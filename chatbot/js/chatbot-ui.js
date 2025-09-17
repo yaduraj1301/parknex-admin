@@ -1,3 +1,9 @@
+import { db } from "../../public/js/firebase-config.js";
+import {
+  collection,
+  getDocs,
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   const messagesEl = document.getElementById("messages");
   const inputEl = document.getElementById("userInput");
@@ -6,11 +12,52 @@ document.addEventListener("DOMContentLoaded", () => {
   // Replace with your actual Gemini API key
   const GEMINI_API_KEY = "AIzaSyCp-51BuOXJq1V58Dz79AleKh2Nnm8DLUc";
 
-  // Slot categories
-  let freeSlots = ["A5", "A8", "B12", "C18", "C22"];
-  let unauthorizedSlots = ["A42", "B7", "C3"]; // Occupied but not booked
-  let bookedSlots = ["A12"];
-  let currentBooking = null;
+  // Firestore-backed slot lists
+  let freeSlots = [];
+  let unauthorizedSlots = [];
+  let bookedSlots = [];
+  let currentBooking = null; // User's current booked slot
+
+  async function loadSlotsFromDB() {
+    freeSlots = [];
+    unauthorizedSlots = [];
+    bookedSlots = [];
+
+    try {
+      const q = collection(db, "parkingSlots");
+      const snapshot = await getDocs(q);
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const slot_name = data.slot_name;
+
+
+        switch (data.status.toLowerCase()) {
+          case "free":
+            freeSlots.push(slot_name);
+            break;
+          case "booked":
+            bookedSlots.push(slot_name);
+            break;
+          case "unbooked":
+            unauthorizedSlots.push(slot_name);
+            break;
+          case "reserved":
+          case "named":
+            // You can handle these separately if needed
+            break;
+        }
+      });
+
+      console.log("Slots loaded:", {
+        freeSlots,
+        bookedSlots,
+        unauthorizedSlots,
+      });
+    } catch (err) {
+      console.error("Error loading slots:", err);
+    }
+  }
 
   function addMessage(text, sender = "bot", html = false, className = "") {
     let div = document.createElement("div");
@@ -562,5 +609,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Initialize
-  showInitialOptions();
+  (async () => {
+    await loadSlotsFromDB();
+    showInitialOptions();
+  })();
 });
