@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
-    <div class="dashboard-container">
+    <div class="main-container">
         <!-- Sidebar -->
         <nav class="sidebar">
             <div class="sidebar-header">
@@ -118,7 +118,7 @@
 
                     <div class="stat-card">
                         <div class="stat-icon available">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Available</h3>
@@ -130,7 +130,7 @@
 
                     <div class="stat-card">
                         <div class="stat-icon occupied">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Occupied</h3>
@@ -142,7 +142,7 @@
 
                     <div class="stat-card">
                         <div class="stat-icon reserved">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Reserved</h3>
@@ -161,13 +161,14 @@
                             <h3><i class="fas fa-chart-bar"></i> Weekly Usage Overview</h3>
                             <p>Average slots occupied by day - Friday shows highest demand</p>
                         </div>
-                        <canvas id="weeklyChart" width="600" height="300"></canvas>
+                        <canvas id="weeklyChart" width="300" height="50"></canvas>
                     </div>
 
                     <!-- Alerts and Insights -->
-                    <div class="alerts-insights">
+                    <div class="insights">
                         <!-- Attention Required -->
-                        <div class="alert-card attention">
+                         <div class="alert-insights" id="alert-insights">
+                            <div class="alert-card attention">
                             <div class="alert-header">
                                 <i class="alert-icon fas fa-exclamation-triangle"></i>
                                 <h4>Attention Required</h4>
@@ -185,6 +186,8 @@
                             <p>12 slots with sensor or connectivity issues require immediate attention.</p>
                             <button class="alert-action sensor">View Details</button>
                         </div>
+                         </div>
+                        
 
                         <!-- Usage Insights -->
                         <div class="insights-card">
