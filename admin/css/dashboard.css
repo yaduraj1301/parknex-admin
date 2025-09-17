@@ -4,9 +4,13 @@
 :root {
     --primary-black: #000000;
     --primary-red: #DC143C;
+    --dull-red: #A50B2C;
+    --primary-red-transaparent: rgba(220, 20, 60, 0.25);
     --secondary-gray: #4D4D4D;
     --secondary-coral: #EA5853;
     --secondary-orange: #F09951;
+    --dull-orange: #e2904d;
+    --secondary-orange-transparent: rgba(240, 152, 81, 0.25);
     --secondary-green: #43BF73;
     --secondary-purple: #8061C3;
     --secondary-light-blue: #64A2F5;
@@ -238,19 +242,25 @@
 }
 
 .alert-card {
-    background: var(--neutral-white);
     border-radius: 12px;
     padding: 20px;
     border: 1px solid var(--border-color);
 }
 
 .alert-card.attention {
-    border-left: 4px solid var(--primary-red);
+    background: var(--primary-red-transaparent);
+    color: var(--primary-red);
+
+    border: 2px solid var(--primary-red);
 }
 
 .alert-card.sensor {
-    border-left: 4px solid var(--secondary-orange);
+background: var(--secondary-orange-transparent);
+    color: var(--secondary-orange);
+
+    border: 2px solid var(--secondary-orange);
 }
+
 
 .alert-header {
     display: flex;
@@ -260,24 +270,21 @@
 }
 
 .alert-icon {
-    font-size: 18px;
+    font-size: 16px;
 }
 
 .alert-header h4 {
     font-size: 16px;
     font-weight: 600;
-    color: var(--text-primary);
 }
 
 .alert-card p {
     font-size: 14px;
-    color: var(--text-secondary);
     margin-bottom: 12px;
     line-height: 1.5;
 }
 
 .alert-action {
-    background: var(--secondary-light-blue);
     color: var(--neutral-white);
     border: none;
     padding: 8px 16px;
@@ -288,8 +295,18 @@
     transition: background 0.2s ease;
 }
 
-.alert-action:hover {
-    background: var(--secondary-blue);
+
+.alert-action.sensor {
+background: var(--secondary-orange);
+}
+.alert-action.attention {
+background: var(--primary-red);
+}
+.alert-action.attention:hover {
+    background: var(--dull-red);
+}
+.alert-action.sensor:hover {
+    background: var(--dull-orange);
 }
 
 .insights-card {

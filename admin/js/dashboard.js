@@ -75,12 +75,12 @@ class ParkingDashboard {
 
     setupEventListeners() {
         // Navigation menu
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handleNavigation(e.target.closest('.nav-link'));
-            });
-        });
+        // document.querySelectorAll('.nav-link').forEach(link => {
+        //     link.addEventListener('click', (e) => {
+        //         e.preventDefault();
+        //         this.handleNavigation(e.target.closest('.nav-link'));
+        //     });
+        // });
 
         // Level tabs
         document.querySelectorAll('.level-tab').forEach(tab => {
