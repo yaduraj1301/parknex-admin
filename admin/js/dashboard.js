@@ -75,12 +75,12 @@ class ParkingDashboard {
 
     setupEventListeners() {
         // Navigation menu
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handleNavigation(e.target.closest('.nav-link'));
-            });
-        });
+        // document.querySelectorAll('.nav-link').forEach(link => {
+        //     link.addEventListener('click', (e) => {
+        //         e.preventDefault();
+        //         this.handleNavigation(e.target.closest('.nav-link'));
+        //     });
+        // });
 
         // Level tabs
         document.querySelectorAll('.level-tab').forEach(tab => {
@@ -279,9 +279,9 @@ class ParkingDashboard {
         
         // Set canvas size
         canvas.width = canvas.offsetWidth;
-        canvas.height = 300;
+        canvas.height = 240;
         
-        const padding = 40;
+        const padding = 30;
         const chartWidth = canvas.width - (padding * 2);
         const chartHeight = canvas.height - (padding * 2);
         const maxValue = Math.max(...data);
@@ -300,24 +300,24 @@ class ParkingDashboard {
             
             // Draw label
             ctx.fillStyle = '#666';
-            ctx.font = '12px Arial';
+            ctx.font = '11px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText(labels[index], x + width/2, canvas.height - 10);
+            ctx.fillText(labels[index], x + width/2, canvas.height - 8);
             
             // Draw value
             ctx.fillStyle = '#333';
-            ctx.font = '11px Arial';
-            ctx.fillText(value.toString(), x + width/2, y - 5);
+            ctx.font = '10px Arial';
+            ctx.fillText(value.toString(), x + width/2, y - 4);
         });
         
         // Draw Y-axis labels
         ctx.fillStyle = '#666';
-        ctx.font = '10px Arial';
+        ctx.font = '9px Arial';
         ctx.textAlign = 'right';
         for (let i = 0; i <= 4; i++) {
             const value = Math.round((maxValue / 4) * i);
             const y = canvas.height - padding - (chartHeight / 4) * i;
-            ctx.fillText(value.toString(), padding - 10, y + 3);
+            ctx.fillText(value.toString(), padding - 8, y + 2);
         }
     }
 
