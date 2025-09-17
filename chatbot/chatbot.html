@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ParkNex Assistant</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/chatbot.css" />
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="header">
+        <div class="logo">
+            <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-bot w-6 h-6"
+            data-lov-id="src/components/Chatbot.tsx:413:10"
+            data-lov-name="Bot"
+            data-component-path="src/components/Chatbot.tsx"
+            data-component-line="413"
+            data-component-file="Chatbot.tsx"
+            data-component-name="Bot"
+            data-component-content="%7B%22className%22%3A%22w-6%20h-6%22%7D"
+            >
+            <path d="M12 8V4H8"></path>
+            <rect width="16" height="12" x="4" y="8" rx="2"></rect>
+            <path d="M2 14h2"></path>
+            <path d="M20 14h2"></path>
+            <path d="M15 13v2"></path>
+            <path d="M9 13v2"></path>
+            </svg>
+        </div>
+        ParkNex Assistant
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="input-box">
+        <input id="userInput" type="text" placeholder="Type your message..." />
+        <button id="sendBtn">➤</button>
+      </div>
+    </div>
+
+    <script src="js/chatbot-ui.js" type="module"></script>
+  </body>
+</html>

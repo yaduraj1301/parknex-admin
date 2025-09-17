@@ -1,12 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle management page</title>
-    <link rel="stylesheet" href="css/vm_styles.css"/>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="../public/css/common-styles.css" />
+    <link rel="stylesheet" href="css/vm_styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
 </head>
+
 <body>
-    
+    <div class="main-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="logo">ParkNex</h2>
+                <p class="logo-subtitle">Parking Management</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active">
+                    <a href="#" class="nav-link" data-section="dashboard">
+                        <i class="nav-icon fas fa-th-large"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <a href="#" class="nav-link" data-section="bookings">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        Bookings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="reports">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="vehicle-management">
+                        <i class="nav-icon fas fa-car"></i>
+                        Vehicle Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="slot-management">
+                        <i class="nav-icon fas fa-plus"></i>
+                        Slot Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="notifications">
+                        <i class="nav-icon fas fa-bell"></i>
+                        Notifications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="settings">
+                        <i class="nav-icon fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="admin-info">
+                        <p class="admin-name">Admin User</p>
+                        <p class="admin-email">admin@park.com</p>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <h1>Vehicle Management</h1>
+                        <p>Employee and vehicle records</p>
+                    </div>
+                    <div class="header-right">
+                        <div class="datetime">
+                            <span class="date" id="current-date">15/09/2025</span>
+                            <span class="time" id="current-time">11:14:25</span>
+                        </div>
+                        <div class="user-menu">
+                            <button class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Top Summary Cards -->
+            <!-- Top Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <h3>Total Vehicles</h3>
+                    <p class="description">Registered vehicles in the system</p>
+                    <div style="display: flex;flex-direction: column;">
+                        <p class="value">50</p>
+                        <div style="display: flex; justify-content: flex-end; align-items: center;">
+                            <i class="fa-solid fa-car" style="justify-content:right;"></i>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="summary-card">
+                    <h3>Currently Parked</h3>
+                    <p class="description">currently parked vehicles</p>
+                    <p class="value">11</p>
+                    <div style="display: flex; justify-content: flex-end; align-items: center;">
+                        <i class="fa-solid fa-car-tunnel"></i>
+                    </div>
+
+
+                </div>
+                <div class="summary-card alert">
+                    <h3>Security Alerts</h3>
+                    <p class="description" style="color: #DC143C;">Vehicles that need attention</p>
+                    <p class="value">2</p>
+                    <div style="display: flex; justify-content: flex-end; align-items: center;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+
+
+                </div>
+                <div class="add-vehicle" style="justify-content: center;align-content: center;">
+                    <button class="add-btn" style="margin-right: 10px;">
+                        <i class="fas fa-plus"></i>
+                        Add Vehicle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Records Table with integrated Search and Filters -->
+          <div class="table-container">
+    <div class="table-header">
+        <h3>Vehicle Records</h3>
+        <br>
+        <div class="table-controls">
+            <div class="search-section">
+                <input type="text" placeholder="Search by Employee or Vehicle No." class="search-input">
+                <button class="search-btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+            <div class="ocr-section">
+                <input type="file" id="upload-ocr" accept="image/*">
+                <label for="upload-ocr" class="ocr-btn">
+                    <i class="fas fa-camera"></i>
+                    OCR Scan
+                </label>
+            </div>
+            <div class="filter-section">
+                <select class="filter-select">
+                    <option>All Departments</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Finance</option>
+                    <option>Marketing</option>
+                </select>
+                <select class="filter-select">
+                    <option>All Status</option>
+                    <option>Active</option>
+                    <option>Inactive</option>
+                </select>
+                <select class="filter-select">
+                    <option>Authorization</option>
+                    <option>Authorized</option>
+                    <option>Unauthorized</option>
+                </select>
+            </div>
+            <div class="clear-btn-section">
+                <button class="clear-btn">
+                    <i class="fas fa-times"></i>
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scrollable wrapper -->
+    <div class="table-scroll">
+        <table class="records-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Vehicle</th>
+                    <th>Contact</th>
+                    <th>Recent Parking</th>
+                    <th>Booking</th>
+                    <th>Authorization</th>
+                    <th>Building</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>John Smith</td>
+                    <td>IT</td>
+                    <td>KL-07-1234</td>
+                    <td>+91 9876543210</td>
+                    <td>14/09/2025 - Slot 10</td>
+                    <td><span class="status active">Active</span></td>
+                    <td><span class="status authorized">Authorized</span></td>
+                    <td>Gayatri</td>
+                    <td class="action-buttons">
+                        <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                        <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                        <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>?</td>
+                    <td>?</td>
+                    <td>?</td>
+                    <td>?</td>
+                    <td>17-09-2025 - Slot 11</td>
+                    <td><span class="status inactive">No booking</span></td>
+                    <td><span class="status unauthorized">Unauthorized</span></td>
+                    <td>Athulya</td>
+                    <td class="action-buttons">
+                        <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                        <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                        <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Mike Johnson</td>
+                    <td>Finance</td>
+                    <td>KL-05-9999</td>
+                    <td>+91 9123456789</td>
+                    <td>13/09/2025 - Slot 5</td>
+                    <td><span class="status active">Active</span></td>
+                    <td><span class="status authorized">Authorized</span></td>
+                    <td>Tejaswini</td>
+                    <td class="action-buttons">
+                        <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                        <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                        <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Sarah Wilson</td>
+                    <td>Marketing</td>
+                    <td>KL-03-7777</td>
+                    <td>+91 9567890123</td>
+                    <td>12/09/2025 - Slot 8</td>
+                    <td><span class="status inactive">No booking</span></td>
+                    <td><span class="status authorized">Authorized</span></td>
+                    <td>Gayatri</td>
+                    <td class="action-buttons">
+                        <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                        <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                        <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+
+        </main>
+    </div>
+
+
 </body>
+
 </html>

@@ -1,6 +1,16 @@
 @import '_variables';
-body
-{
-    
-    background-color: $primary-red;
+
+card-left {
+    width: 50%;
+    float: left;
+    padding: 20px;
+    background-color: aqua;
+
+}
+
+card-right {
+    width: 50%;
+    float: right;
+    padding: 20px;
+    background-color: rgb(255, 255, 35);
 }
