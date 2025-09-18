@@ -78,12 +78,12 @@ console.log('Sample slots generated:', Object.keys(slots).length);
 
     setupEventListeners() {
         // Navigation menu
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.handleNavigation(e.target.closest('.nav-link'));
-            });
-        });
+        // document.querySelectorAll('.nav-link').forEach(link => {
+        //     link.addEventListener('click', (e) => {
+        //         e.preventDefault();
+        //         this.handleNavigation(e.target.closest('.nav-link'));
+        //     });
+        // });
 
         // Level tabs
         document.querySelectorAll('.level-tab').forEach(tab => {
@@ -115,24 +115,24 @@ console.log('Sample slots generated:', Object.keys(slots).length);
         }
     }
 
-    handleNavigation(navLink) {
-        // Remove active class from all nav items
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
+    // handleNavigation(navLink) {
+    //     // Remove active class from all nav items
+    //     document.querySelectorAll('.nav-item').forEach(item => {
+    //         item.classList.remove('active');
+    //     });
 
-        // Add active class to clicked nav item
-        navLink.closest('.nav-item').classList.add('active');
+    //     // Add active class to clicked nav item
+    //     navLink.closest('.nav-item').classList.add('active');
 
-        const section = navLink.dataset.section;
-        console.log(`Navigating to: ${section}`);
+    //     const section = navLink.dataset.section;
+    //     console.log(`Navigating to: ${section}`);
 
-        // Here you would typically load different content based on the section
-        // For now, we'll just show an alert
-        if (section !== 'bookings') {
-            alert(`${section.replace('-', ' ').toUpperCase()} section coming soon!`);
-        }
-    }
+    //     // Here you would typically load different content based on the section
+    //     // For now, we'll just show an alert
+    //     if (section !== 'bookings') {
+    //         alert(`${section.replace('-', ' ').toUpperCase()} section coming soon!`);
+    //     }
+    // }
 
     switchLevel(level) {
         this.currentLevel = level;
