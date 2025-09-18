@@ -153,6 +153,10 @@
     background: var(--secondary-orange);
     color: var(--neutral-white);
 }
+.stat-icon.nam {
+    background: var(--neutral-grey);
+    color: var(--neutral-white);
+}
 
 .stat-content h3 {
     font-size: 13px;

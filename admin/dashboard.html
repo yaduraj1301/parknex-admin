@@ -88,9 +88,10 @@
                     </div>
                     <div class="header-right">
                         <select class="building-selector">
-                            <option value="thejaswini"><i class="fas fa-map-marker-alt"></i> Thejaswini Building
+                            <option value="thejaswini"><i class="fas fa-map-marker-alt"></i> building1
                             </option>
-                            <option value="building2"><i class="fas fa-map-marker-alt"></i> Building 2</option>
+                            <option value="building2"><i class="fas fa-map-marker-alt"></i> buildin2</option>
+                            <option value="building2"><i class="fas fa-map-marker-alt"></i> building3</option>
                         </select>
                         <div class="datetime">
                             <span class="date" id="current-date">15/09/2025</span>
@@ -154,26 +155,38 @@
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
+                    <div class="stat-card">
+                        <div class="stat-icon named">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Named</h3>
+                            <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
+                            <div class="stat-percentage">16%</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="alert-insights-secondary secondary " id="alert-insights">
-                            <div class="alert-card secondary attention">
-                                <div class="alert-header">
-                                    <i class="alert-icon fas fa-exclamation-triangle"></i>
-                                    <h4>Attention Required</h4>
-                                </div>
-                                <p>9 vehicles are parked without booking.</p>
-                                <button class="alert-action attention">View Details</button>
-                            </div>
 
-                            <!-- Sensor Issues -->
-                            <div class="alert-card secondary sensor">
-                                <div class="alert-header">
-                                    <i class="alert-icon fas fa-tools"></i>
-                                    <h4>Sensor Issues</h4>
-                                </div>
-                                <p>12 slots with sensor or connectivity issues require immediate attention.</p>
-                                <button class="alert-action sensor">View Details</button>
-                            </div>
+                <!-- both alerts at once -->
+                <div class="alert-insights-secondary secondary hidden " id="alert-insights">
+                    <div class="alert-card secondary attention">
+                        <div class="alert-header">
+                            <i class="alert-icon fas fa-exclamation-triangle"></i>
+                            <h4>Attention Required</h4>
+                        </div>
+                        <p>9 vehicles are parked without booking.</p>
+                        <button class="alert-action attention">View Details</button>
+                    </div>
+
+                    <!-- Sensor Issues -->
+                    <div class="alert-card secondary sensor">
+                        <div class="alert-header">
+                            <i class="alert-icon fas fa-tools"></i>
+                            <h4>Sensor Issues</h4>
+                        </div>
+                        <p>12 slots with sensor or connectivity issues require immediate attention.</p>
+                        <button class="alert-action sensor">View Details</button>
+                    </div>
                 </div>
 
                 <!-- Charts and Alerts Row -->
@@ -504,7 +517,7 @@
         </main>
     </div>
 
-    <script src="js/dashboard.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
 </body>
 
 </html>
