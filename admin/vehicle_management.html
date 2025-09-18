@@ -29,7 +29,7 @@
             </div>
 
             <ul class="nav-menu">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a href="#" class="nav-link" data-section="dashboard">
                         <i class="nav-icon fas fa-th-large"></i>
                         Dashboard
@@ -47,7 +47,7 @@
                         Reports
                     </a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item active">
                     <a href="#" class="nav-link" data-section="vehicle-management">
                         <i class="nav-icon fas fa-car"></i>
                         Vehicle Management
@@ -281,13 +281,74 @@
     </div>
 </div>
 
+<!-- Popup Modal -->
+<div id="popupModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Authorization Status</h3>
+    <div class="status-card">
+      <div class="status-header">
+        <h4 id="empName">Sarah Johnson</h4>
+        <span class="status-badge authorized" id="authStatus">Authorized</span>
+      </div>
+      <p><strong>ID:</strong> <span id="empId">EMP002</span></p>
+      
+      <div class="details">
+        <p><strong>Vehicle Information:</strong> <span id="vehicleInfo">KL 08 Q 3738, Maruti 800 White</span></p>
+        <p><strong>Department:</strong> <span id="department">L & D</span></p>
+        <p><strong>Building:</strong> <span id="building">Gayatri Phase 1</span></p>
+        <p><strong>Contact Number:</strong> <span id="contact">8078345787</span></p>
+        <p><strong>Date Authorized:</strong> <span id="authDate">18/03/2019</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Vehicle Modal -->
+<div id="addVehicleModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <h3>Add new Vehicle</h3>
+
+    <form id="vehicleForm">
+  <label>Vehicle Number *</label>
+  <input type="text" name="registration_no" placeholder="e.g. KA01AB1234" required>
+
+  <label>Employee ID *</label>
+  <input type="text" name="employee_id" placeholder="e.g. EMP002" required>
+
+  <label>Vehicle Model *</label>
+  <input type="text" name="model" placeholder="e.g. Tesla Model 3" required>
+
+  <label>Car Color *</label>
+  <input type="text" name="color" placeholder="e.g. Red" required>
+
+  <label>Default Vehicle?</label>
+  <select name="is_default" required>
+    <option value="true">Yes</option>
+    <option value="false">No</option>
+  </select>
+
+  <label>Registration Date *</label>
+  <input type="date" name="registration_date" required>
+
+  <div class="form-actions">
+    <button type="button" class="cancel-btn">Cancel</button>
+    <button type="submit" class="add-btn">Add Vehicle</button>
+  </div>
+</form>
+
+
+  </div>
+</div>
+
 
 
 
         </main>
     </div>
 
-
+<script type="module" src="js/vm.js"></script>
 </body>
 
 </html>

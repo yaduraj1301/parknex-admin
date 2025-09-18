@@ -1,8 +1,9 @@
 /* Reset and Base Styles */
 
 /* Color Variables */
+/* Color Variables */
 :root {
-    --primary-black: #000000;
+      --primary-black: #000000;
     --primary-red: #DC143C;
     --dull-red: #A50B2C;
     --primary-red-transaparent: rgba(220, 20, 60, 0.25);
@@ -25,25 +26,13 @@
 }
 
 /* Dashboard Container */
-.dashboard-container {
-    display: flex;
-    min-height: 100vh;
-}
 
-
-
-/* Main Content */
-.main-content {
-    flex: 1;
-    margin-left: 280px;
-    min-height: 100vh;
-}
 
 /* Header */
 .dashboard-header {
     background: var(--neutral-white);
     border-bottom: 1px solid var(--border-color);
-    padding: 20px 24px;
+    padding: 16px 20px;
 }
 
 .header-content {
@@ -53,15 +42,15 @@
 }
 
 .header-left h1 {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .header-left p {
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .header-right {
@@ -108,25 +97,25 @@
 
 /* Dashboard Content */
 .dashboard-content {
-    padding: 24px;
+    padding: 20px;
 }
 
 /* Stats Grid */
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-bottom: 30px;
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .stat-card {
+    flex: 1;
     background: var(--neutral-white);
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -136,13 +125,13 @@
 }
 
 .stat-icon {
-    width: 48px;
-    height: 48px;
+    width: 42px;
+    height: 42px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     background: var(--hover-color);
 }
 
@@ -162,33 +151,33 @@
 }
 
 .stat-content h3 {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 500;
 }
 
 .stat-number {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .stat-total {
-    font-size: 18px;
+    font-size: 16px;
     color: var(--text-secondary);
     font-weight: 400;
 }
 
 .stat-percentage {
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text-secondary);
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .stat-change {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
 }
 
@@ -202,8 +191,7 @@
 
 /* Dashboard Row */
 .dashboard-row {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
+    display: flex;
     gap: 24px;
     margin-bottom: 30px;
 }
@@ -235,12 +223,17 @@
 }
 
 /* Alerts and Insights */
-.alerts-insights {
+.insights {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
+.alert-insights{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
 .alert-card {
     border-radius: 12px;
     padding: 20px;
@@ -346,11 +339,12 @@ background: var(--primary-red);
     color: var(--text-primary);
 }
 
+
 /* Parking Overview */
 .parking-overview {
     background: var(--neutral-white);
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     border: 1px solid var(--border-color);
 }
 
@@ -358,32 +352,32 @@ background: var(--primary-red);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .parking-header h3 {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .parking-legend {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     align-items: center;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 12px;
+    gap: 4px;
+    font-size: 11px;
     color: var(--text-secondary);
 }
 
 .legend-color {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 2px;
 }
 
@@ -420,16 +414,16 @@ background: var(--primary-red);
 /* Level Tabs */
 .level-tabs {
     display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
+    gap: 6px;
+    margin-bottom: 20px;
 }
 
 .level-tab {
-    padding: 8px 16px;
+    padding: 6px 12px;
     border: 1px solid var(--border-color);
     background: var(--neutral-white);
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
@@ -450,33 +444,33 @@ background: var(--primary-red);
 .parking-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 16px;
 }
 
 .parking-block {
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 16px;
+    padding: 12px;
     background: #fafafa;
 }
 
 .parking-block h4 {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     text-align: center;
 }
 
 .slots-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 6px;
 }
 
 .parking-slot {
     aspect-ratio: 1;
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -485,7 +479,7 @@ background: var(--primary-red);
     transition: all 0.2s ease;
     border: 2px solid transparent;
     position: relative;
-    min-height: 60px;
+    min-height: 50px;
 }
 
 .parking-slot:hover {
@@ -515,13 +509,13 @@ background: var(--primary-red);
 }
 
 .slot-id {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
     margin-bottom: 2px;
 }
 
 .slot-icon {
-    font-size: 16px;
+    font-size: 14px;
 }
 
 /* Responsive Design */

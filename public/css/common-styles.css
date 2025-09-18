@@ -13,6 +13,15 @@ body {
     line-height: 1.6;
 }
 
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    min-height: 100vh;
+}
+.main-container {
+    display: flex;
+    min-height: 100vh;
+}
 
 
 /* =================================
@@ -54,10 +63,7 @@ body {
     flex: 1;
 }
 
-.sidebar .nav-item {
-    margin: 0 12px;
 
-}
 
 .sidebar .nav-link {
     display: flex;
@@ -68,7 +74,9 @@ body {
     font-weight: 500;
     font-size: 15px;
     transition: all 0.3s ease;
-        border-radius: 12px;
+    border-radius: 12px;
+    margin: 0 12px;
+
 
 }
 
