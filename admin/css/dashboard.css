@@ -6,17 +6,19 @@
       --primary-black: #000000;
     --primary-red: #DC143C;
     --dull-red: #A50B2C;
-    --primary-red-transaparent: rgba(220, 20, 60, 0.25);
+    --primary-red-transparent: rgba(220, 20, 60, 0.25);
     --secondary-gray: #4D4D4D;
     --secondary-coral: #EA5853;
     --secondary-orange: #F09951;
     --dull-orange: #e2904d;
     --secondary-orange-transparent: rgba(240, 152, 81, 0.25);
     --secondary-green: #43BF73;
+    --secondary-green-transparent: hsla(143, 49%, 51%, 0.25);
     --secondary-purple: #8061C3;
     --secondary-light-blue: #64A2F5;
     --secondary-blue: #3E68B9;
-    --neutral-gray: #ADAOAD;
+    --neutral-gray: #A0A0A0;
+    --neutral-gray-transparent: hsla(0, 0%, 63%, 0.25);
     --neutral-white: #FFFFFF;
     --bg-color: #f8f9fa;
     --text-primary: #333;
@@ -98,6 +100,8 @@
 /* Dashboard Content */
 .dashboard-content {
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Stats Grid */
@@ -192,15 +196,16 @@
 /* Dashboard Row */
 .dashboard-row {
     display: flex;
-    gap: 24px;
+    gap: 18px;
     margin-bottom: 30px;
 }
 
 /* Chart Container */
 .chart-container {
+    flex: 1;
     background: var(--neutral-white);
     border-radius: 12px;
-    padding: 24px;
+    padding: 20px;
     border: 1px solid var(--border-color);
 }
 
@@ -219,29 +224,45 @@
 
 #weeklyChart {
     width: 100%;
-    height: 300px;
+    height: 200px;
 }
 
 /* Alerts and Insights */
 .insights {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    /* gap: 16px; */
+}
+
+.alert-insights {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.alert-insights{
+.alert-insights-secondary{
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    margin-bottom: 24px;;
     gap: 16px;
+}
+
+.alert-card.secondary {
+    flex: 1;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 0px;
 }
 .alert-card {
     border-radius: 12px;
     padding: 20px;
     border: 1px solid var(--border-color);
+    margin-bottom: 16px;
 }
-
 .alert-card.attention {
-    background: var(--primary-red-transaparent);
+    background: var(--primary-red-transparent);
     color: var(--primary-red);
 
     border: 2px solid var(--primary-red);
@@ -252,6 +273,12 @@ background: var(--secondary-orange-transparent);
     color: var(--secondary-orange);
 
     border: 2px solid var(--secondary-orange);
+}
+.alert-card.no-alerts {
+background: var(--secondary-green-transparent);
+    color: var(--secondary-green);
+
+    border: 2px solid var(--secondary-green);
 }
 
 
@@ -264,6 +291,7 @@ background: var(--secondary-orange-transparent);
 
 .alert-icon {
     font-size: 16px;
+    width: 20px;
 }
 
 .alert-header h4 {
@@ -306,6 +334,7 @@ background: var(--primary-red);
     background: var(--neutral-white);
     border-radius: 12px;
     padding: 20px;
+    height: 100%;
     border: 1px solid var(--border-color);
 }
 
@@ -442,12 +471,13 @@ background: var(--primary-red);
 
 /* Parking Grid */
 .parking-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
     gap: 16px;
+
 }
 
 .parking-block {
+    flex: 1;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 12px;
@@ -469,8 +499,8 @@ background: var(--primary-red);
 }
 
 .parking-slot {
-    aspect-ratio: 1;
-    border-radius: 6px;
+    /* aspect-ratio: 1; */
+    border-radius: 12px 0px 12px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -488,18 +518,21 @@ background: var(--primary-red);
 }
 
 .parking-slot.available {
-    background: var(--secondary-green);
-    color: var(--neutral-white);
+    background: var(--secondary-green-transparent);
+    border: 1px solid var(--secondary-green);
+    color: var(--secondary-green);
 }
 
 .parking-slot.occupied {
-    background: var(--primary-red);
-    color: var(--neutral-white);
+    background: var(--primary-red-transparent);
+    border: 1px solid var(--primary-red);
+    color: var(--primary-red);
 }
 
 .parking-slot.reserved {
-    background: var(--secondary-orange);
-    color: var(--neutral-white);
+    background: var(--secondary-orange-transparent);
+    border: 1px solid var(--secondary-orange);
+    color: var(--secondary-orange);
 }
 
 .parking-slot.unbooked {
@@ -516,6 +549,13 @@ background: var(--primary-red);
 
 .slot-icon {
     font-size: 14px;
+}
+.icon-list {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 /* Responsive Design */
@@ -635,4 +675,8 @@ background: var(--primary-red);
 
 .tooltip:hover::after {
     opacity: 1;
+}
+
+.hidden{
+    display: none;
 }
