@@ -17,6 +17,7 @@ body {
     flex: 1;
     margin-left: 280px;
     min-height: 100vh;
+    gap: 18px;
 }
 .main-container {
     display: flex;
