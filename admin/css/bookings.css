@@ -1,0 +1,16 @@
+.btn-dropdown, .search-bar{
+    color: #404040;
+    border: 1px solid black;
+    padding: 5px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.filters-container > div {
+    border-radius: 12px;
+}
+
+.filters-container .form-control {
+    width: 300px;
+}
+
