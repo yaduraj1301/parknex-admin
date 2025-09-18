@@ -478,24 +478,24 @@ function setupEventListeners() {
     }
 }
 
-// Handle navigation clicks
-// function handleNavigation(navLink) {
-//     // Remove active class from all nav items
-//     document.querySelectorAll('.nav-item').forEach(item => {
-//         item.classList.remove('active');
-//     });
+    handleNavigation(navLink) {
+        // Remove active class from all nav items
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
 
-//     // Add active class to clicked nav item
-//     navLink.closest('.nav-item').classList.add('active');
+        // Add active class to clicked nav item
+        navLink.closest('.nav-item').classList.add('active');
 
-//     const section = navLink.dataset.section;
-//     console.log(`Navigating to: ${section}`);
+        const section = navLink.dataset.section;
+        console.log(`Navigating to: ${section}`);
 
-//     // Show alert for non-dashboard sections
-//     if (section !== 'dashboard') {
-//         alert(`${section.replace('-', ' ').toUpperCase()} section coming soon!`);
-//     }
-// }
+        // Here you would typically load different content based on the section
+        // For now, we'll just show an alert
+        if (section !== 'bookings') {
+            alert(`${section.replace('-', ' ').toUpperCase()} section coming soon!`);
+        }
+    }
 
 // Switch between parking levels
 function switchLevel(level) {
