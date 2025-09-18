@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ParkNex - Slot Overview</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="css/slot-management.css" />
+    <link rel="stylesheet" href="../public/css/common-styles.css" />
+  </head>
+
+  <body>
+    <div class="main-container" id="main-container">
+      <!--------- Sidebar -------->
+
+      <div class="sidebar" id="sidebar">
+        <nav class="sidebar">
+          <div class="sidebar-header">
+            <h2 class="logo">ParkNex</h2>
+            <p class="logo-subtitle">Parking Management</p>
+          </div>
+
+          <ul class="nav-menu">
+            <li class="nav-item">
+              <a
+                href="dashboard.html"
+                class="nav-link"
+                data-section="dashboard"
+              >
+                <i class="nav-icon fas fa-th-large"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="bookings">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                Bookings
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="reports">
+                <i class="nav-icon fas fa-file-alt"></i>
+                Reports
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="vehicle-management">
+                <i class="nav-icon fas fa-car"></i>
+                Vehicle Management
+              </a>
+            </li>
+            <li class="nav-item active">
+              <a
+                href="slot-management.html"
+                class="nav-link"
+                data-section="slot-management"
+              >
+                <i class="nav-icon fas fa-plus"></i>
+                Slot Management
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="notifications">
+                <i class="nav-icon fas fa-bell"></i>
+                Notifications
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="#" class="nav-link" data-section="settings">
+                <i class="nav-icon fas fa-cog"></i>
+                Settings
+              </a>
+            </li>
+          </ul>
+
+          <div class="sidebar-footer">
+            <div class="admin-profile">
+              <div class="admin-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="admin-info">
+                <p class="admin-name">Admin User</p>
+                <p class="admin-email">admin@park.com</p>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!--------- Header -------->
+      <div class="main-content" id="main-content">
+        <header class="slot-overview-header">
+          <div class="header-content">
+            <div class="header-left">
+              <h1>Slot Management</h1>
+              <p>
+                Manage parking slots, monitor occupancy, and track utilization
+              </p>
+            </div>
+            <div class="header-right">
+              <div class="notification-icon">
+                <button class="">
+                  <i class="fa-regular fa-bell"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Add Slot and Refresh  Buttons -->
+        <div class="content-container" id="content-container">
+          <div class="action-buttons">
+            <button class="action-btn add-slot-btn" id="add-slot-btn">
+              <i class="fa-solid fa-plus"></i>
+              Add new slot
+            </button>
+            <button class="action-btn refresh-btn" id="refresh-btn">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Quick Actions & Search Filters -->
+          <div class="action-bar">
+            <h3>Quick Actions & Search Filters</h3>
+
+            <div class="quick-filters">
+              <button
+                class="btn btn-secondary" 
+                id="btn-unbooked"
+              >
+                View Unbooked Slots
+              </button>
+              <button 
+                class="btn btn-secondary" 
+                id="btn-ev"
+              >
+                View EV Slots
+              </button>
+              <button
+                class="btn btn-secondary"
+                id="btn-handicapped"
+              >
+                View Handicapped Slots
+              </button>
+              <button 
+                class="btn btn-secondary"
+                id="clear-filters" 
+              >
+                Clear Filters
+              </button>
+            </div>
+
+            <div class="filter-group">
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Search..."
+                onkeyup="searchSlots(this.value)"
+              />
+              <select
+                class="filter-select"
+                onchange="filterByLocation(this.value)"
+              >
+                <option value="">All Locations</option>
+                <option value="thiruvanathapuram">Thiruvanathapuram</option>
+                <option value="kochi">Kochi</option>
+              </select>
+              <select
+                class="filter-select"
+                onchange="filterByBuilding(this.value)"
+              >
+                <option value="">All Buildings</option>
+                <option value="gayan">Gayan</option>
+                <option value="thejaswini">Thejaswini</option>
+                <option value="athulya">Athulya</option>
+              </select>
+              <select
+                class="filter-select"
+                onchange="filterByGroup(this.value)"
+              >
+                <option value="">All Groups</option>
+                <option value="yamuna">Yamuna</option>
+                <option value="ganga">Ganga</option>
+                <option value="periyar">Periyar</option>
+              </select>
+              <select
+                class="filter-select"
+                onchange="filterByStatus(this.value)"
+              >
+                <option value="">All Status</option>
+                <option value="available">Available</option>
+                <option value="occupied">Occupied</option>
+                <option value="reserved">Reserved</option>
+                <option value="unauthorized">Unauthorized</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Parking Lot Overview -->
+          <div class="parking-overview">
+            <div class="overview-header">
+              <h3 class="overview-title">Parking Lot Overview</h3>
+              <div class="legend">
+                <div class="legend-item">
+                  <div class="legend-dot filter"></div>
+                  <span>Filter</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot corner"></div>
+                  <span>Corner</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot available"></div>
+                  <span>Available</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot occupied"></div>
+                  <span>Occupied</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot reserved"></div>
+                  <span>Reserved</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot unbooked"></div>
+                  <span>Unbooked</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="level-tabs">
+              <button class="level-tab active" onclick="switchLevel(1)">
+                Level 1
+              </button>
+              <button class="level-tab" onclick="switchLevel(2)">
+                Level 2
+              </button>
+              <button class="level-tab" onclick="switchLevel(3)">
+                Level 3
+              </button>
+            </div>
+
+            <div class="parking-grid" id="parkingGrid">
+              <!-- Blocks will be generated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Modal for Add New Slot -->
+      <div class="modal" id="addSlotModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">
+              <i class="fa-solid fa-plus"></i>
+              Add New Slot
+            </h3>
+            <button class="modal-close" onclick="closeModal('addSlotModal')">
+              &times;
+            </button>
+          </div>
+          <form id="addSlotForm">
+            <div class="form-group">
+              <label class="form-label"
+                >Slot Number <span class="required">*</span></label
+              >
+              <input
+                type="text"
+                class="form-input"
+                id="slotNumber"
+                placeholder="e.g. G-123"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input
+                type="text"
+                class="form-input"
+                id="slotLocation"
+                placeholder="e.g. Thiruvanathapuram"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Building</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="slotBuilding"
+                  placeholder="e.g. Thejaswini"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Group name</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="slotGroup"
+                  placeholder="e.g. Yamuna"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label"
+                  >Slot Type <span class="required">*</span></label
+                >
+                <select class="form-select" id="slotType" required>
+                  <option value="normal">Normal</option>
+                  <option value="ev">EV</option>
+                  <option value="handicap">Handicap</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label"
+                  >Initial Status <span class="required">*</span></label
+                >
+                <select class="form-select" id="slotInitialStatus" required>
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="reserved">Reserved</option>
+                  <option value="unauthorized">Unauthorized</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea
+                class="form-textarea"
+                id="slotNotes"
+                placeholder="e.g. Near Corner, Small parking space etc."
+              ></textarea>
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-cancel"
+                onclick="closeModal('addSlotModal')"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">Add Slot</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal for Configure Slot -->
+      <div class="modal" id="configureSlotModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">✏️ Configure Slots</h3>
+            <button
+              class="modal-close"
+              onclick="closeModal('configureSlotModal')"
+            >
+              &times;
+            </button>
+          </div>
+          <form id="configureSlotForm">
+            <div class="form-group">
+              <label class="form-label">Slot Number</label>
+              <input
+                type="text"
+                class="form-input"
+                id="configSlotNumber"
+                readonly
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Location</label>
+              <input
+                type="text"
+                class="form-input"
+                id="configSlotLocation"
+                placeholder="Thiruvanathapuram"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Building</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="configSlotBuilding"
+                  placeholder="Thejaswini"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Group name</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="configSlotGroup"
+                  placeholder="Yamuna"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Slot Type</label>
+                <select class="form-select" id="configSlotType">
+                  <option value="normal">Normal</option>
+                  <option value="ev">EV</option>
+                  <option value="handicap">Handicap</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Initial Status</label>
+                <select class="form-select" id="configSlotStatus">
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="reserved">Reserved</option>
+                  <option value="unauthorized">Unauthorized</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea
+                class="form-textarea"
+                id="configSlotNotes"
+                placeholder="Around a corner, near a Pillar"
+              ></textarea>
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-cancel"
+                onclick="closeModal('configureSlotModal')"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">Confirm</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script src="./js/slot-management.js"></script>
+  </body>
+</html>
