@@ -4,16 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+
+    <title>ParkNex - Bookings</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../public/css/common-styles.css">
     <link rel="stylesheet" href="css/bookings.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
 </head>
 
 <body>
-    <div class="main-container d-flex">
+    <div class="main-container">
+
         <nav class="sidebar">
             <div class="sidebar-header">
                 <h2 class="logo">ParkNex</h2>
@@ -22,7 +23,9 @@
 
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-section="dashboard">
+
+                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
+
                         <i class="nav-icon fas fa-th-large"></i>
                         Dashboard
                     </a>
@@ -77,44 +80,47 @@
                 </div>
             </div>
         </nav>
-        <div class="main-content d-flex-column">
+        <div class="main-content">
             <header class="dashboard-header">
-                <div class="header-content d-flex align-items-center justify-content-between px-4 pt-4">
+                <div class="header-content">
+
                     <div class="header-left">
                         <h2>Bookings</h2>
                     </div>
                     <div class="header-right">
                         <img src="../public/assets/images/notification.png" alt="Notifications"
-                            class="notification-icon w-80 h-80">
+                            class="notification-icon">
+
                     </div>
                 </div>
             </header>
             <main>
-                <div class="sub-heading-container d-flex-column p-4 pe-0">
-                    <div class="d-flex align-items-center mb-2">
+
+                <div class="sub-heading-container">
+                    <div class="sub-heading-top">
                         <h4>All Booking(9)</h4>
                     </div>
-                    <div class="filters-container d-flex gap-4">
-                        <input class="form-control mr-sm-2 w-80 h-50 search-bar border-dark rounded-3" type="search"
+                    <div class="filters-container">
+                        <input class="search-bar" type="search"
                             placeholder="Search" aria-label="Search">
-                        <div class="btn-dropdown h-50 d-flex align-items-center justify-content-between w-25">
+                        <div class="btn-dropdown">
                             <span>Status</span>
                             <i class="fas fa-chevron-down"></i>
                         </div>
-                        <div class="btn-dropdown h-50 d-flex align-items-center justify-content-between w-25">
+                        <div class="btn-dropdown">
                             <span>Date</span>
                             <i class="fas fa-chevron-down"></i>
                         </div>
 
                         <div class="button-container">
-                            <button class="btn ms-2 h-60 w-45 btn-primary btn-sm p-2 rounded-3">
-                                <i class="fas fa-plus me-2"></i>Book Slot
+                            <button class="btn-primary">
+                                <i class="fas fa-plus"></i>Book Slot
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="table-container py-3 px-3">
-                    <table class="table table-striped">
+                <div class="table-container">
+                    <table class="table">
                         <thead>
                             <tr>
                                 <th>Booking ID</th>
@@ -134,7 +140,7 @@
                                 <td>A-101</td>
                                 <td>Booked</td>
                                 <td>2025-09-17 10:00 AM</td>
-                                <td><button class="btn btn-sm btn-primary">View</button></td>
+                                <td><button class="btn-action">View</button></td>
                             </tr>
                             <tr>
                                 <td>#BK002</td>
@@ -143,7 +149,7 @@
                                 <td>B-202</td>
                                 <td>Cancelled</td>
                                 <td>2025-09-16 02:00 PM</td>
-                                <td><button class="btn btn-sm btn-primary">View</button></td>
+                                <td><button class="btn-action">View</button></td>
                             </tr>
                             <tr>
                                 <td>#BK003</td>
@@ -152,7 +158,7 @@
                                 <td>C-303</td>
                                 <td>Pending</td>
                                 <td>2025-09-15 09:00 AM</td>
-                                <td><button class="btn btn-sm btn-primary">View</button></td>
+                                <td><button class="btn-action">View</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -161,9 +167,6 @@
         </div>
     </div>
     <script src="../admin/js/bookings.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-        crossorigin="anonymous"></script>
 </body>
 
 </html>
