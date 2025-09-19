@@ -88,11 +88,11 @@
                         <p>Real time parking lot management and monitoring</p>
                     </div>
                     <div class="header-right">
-                        <select class="building-selector">
-                            <option value="thejaswini"><i class="fas fa-map-marker-alt"></i> building1
+                        <select class="building-selector" id="building-selector">
+                            <option value="building1"><i class="fas fa-map-marker-alt"></i> building1
                             </option>
                             <option value="building2"><i class="fas fa-map-marker-alt"></i> buildin2</option>
-                            <option value="building2"><i class="fas fa-map-marker-alt"></i> building3</option>
+                            <option value="building3"><i class="fas fa-map-marker-alt"></i> building3</option>
                         </select>
                         <div class="datetime">
                             <span class="date" id="current-date">15/09/2025</span>
@@ -100,7 +100,7 @@
                         </div>
                         <div class="user-menu">
                             <button class="user-avatar">
-                                <i class="fas fa-user"></i>
+                                <i class="fas fa-bell"></i>
                             </button>
                         </div>
                     </div>
@@ -122,7 +122,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card available">
                         <div class="stat-icon available">
                             <i class="fas fa-car"></i>
                         </div>
@@ -140,7 +140,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card occupied">
                         <div class="stat-icon occupied">
                             <i class="fas fa-car"></i>
                         </div>
@@ -158,7 +158,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card reserved">
                         <div class="stat-icon reserved">
                             <i class="fas fa-car"></i>
                         </div>
@@ -176,7 +176,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card named">
                         <div class="stat-icon named">
                             <i class="fas fa-car"></i>
                         </div>
@@ -311,7 +311,7 @@
                         <div class="parking-legend second-row">
                             
                             <div class="legend-item">
-                                <img src="../public/assets/icons/pillar.png" class="pillar-icon" alt="">
+                                <img src="../public/assets/icons/pillar.png" class="pillar" alt="">
                                 Pillar
                             </div>
                             <div class="legend-item">
