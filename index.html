@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="page-wrapper">
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="logo">ParkNex</h2>
+                <p class="logo-subtitle">Parking Management</p>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="dashboard"><i class="nav-icon fas fa-th-large"></i> Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="bookings"><i class="nav-icon fas fa-calendar-alt"></i> Bookings</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="reports"><i class="nav-icon fas fa-file-alt"></i> Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="vehicle-management"><i class="nav-icon fas fa-car"></i> Vehicle Management</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="slot-management"><i class="nav-icon fas fa-plus"></i> Slot Management</a>
+                </li>
+                <li class="nav-item active">
+                    <a href="#" class="nav-link" data-section="notifications"><i class="nav-icon fas fa-bell"></i> Notifications</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="settings"><i class="nav-icon fas fa-cog"></i> Settings</a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar"><i class="fas fa-user"></i></div>
+                    <div class="admin-info">
+                        <p class="admin-name">Admin User</p>
+                        <p class="admin-email">admin@park.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <header class="main-header">
+                <div class="header-title">
+                    <h1>Notifications</h1>
+                    <p>Real-time alerts and system notifications</p>
+                </div>
+                <div class="header-actions">
+                    <!-- ADDED ID HERE -->
+                    <a href="#" id="mark-all-read-btn" class="header-action-link"><i class="fas fa-check"></i> Mark All Read</a>
+                    <a href="#" class="header-action-link"><i class="fas fa-cog"></i> Alert Settings</a>
+                </div>
+            </header>
+            
+            <div class="content-area">
+                <!-- Summary Cards Section with IDs -->
+                <section class="summary-cards">
+                    <div class="card">
+                        <div class="card-icon critical"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="card-content">
+                            <h3>Critical Alerts</h3>
+                            <p class="card-count" id="critical-count">0</p>
+                            <p class="card-subtitle">Requires immediate attention</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon unread"><i class="fas fa-bell"></i></div>
+                        <div class="card-content">
+                            <h3>Unread</h3>
+                            <p class="card-count" id="unread-count">0</p>
+                            <p class="card-subtitle">Total unread notifications</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon today"><i class="fas fa-clock"></i></div>
+                        <div class="card-content">
+                            <h3>Today's Alerts</h3>
+                            <p class="card-count" id="today-count">0</p>
+                            <p class="card-subtitle">Alerts in last 24 hours</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Filter Section with NEW date dropdown -->
+                <section class="filter-bar">
+                    <h3>Filter Notifications</h3>
+                    <div class="filters">
+                        <select id="filter-type" class="filter-dropdown">
+                            <option value="all">All Types</option>
+                            <option value="unauthorized_parking">Unauthorized Parking</option>
+                            <option value="booking_status">Booking Status</option>
+                            <option value="pre_book_confirmation">Pre-book Confirmation</option>
+                            <option value="slot_status">Slot Status</option>
+                            <option value="system_malfunction">System Malfunctions</option>
+                        </select>
+                        <select id="filter-status" class="filter-dropdown">
+                            <option value="all">All Statuses</option>
+                            <option value="unread">Unread</option>
+                            <option value="read">Read</option>
+                        </select>
+                        <!-- NEW DATE FILTER DROPDOWN -->
+                        <select id="filter-date" class="filter-dropdown">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                        </select>
+                    </div>
+                </section>
+
+                <!-- Notification List Section with an ID -->
+                <section class="notification-list" id="notification-list">
+                    <!-- Notifications will be dynamically inserted here -->
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs and custom script -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

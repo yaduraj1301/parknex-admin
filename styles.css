@@ -1,0 +1,345 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* =================================
+   PAGE WRAPPER
+   ================================= */
+.page-wrapper {
+    display: flex;
+    /* align-items: stretch; is the default, which is what we want. */
+    /* It makes both columns the same height as the tallest column. */
+}
+
+/* =================================
+   SIDEBAR COMPONENT
+   ================================= */
+.sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: #f5f5f5;
+    border-right: 1px solid #e0e0e0;
+    
+    /* THIS IS THE KEY FOR THE STRETCHING GAP */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures footer is at bottom even on short pages */
+}
+
+.sidebar-header {
+    flex-shrink: 0; /* Prevents header from shrinking */
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 20px 0 0 0;
+    margin: 0;
+
+    /* THIS MAKES THE GAP STRETCH */
+    flex-grow: 1; 
+}
+
+.sidebar-footer {
+    flex-shrink: 0; /* Prevents footer from shrinking */
+    background: #ffffff;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* (The rest of the specific sidebar styles for links, text, etc. remain the same) */
+.sidebar .nav-item { margin: 0 12px; }
+.sidebar .nav-link { display: flex; align-items: center; padding: 16px 20px; text-decoration: none; color: #333; font-weight: 500; font-size: 15px; transition: all 0.3s ease; border-radius: 12px; }
+.sidebar .nav-link:hover { background-color: rgba(100, 162, 245, 0.1); color: #64A2F5; }
+.sidebar .nav-item.active .nav-link { background-color: #64A2F5; color: #ffffff; }
+.sidebar .nav-icon { margin-right: 12px; font-size: 18px; width: 20px; text-align: center; }
+.sidebar .admin-profile { padding: 20px; display: flex; align-items: center; gap: 12px; }
+.sidebar .admin-avatar { width: 40px; height: 40px; border-radius: 50%; background: #64A2F5; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #ffffff; }
+.sidebar .admin-name { font-weight: 600; color: #333; font-size: 14px; margin-bottom: 2px; }
+.sidebar .admin-email { font-size: 12px; color: #666; margin: 0; }
+
+/* =================================
+   MAIN CONTAINER
+   ================================= */
+
+.main-container {
+    flex-grow: 1;
+    background: #ffffff;
+}
+
+.content-area {
+    padding: 24px;
+}
+
+/* =================================
+   SHARED HEADER STYLES FOR ALIGNMENT
+   ================================= */
+.sidebar-header {
+    height: 95px; /* Fixed height for perfect alignment */
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+ .main-header {
+    height: 95px; /* Fixed height for perfect alignment */
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    /* border-bottom: 1px solid #e0e0e0; */
+}
+
+.main-header {
+    justify-content: space-between;
+}
+
+.sidebar-header {
+    padding: 0 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* (The rest of the header text styles remain the same) */
+.sidebar .logo { font-size: 24px; font-weight: 700; color: #000000; margin-bottom: 4px; }
+.sidebar .logo-subtitle { font-size: 14px; color: #666; font-weight: 400; }
+.header-title h1 { font-size: 28px; font-weight: 700; color: #000000; margin-bottom: 4px; line-height: 1.2; }
+.header-title p { font-size: 15px; color: #6c757d; margin: 0; }
+.header-actions { display: flex; align-items: center; gap: 24px; }
+.header-action-link { display: flex; align-items: center; text-decoration: none; color: #333; font-weight: 600; font-size: 14px; transition: color 0.2s ease; }
+.header-action-link:hover { color: #64A2F5; }
+.header-action-link i { margin-right: 8px; font-size: 16px; }
+
+/* Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.card {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.card-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 18px;
+    color: #adb5bd;
+}
+.card-icon.critical { color: #dc3545; }
+.card-icon.unread { color: #007bff; }
+.card-icon.today { color: #17a2b8; }
+
+.card-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 12px;
+}
+
+.card-count {
+    font-size: 36px;
+    font-weight: 700;
+    color: #343a40;
+    line-height: 1;
+}
+
+.card-subtitle {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+/* Filter Bar */
+.filter-bar {
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.filter-bar h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #343a40;
+}
+
+.filters {
+    display: flex;
+    gap: 16px;
+}
+
+.filter-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Notification List */
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.notification-item {
+    display: flex;
+    gap: 20px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    border-left-width: 4px;
+}
+
+.notification-item--critical { border-left-color: #dc3545; }
+.notification-item--warning { border-left-color: #fd7e14; }
+.notification-item--success { border-left-color: #28a745; }
+
+.notification-icon {
+    font-size: 20px;
+    margin-top: 2px;
+}
+.notification-item--critical .notification-icon { color: #dc3545; }
+.notification-item--warning .notification-icon { color: #fd7e14; }
+.notification-item--success .notification-icon { color: #28a745; }
+
+
+.notification-content {
+    flex-grow: 1;
+}
+
+.notification-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.notification-header h4 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+.notification-content > p {
+    font-size: 15px;
+    color: #495057;
+    margin: 0;
+    line-height: 1.5;
+    max-width: 90%;
+}
+
+.notification-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 12px;
+}
+
+.badge-new {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+/* Tags */
+.tag {
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+.tag-red { background-color: #ffe3e5; color: #dc3545; }
+.tag-orange { background-color: #fff0e2; color: #fd7e14; }
+.tag-green { background-color: #d4edda; color: #155724; }
+.tag-gray { background-color: #f1f3f5; color: #495057; }
+
+/* Action Buttons */
+.notification-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+.action-btn i { font-size: 13px; }
+
+.btn-blue { background-color: #e7f1ff; color: #4a8cff; }
+.btn-blue:hover { background-color: #d0e2ff; }
+
+.btn-purple { background-color: #f3e7ff; color: #8e44ad; }
+.btn-purple:hover { background-color: #e9d3ff; }
+
+.btn-dark { background-color: #f1f3f5; color: #343a40; }
+.btn-dark:hover { background-color: #e9ecef; }
+
+/* Mark as Read link */
+.notification-mark-read {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+    align-self: flex-start;
+    transition: color 0.2s ease;
+}
+.notification-mark-read:hover { color: #007bff; }
+.notification-mark-read i { margin-right: 6px; }
+
+/* ... all previous CSS ... */
+
+/* Style for the new <select> elements to match the design */
+select.filter-dropdown {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23333' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 12px;
+    padding-right: 30px; /* Make space for the arrow */
+}
