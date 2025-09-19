@@ -84,7 +84,7 @@
             <header class="dashboard-header">
                 <div class="header-content">
                     <div class="header-left">
-                        <h1>Dashboard abcdefg</h1>
+                        <h1>Dashboard</h1>
                         <p>Real time parking lot management and monitoring</p>
                     </div>
                     <div class="header-right">
@@ -110,6 +110,7 @@
             <!-- Dashboard Content -->
             <div class="dashboard-content">
                 <!-- Stats Cards -->
+                <!-- Updated Stats Cards with Progress Bars -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
@@ -128,7 +129,13 @@
                         <div class="stat-content">
                             <h3>Available</h3>
                             <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                             <div class="stat-change positive">+5% from last week</div>
                         </div>
                     </div>
@@ -140,7 +147,13 @@
                         <div class="stat-content">
                             <h3>Occupied</h3>
                             <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
@@ -152,10 +165,17 @@
                         <div class="stat-content">
                             <h3>Reserved</h3>
                             <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
+
                     <div class="stat-card">
                         <div class="stat-icon named">
                             <i class="fas fa-car"></i>
@@ -163,7 +183,13 @@
                         <div class="stat-content">
                             <h3>Named</h3>
                             <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -175,7 +201,7 @@
                             <i class="alert-icon fas fa-exclamation-triangle"></i>
                             <h4>Attention Required</h4>
                         </div>
-                        <p>9 vehicles are parked without booking.</p>
+                        <p>N vehicles are parked without booking.</p>
                         <button class="alert-action attention">View Details</button>
                     </div>
 
@@ -185,18 +211,10 @@
                             <i class="alert-icon fas fa-tools"></i>
                             <h4>Sensor Issues</h4>
                         </div>
-                        <p>12 slots with sensor or connectivity issues require immediate attention.</p>
+                        <p>N slots with sensor or connectivity issues require immediate attention.</p>
                         <button class="alert-action sensor">View Details</button>
                     </div>
-                    <!-- Sensor Issues -->
-                    <div class="alert-card secondary sensor">
-                        <div class="alert-header">
-                            <i class="alert-icon fas fa-tools"></i>
-                            <h4>Sensor Issues</h4>
-                        </div>
-                        <p>12 slots with sensor or connectivity issues require immediate attention.</p>
-                        <button class="alert-action sensor">View Details</button>
-                    </div>
+                   
                 </div>
 
                 <!-- Charts and Alerts Row -->
@@ -219,7 +237,7 @@
                                     <i class="alert-icon fas fa-exclamation-triangle"></i>
                                     <h4>Attention Required</h4>
                                 </div>
-                                <p>9 vehicles are parked without booking.</p>
+                                <p>N vehicles are parked without booking.</p>
                                 <button class="alert-action attention">View Details</button>
                             </div>
 
@@ -229,14 +247,14 @@
                                     <i class="alert-icon fas fa-tools"></i>
                                     <h4>Sensor Issues</h4>
                                 </div>
-                                <p>12 slots with sensor or connectivity issues require immediate attention.</p>
+                                <p>N slots with sensor or connectivity issues require immediate attention.</p>
                                 <button class="alert-action sensor">View Details</button>
                             </div>
                             <!-- No Issues -->
                             <div class="alert-card no-alerts hidden">
                                 <div class="alert-header">
                                     <img src="../public/assets/icons/party-horn.svg" class="alert-icon" alt="">
-                                    <h4>Congrats</h4>
+                                    <h4>Hooray !!</h4>
                                 </div>
                                 <p>Your system is working fine.</p>
                             </div>
@@ -309,33 +327,23 @@
                             <div class="slots-grid">
                                 <div class="parking-slot available" data-slot="A01">
                                     <span class="slot-id">A01</span>
-                                    <div class="icon-list" id="icon-list">
-                                        <img src="../public/assets/icons/pillar.png" class="slot-icon  pillar"
-                                            title="Pillar" alt="">
-                                        <i class="slot-icon fas fa-square corner" title="Corner"></i>
-                                        <i class="slot-icon fas fa-car"></i>
 
-                                    </div>
+                                    <i class="slot-icon fas fa-car"></i>
+
+
                                 </div>
                                 <div class="parking-slot occupied" data-slot="A02">
                                     <span class="slot-id">A02</span>
-                                    <div class="icon-list" id="icon-list">
-                                        <img src="../public/assets/icons/pillar.png" class="slot-icon  pillar"
-                                            title="Pillar" alt="">
-                                        <i class="slot-icon fas fa-square corner" title="Corner"></i>
-                                        <i class="slot-icon fas fa-car"></i>
 
-                                    </div>
+                                    <i class="slot-icon fas fa-car"></i>
+
                                 </div>
                                 <div class="parking-slot available" data-slot="A03">
                                     <span class="slot-id">A03</span>
-                                    <div class="icon-list" id="icon-list">
-                                        <img src="../public/assets/icons/pillar.png" class="slot-icon  pillar"
-                                            title="Pillar" alt="">
-                                        <i class="slot-icon fas fa-square corner" title="Corner"></i>
-                                        <i class="slot-icon fas fa-car"></i>
 
-                                    </div>
+                                    <i class="slot-icon fas fa-car"></i>
+
+
                                 </div>
                                 <div class="parking-slot occupied" data-slot="A04">
                                     <span class="slot-id">A04</span>

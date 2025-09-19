@@ -116,6 +116,7 @@
     background: var(--neutral-white);
     border-radius: 12px;
     padding: 20px;
+    padding-right: 10px;
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
@@ -157,7 +158,9 @@
     background: var(--neutral-grey);
     color: var(--neutral-white);
 }
-
+.stat-content{
+    width: 70%;
+}
 .stat-content h3 {
     font-size: 13px;
     color: var(--text-secondary);
@@ -178,12 +181,57 @@
     font-weight: 400;
 }
 
+/* Progress bar container */
+.stat-progress-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 3px;
+}
+
 .stat-percentage {
     font-size: 14px;
     color: var(--text-secondary);
     margin-bottom: 3px;
 }
 
+.stat-progress-bar {
+    flex: 1;
+    height: 6px;
+    width: 100%;
+    background: var(--hover-color);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+/* Progress bar colors based on stat type */
+.stat-card:nth-child(1) .stat-progress-fill {
+    background: var(--secondary-light-blue);
+}
+
+.stat-card:nth-child(2) .stat-progress-fill {
+    background: var(--secondary-green);
+}
+
+.stat-card:nth-child(3) .stat-progress-fill {
+    background: var(--primary-red);
+}
+
+.stat-card:nth-child(4) .stat-progress-fill {
+    background: var(--secondary-orange);
+}
+
+.stat-card:nth-child(5) .stat-progress-fill {
+    background: var(--neutral-gray);
+}
 .stat-change {
     font-size: 11px;
     font-weight: 500;

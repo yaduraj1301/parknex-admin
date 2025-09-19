@@ -203,16 +203,25 @@ function updateStatCard(cardElement, count, total, type) {
     
     const statNumber = cardElement.querySelector('.stat-number');
     const statPercentage = cardElement.querySelector('.stat-percentage');
+    const statProgressFill = cardElement.querySelector('.stat-progress-fill');
+    
+    // Calculate percentage
+    const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
+    
     
     if (statNumber) {
         statNumber.innerHTML = `${count} <span class="stat-total">/ ${total}</span>`;
     }
     
     if (statPercentage) {
-        const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
         statPercentage.textContent = `${percentage}%`;
     }
-    
+    if (statProgressFill) {
+        // Use setTimeout to ensure the transition animation works
+        setTimeout(() => {
+            statProgressFill.style.width = `${percentage}%`;
+        }, 50);
+    }
     // Hide trend indicators since we don't have historical data yet
     const statChange = cardElement.querySelector('.stat-change');
     if (statChange) {
@@ -223,92 +232,45 @@ function updateStatCard(cardElement, count, total, type) {
 // Function to update alert counts
 // Function to manage alert visibility based on real unbooked data
 function updateAlertCounts(stats) {
-    // Check if we have unbooked vehicles
     const hasUnbookedIssue = stats.unbooked > 0;
     console.log(`Unbooked vehicles count: ${stats.unbooked}`);
     
-    // Get all alert elements
+    // Get alert elements
     const alertInsightsSecondary = document.querySelector('.alert-insights-secondary');
-    const alertInsightsMain = document.querySelector('.alert-insights');
+    const alertInsightsMain = document.querySelector('.insights .alert-insights');
     
-    // Individual alert cards in main insights
-    const attentionCardMain = document.querySelector('.alert-insights .alert-card.attention');
-    const noAlertsCard = document.querySelector('.alert-insights .alert-card.no-alerts');
+    // Individual alert cards in main insights only
+    const attentionCardMain = document.querySelector('.insights .alert-card.attention');
+    const noAlertsCard = document.querySelector('.insights .alert-card.no-alerts');
     
-    // Individual alert cards in secondary
-    const attentionCardSecondary = document.querySelector('.alert-insights-secondary .alert-card.attention');
-    
-    // Always hide sensor alerts since we're not implementing them
-    const sensorCardMain = document.querySelector('.alert-insights .alert-card.sensor');
-    const sensorCardSecondary = document.querySelector('.alert-insights-secondary .alert-card.sensor');
-    
+    // Always hide sensor cards and secondary section completely
+    const sensorCardMain = document.querySelector('.insights .alert-card.sensor');
     if (sensorCardMain) sensorCardMain.classList.add('hidden');
-    if (sensorCardSecondary) sensorCardSecondary.style.display = 'none';
+    
+    // ALWAYS hide secondary section since we're not using sensors
+    if (alertInsightsSecondary) {
+        alertInsightsSecondary.style.display = 'none';
+    }
+    
+    // Always show main insights
+    if (alertInsightsMain) {
+        alertInsightsMain.style.display = 'block';
+    }
     
     // Case 1: No unbooked vehicles - show congratulations
     if (!hasUnbookedIssue) {
-        // Hide secondary section
-        if (alertInsightsSecondary) {
-            alertInsightsSecondary.style.display = 'none';
-        }
-        
-        // Show main insights
-        if (alertInsightsMain) {
-            alertInsightsMain.style.display = 'block';
-        }
-        
-        // Hide attention card in main
-        if (attentionCardMain) {
-            attentionCardMain.classList.add('hidden');
-        }
-        
-        // Show no-alerts card
-        if (noAlertsCard) {
-            noAlertsCard.classList.remove('hidden');
-        }
+        if (attentionCardMain) attentionCardMain.classList.add('hidden');
+        if (noAlertsCard) noAlertsCard.classList.remove('hidden');
     }
     
-    // Case 2: Has unbooked vehicles - show attention alert
+    // Case 2: Has unbooked vehicles - show attention alert in main section
     else {
-        // You can customize this threshold based on your needs
-        const useSecondarySection = stats.unbooked > 10;
-        
-        if (useSecondarySection) {
-            // High count - use secondary section for emphasis
-            if (alertInsightsMain) {
-                alertInsightsMain.style.display = 'none';
-            }
-            
-            if (alertInsightsSecondary) {
-                alertInsightsSecondary.style.display = 'block';
-            }
-            
-            if (attentionCardSecondary) {
-                const alertText = attentionCardSecondary.querySelector('p');
-                if (alertText) {
-                    alertText.textContent = `${stats.unbooked} vehicles are parked without booking.`;
-                }
-            }
-        } else {
-            // Normal count - use main section
-            if (alertInsightsSecondary) {
-                alertInsightsSecondary.style.display = 'none';
-            }
-            
-            if (alertInsightsMain) {
-                alertInsightsMain.style.display = 'block';
-            }
-            
-            if (noAlertsCard) {
-                noAlertsCard.classList.add('hidden');
-            }
-            
-            if (attentionCardMain) {
-                attentionCardMain.classList.remove('hidden');
-                const alertText = attentionCardMain.querySelector('p');
-                if (alertText) {
-                    alertText.textContent = `${stats.unbooked} vehicles are parked without booking.`;
-                }
+        if (noAlertsCard) noAlertsCard.classList.add('hidden');
+        if (attentionCardMain) {
+            attentionCardMain.classList.remove('hidden');
+            const alertText = attentionCardMain.querySelector('p');
+            if (alertText) {
+                alertText.textContent = `${stats.unbooked} vehicles are parked without booking.`;
             }
         }
     }
