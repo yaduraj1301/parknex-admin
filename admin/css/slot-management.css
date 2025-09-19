@@ -10,6 +10,7 @@
   --secondary-orange-transparent: rgba(240, 152, 81, 0.25);
   --secondary-green: #43bf73;
   --secondary-purple: #8061c3;
+  --secondary-purple: #8061c3;
   --secondary-light-blue: #64a2f5;
   --secondary-blue: #3e68b9;
   --neutral-gray: #ADAOAD;
@@ -244,11 +245,12 @@
   color: var(--neutral-white);
 }
 
-.parking-grid {
+#parkingGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns for blocks */
+  gap: 20px;
 }
+
 
 .parking-block {
   border: 2px solid var(--border-color);
@@ -458,13 +460,19 @@
   border-top: 1px solid var(--border-color);
 }
 
-.btn-cancel {
-  background: var(--neutral-gray);
-  color: var(--neutral-white);
+.popup-btns {
+  padding: 12px 18px;
+  border-radius: 12px;
+
 }
 
-.btn-cancel:hover {
-  background: var(--secondary-gray);
+.btn-cancel, .btn-primary {
+  background: var(--bg-color);
+  color: var(--primary-black);
+}
+
+.btn-cancel:hover .btn-primary:hover {
+  background: var(--hover-color);
 }
 
 .slot-status {
@@ -492,3 +500,77 @@
   background: var(--secondary-orange);
   color: white;
 }
+
+/* Outer grid for blocks */
+.block-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  margin-top: 20px;
+  justify-content: space-between;
+}
+
+/* Each block card */
+.block-section {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+
+/* Block title */
+.block-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* Grid inside block for slots */
+.block-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns inside each block */
+  gap: 20px;
+}
+
+/* Slot card */
+.slot-box {
+  padding: 23px 0px;
+  border-radius: 12px 0px 12px 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.slot-box.available {
+  background: #43BF734D; 
+  color: var(--secondary-green);
+  font-weight: 550;
+  border: 2px solid var(--secondary-green);
+}
+.slot-box.occupied {
+  background: #DC143C40;
+  color: var(--primary-red);
+  font-weight: 550;
+  border: 2px solid var(--primary-red);
+}
+.slot-box.reserved {
+  background: #F0995140 ;
+  color: var(--secondary-orange) ;
+  font-weight: 550;
+  border: 2px solid var(--secondary-orange);
+}
+.slot-box.unbooked {
+  background: var(--primary-red); /* grey */
+}
+.slot-box.named {
+  background: #4D4D4D40;
+  color: var(--secondary-gray) ;
+  font-weight: 550;
+  border: 2px solid var(--secondary-gray)
+}
+
+
+
