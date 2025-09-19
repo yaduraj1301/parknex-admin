@@ -412,7 +412,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Check if user already has a booking
     if (currentBooking) {
       addMessage(
-        `❌ You already have slot ${currentBooking} booked. Please leave it first before booking another slot.`,
+        `❌ You already have slot ${currentBooking.name} booked. Please leave it first before booking another slot.`,
         "bot",
         false,
         "error"
@@ -470,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (opt === "book") {
       if (currentBooking) {
         addMessage(
-          `❌ You already have slot ${currentBooking} booked. Please leave it first before booking another slot.`,
+          `❌ You already have slot ${currentBooking.name} booked. Please leave it first before booking another slot.`,
           "bot",
           false,
           "error"
@@ -512,7 +512,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (opt === "manage") {
       if (currentBooking) {
         addMessage(
-          `📍 Current Booking: Slot ${currentBooking}`,
+          `📍 Current Booking: Slot ${currentBooking.name}`,
           "bot",
           false,
           "success"
@@ -836,7 +836,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function reportSlot() {
     if (currentBooking) {
       addMessage(
-        `✅ Report for your booked slot ${currentBooking} has been sent to admin.`,
+        `✅ Report for your booked slot ${currentBooking.name} has been sent to admin.`,
         "bot",
         false,
         "success"
