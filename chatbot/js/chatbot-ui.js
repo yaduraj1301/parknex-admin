@@ -14,6 +14,7 @@ import {
   doc,
   Timestamp,
   updateDoc,
+  writeBatch,  // Add this
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -110,7 +111,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Firestore-backed slot lists - now organized by floor
-  let slotsByFloor = {}; // Structure: { "Level 0": { free: [], unauthorized: [], booked: [] }, ... }
+  // Modify the slotsByFloor structure to include docIds
+  let slotsByFloor = {}; // Structure: { "Level 0": { free: [], unauthorized: [{name: "A1", docId: "xxx"}], booked: [] }, ... }
   let employeeBuilding = null; // Will store employee's building
   let currentBooking = null; // User's current booked slot
 
@@ -132,7 +134,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Check if the slot's building contains the employee's building name
         if (data.building && data.building.includes(employeeBuilding)) {
-          const slot_name = data.slot_name;
+          const slotInfo = {
+            name: data.slot_name,
+            docId: doc.id
+          };
           const floor = data.floor || "Unknown Floor";
 
           // Initialize floor object if it doesn't exist
@@ -147,17 +152,13 @@ document.addEventListener("DOMContentLoaded", () => {
           // Categorize slots by status
           switch (data.status.toLowerCase()) {
             case "free":
-              slotsByFloor[floor].free.push(slot_name);
+              slotsByFloor[floor].free.push(slotInfo);
               break;
             case "booked":
-              slotsByFloor[floor].booked.push(slot_name);
+              slotsByFloor[floor].booked.push(slotInfo);
               break;
             case "unbooked":
-              slotsByFloor[floor].unauthorized.push(slot_name);
-              break;
-            case "reserved":
-            case "named":
-              // You can handle these separately if needed
+              slotsByFloor[floor].unauthorized.push(slotInfo);
               break;
           }
         }
@@ -169,11 +170,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Helper functions to get flat arrays (for backward compatibility)
+  // Update the helper function to handle new structure
   function getFlatSlotsByStatus(status) {
     const slots = [];
     Object.values(slotsByFloor).forEach((floor) => {
-      slots.push(...floor[status]);
+      slots.push(...floor[status].map(slot => slot.name));
     });
     return slots;
   }
@@ -469,62 +470,69 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function validateAndBookSlot(slot) {
+    // Remove the padding logic since we're using exact names from DB
     slot = slot.toUpperCase();
 
     // Check if user already has a booking
     if (currentBooking) {
-      addMessage(
-        `❌ You already have slot ${currentBooking.name} booked. Please leave it first before booking another slot.`,
-        "bot",
-        false,
-        "error"
-      );
-      return;
+        addMessage(
+            `❌ You already have slot ${currentBooking.name} booked. Please leave it first before booking another slot.`,
+            "bot",
+            false,
+            "error"
+        );
+        return;
     }
 
-    // Get flat arrays for validation
-    const unauthorizedSlots = getFlatSlotsByStatus("unauthorized");
-    const bookedSlots = getFlatSlotsByStatus("booked");
-    const freeSlots = getFlatSlotsByStatus("free");
+    // Get arrays of slot objects instead of just names
+    const getSlotsByStatus = (status) => {
+        const slots = [];
+        Object.values(slotsByFloor).forEach((floor) => {
+            slots.push(...floor[status]);
+        });
+        return slots;
+    };
+
+    const unauthorizedSlots = getSlotsByStatus("unauthorized");
+    const bookedSlots = getSlotsByStatus("booked");
+    const freeSlots = getSlotsByStatus("free");
 
     // Check if the slot is in unauthorized (occupied but not booked) category
-    if (unauthorizedSlots.includes(slot)) {
-      handleBooking(slot);
-      return;
+    if (unauthorizedSlots.find(s => s.name === slot)) {
+        handleBooking(slot);
+        return;
     }
 
     // Check if slot is already booked
-    if (bookedSlots.includes(slot)) {
-      addMessage(
-        `❌ Slot ${slot} is already booked by someone else.`,
-        "bot",
-        false,
-        "error"
-      );
-      return;
+    if (bookedSlots.find(s => s.name === slot)) {
+        addMessage(
+            `❌ Slot ${slot} is already booked by someone else.`,
+            "bot",
+            false,
+            "error"
+        );
+        return;
     }
 
     // Check if slot is free (can't book free slots directly)
-    if (freeSlots.includes(slot)) {
-      addMessage(
-        `❌ Slot ${slot} is currently free. You can only book occupied-unbooked slots. Available slots: ${unauthorizedSlots.join(
-          ", "
-        )}`,
-        "bot",
-        false,
-        "error"
-      );
-      return;
+    if (freeSlots.find(s => s.name === slot)) {
+        const availableSlots = unauthorizedSlots.map(s => s.name).join(", ");
+        addMessage(
+            `❌ Slot ${slot} is currently free. You can only book occupied-unbooked slots. Available slots: ${availableSlots}`,
+            "bot",
+            false,
+            "error"
+        );
+        return;
     }
 
     // Slot doesn't exist
+    const availableSlots = unauthorizedSlots.map(s => s.name).join(", ");
     addMessage(
-      `❌ Slot ${slot} doesn't exist or isn't available for booking. Available slots: ${unauthorizedSlots.join(
-        ", "
-      )}`,
-      "bot",
-      false,
-      "error"
+        `❌ Slot ${slot} doesn't exist or isn't available for booking. Available slots: ${availableSlots}`,
+        "bot",
+        false,
+        "error"
     );
   }
 
@@ -563,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           let btns = '<div class="options">';
           slotsByFloor[floor].unauthorized.forEach((slot) => {
-            btns += `<button class="option-btn book-slot" data-slot="${slot}">📍 Slot ${slot}</button>`;
+            btns += `<button class="option-btn book-slot" data-slot="${slot.name}">📍 Slot ${slot.name}</button>`;
           });
           btns += "</div>";
           addMessage(btns, "bot", true);
@@ -638,72 +646,113 @@ document.addEventListener("DOMContentLoaded", () => {
     return expiry;
   }
 
-  async function getSlotDocIdByName(slotName) {
+  async function getSlotDocIdByName(slotName, building) {
+    // Pad single digit numbers with leading zero
+    slotName = slotName.toUpperCase().replace(/(\D)(\d)$/, "$10$2");
+
     const q = query(
-      collection(db, "ParkingSlots"),
-      where("slot_name", "==", slotName)
+        collection(db, "ParkingSlots"),
+        where("slot_name", "==", slotName),
+        where("building", "==", building)
     );
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-      throw new Error(`Parking slot document for "${slotName}" not found.`);
+        throw new Error(`Parking slot "${slotName}" not found in building "${building}".`);
     }
 
-    // Return the document ID of the first match
     return snapshot.docs[0].id;
   }
 
+  // Add this new function to check for active bookings
+  async function hasActiveBooking(employeeId, vehicleId) {
+    try {
+        const bookingsRef = collection(db, "bookings");
+        const q = query(
+            bookingsRef,
+            where("vehicle_id", "==", `employees/${employeeId}/vehicles/${vehicleId}`),
+            where("status", "==", "Confirmed")
+        );
+
+        const snapshot = await getDocs(q);
+        const now = new Date();
+
+        // Check if any booking is still active (not expired)
+        for (const doc of snapshot.docs) {
+            const data = doc.data();
+            if (data.expiry_time.toDate() > now) {
+                return true;
+            }
+        }
+        return false;
+    } catch (err) {
+        console.error("Error checking active bookings:", err);
+        throw err;
+    }
+  }
+
+  // Modify bookSlot function to check for active bookings first
   async function bookSlot(slotName, employeeId, vehicleId) {
-    // Step 1: Get the document ID for the given slot name
-    const slotDocId = await getSlotDocIdByName(slotName);
-
-    const bookingsRef = collection(db, "bookings");
-    const now = new Date();
-    const expiry = getTodayExpiry();
-
-    // Step 2: Check for existing active booking for the vehicle
-    const q = query(
-      bookingsRef,
-      where(
-        "vehicle_id",
-        "==",
-        `employees/${employeeId}/vehicles/${vehicleId}`
-      ),
-      where("status", "==", "Confirmed")
-    );
-
-    const snapshot = await getDocs(q);
-    let hasActive = false;
-
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.expiry_time.toDate() > now) {
-        hasActive = true;
-      }
-    });
-
-    if (hasActive) {
-      throw new Error("Active booking already exists for this employee.");
+    // First check if user has any active booking
+    const hasBooking = await hasActiveBooking(employeeId, vehicleId);
+    if (hasBooking) {
+        throw new Error("Active booking exists");
     }
 
-    // Step 3: Create the booking using the slot's document ID
-    const bookingData = {
-      vehicle_id: `employees/${employeeId}/vehicles/${vehicleId}`,
-      slot_id: doc(db, "ParkingSlots", slotDocId), // Store as a document reference
-      booking_time: Timestamp.fromDate(now),
-      expiry_time: Timestamp.fromDate(expiry),
-      status: "Confirmed",
-    };
+    // Find the slot docId from our stored data
+    let slotDocId = null;
+    for (const floor of Object.values(slotsByFloor)) {
+        const slot = floor.unauthorized.find(s => s.name === slotName);
+        if (slot) {
+            slotDocId = slot.docId;
+            break;
+        }
+    }
 
-    const newBooking = await addDoc(bookingsRef, bookingData);
-    console.log("✅ Booking created with ID:", newBooking.id);
+    if (!slotDocId) {
+        throw new Error(`Slot ${slotName} not found`);
+    }
 
-    // Return an object containing both the name and the doc ID for local state management
-    return {
-      bookingId: newBooking.id,
-      slotName: slotName,
-      slotDocId: slotDocId,
-    };
+    try {
+        const bookingsRef = collection(db, "bookings");
+        const now = new Date();
+        const expiry = getTodayExpiry();
+
+        // Create the booking using the slot's document ID
+        const bookingData = {
+            vehicle_id: `employees/${employeeId}/vehicles/${vehicleId}`,
+            slot_id: doc(db, "ParkingSlots", slotDocId),
+            booking_time: Timestamp.fromDate(now),
+            expiry_time: Timestamp.fromDate(expiry),
+            status: "Confirmed"
+        };
+
+        // Start a batch write to ensure both operations succeed or fail together
+        const batch = writeBatch(db);
+
+        // 1. Create the booking document
+        const newBookingRef = doc(bookingsRef);
+        batch.set(newBookingRef, bookingData);
+
+        // 2. Update the slot status
+        const slotRef = doc(db, "ParkingSlots", slotDocId);
+        batch.update(slotRef, {
+            status: "Booked"  // Update status from "Unbooked" to "Booked"
+        });
+
+        // Commit both operations
+        await batch.commit();
+
+        return {
+            bookingId: newBookingRef.id,
+            slotName: slotName,
+            slotDocId: slotDocId
+        };
+
+    } catch (err) {
+        console.error("Error during booking:", err);
+        throw new Error("Failed to create booking");
+    }
   }
 
   // Example usage:
@@ -858,16 +907,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const leftSlotName = currentBooking.name;
     const bookingDocId = currentBooking.bookingDocId;
+    const slotDocId = currentBooking.id;
 
     try {
-      // Directly update the booking document using its ID
+      // Use batch to update both booking and slot
+      const batch = writeBatch(db);
+
+      // 1. Update the booking document
       const bookingDocRef = doc(db, "bookings", bookingDocId);
-      await updateDoc(bookingDocRef, {
+      batch.update(bookingDocRef, {
         status: "Cancelled",
         expiry_time: Timestamp.now(),
       });
 
-      // Update local arrays - move from booked to free
+      // 2. Update the slot status back to free
+      const slotRef = doc(db, "ParkingSlots", slotDocId);
+      batch.update(slotRef, {
+        status: "Free"  // Set status back to free when slot is left
+      });
+
+      // Commit both operations
+      await batch.commit();
+
+      // Update local arrays
       Object.keys(slotsByFloor).forEach((floor) => {
         const index = slotsByFloor[floor].booked.indexOf(leftSlotName);
         if (index > -1) {
