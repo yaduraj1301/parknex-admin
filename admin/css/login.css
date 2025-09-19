@@ -1,0 +1,206 @@
+/* --- General Reset & Body Styles --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+}
+
+/* --- Main Container --- */
+.login-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* --- Left Panel (Branding) --- */
+.left-panel {
+    flex: 1.1; /* Makes the left panel slightly larger */
+    padding: 10px 40px 40px 40px ;
+    position: relative;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    
+    /* IMPORTANT: Replace 'path/to/your/background-image.jpg' with your background image */
+    background: url('../../public/assets/images/buildingedit.png');
+    background-size:100% 100%;
+    
+}
+
+.logo {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 150px; /* Adjust as needed */
+}
+.brand-text{
+    font-family: "Montserrat";
+}
+.brand-text h1 {
+    font-size: 100px;
+    font-weight: 1000;
+    margin-left: 20px; 
+}
+
+.brand-text h1 span {
+    color: #DC143C; /* Red color for 'NeX' */
+}
+
+.brand-text p {
+    font-size: 25px;
+    font-weight: 400;
+    color:#333333;
+}
+
+/* --- Right Panel (Form) --- */
+.right-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 120px 0;
+}
+
+.login-form {
+    width: 100%;
+    max-width: 340px;
+}
+
+.login-form h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.login-form .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* --- Form Elements --- */
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+/* Hide default password reveal button in browsers */
+.input-group input[type="password"]::-ms-reveal,
+.input-group input[type="password"]::-ms-clear {
+    display: none;
+}
+
+.input-group input[type="password"]::-webkit-contacts-auto-fill-button,
+.input-group input[type="password"]::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+    margin: 0;
+}
+
+.input-group input:focus {
+    border-color: #0d6efd;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper i {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    color: #999;
+    cursor: pointer;
+}
+
+.options {
+    display: flex;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.options input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+.options label {
+    font-size: 14px;
+    color: #555;
+}
+
+/* --- Buttons & Links --- */
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s, opacity 0.3s;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    color: #fff;
+    margin-top: 15px;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 992px) {
+    .left-panel {
+        display: none; /* Hide the left panel on smaller screens */
+    }
+    .right-panel {
+        flex: 1;
+        justify-content: center;
+    }
+    .login-container {
+        flex-direction: column;
+        max-width: 500px;
+        min-height: auto;
+    }
+}
