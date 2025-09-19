@@ -649,41 +649,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // Disable all booking buttons to prevent multiple clicks
     document.querySelectorAll(".book-slot").forEach((btn) => {
       btn.disabled = true;
-      btn.style.opacity = "0.5";
-      btn.style.cursor = "not-allowed";
+      btn.style.cssText = "opacity: 0.5; cursor: not-allowed;";
     });
-
     try {
       const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
       const vehicles = await getEmployeeVehicles(employee.id);
+      if (vehicles.length === 0)
+        throw new Error("No vehicles found for this employee");
 
-      if (vehicles.length === 0) {
-        addMessage(
-          "❌ No vehicles found for this employee.",
-          "bot",
-          false,
-          "error"
-        );
-        return;
-      }
-
-      const selectedVehicle = vehicles[0]; // later: let user choose
-
-      // The bookSlot function now returns an object
+      const selectedVehicle = vehicles[0];
       const bookingResult = await bookSlot(
         slotName,
         employee.id,
         selectedVehicle.id
       );
 
-      // Store booking info as an object
       currentBooking = {
         name: bookingResult.slotName,
         id: bookingResult.slotDocId,
         bookingDocId: bookingResult.bookingId,
       };
 
-      // Update local arrays - move from unauthorized to booked
+      // Update local arrays
       Object.keys(slotsByFloor).forEach((floor) => {
         const index = slotsByFloor[floor].unauthorized.indexOf(slotName);
         if (index > -1) {
@@ -691,7 +678,6 @@ document.addEventListener("DOMContentLoaded", () => {
           slotsByFloor[floor].booked.push(slotName);
         }
       });
-
       addMessage(
         `✅ Slot ${slotName} booked successfully for vehicle ${selectedVehicle.registration_no}.`,
         "bot",
@@ -701,8 +687,41 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error("❌ Error booking slot:", err);
 
+      // *** THIS IS THE CRITICAL FIX ***
       if (err.message.includes("Active booking")) {
-        // ... (rest of the error handling remains the same)
+        try {
+          const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
+          const vehicles = await getEmployeeVehicles(employee.id);
+          const activeBooking = await getCurrentBooking(
+            employee.id,
+            vehicles[0].id
+          );
+
+          if (activeBooking) {
+            // Synchronize the local state with the database state
+            currentBooking = activeBooking;
+            addMessage(
+              `⚠️ You already have an active booking for slot ${activeBooking.name}.`,
+              "bot",
+              false,
+              "warning"
+            );
+          } else {
+            addMessage(
+              "⚠️ You already have an active booking.",
+              "bot",
+              false,
+              "warning"
+            );
+          }
+        } catch (fetchErr) {
+          addMessage(
+            "⚠️ You already have an active booking.",
+            "bot",
+            false,
+            "warning"
+          );
+        }
       } else {
         addMessage(
           `❌ Failed to create booking for ${slotName}. Please try again. Reason: ${err.message}`,
@@ -715,8 +734,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Re-enable buttons only if booking failed
       document.querySelectorAll(".book-slot").forEach((btn) => {
         btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
+        btn.style.cssText = "opacity: 1; cursor: pointer;";
       });
     }
   }
@@ -725,12 +743,13 @@ document.addEventListener("DOMContentLoaded", () => {
   async function getCurrentBooking(employeeId, vehicleId) {
     try {
       const bookingsRef = collection(db, "bookings");
+      // Note the path construction matches the bookSlot function
       const q = query(
         bookingsRef,
         where(
           "vehicle_id",
           "==",
-          `Employees/${employeeId}/vehicles/${vehicleId}`
+          `employees/${employeeId}/vehicles/${vehicleId}`
         ),
         where("status", "==", "Confirmed")
       );
@@ -738,15 +757,22 @@ document.addEventListener("DOMContentLoaded", () => {
       const snapshot = await getDocs(q);
       const now = new Date();
 
-      let currentSlot = null;
-      snapshot.forEach((doc) => {
-        const data = doc.data();
+      for (const bookingDoc of snapshot.docs) {
+        const data = bookingDoc.data();
         if (data.expiry_time.toDate() > now) {
-          currentSlot = data.slot_id;
+          const slotRef = data.slot_id; // This is a DocumentReference
+          const slotDoc = await getDoc(slotRef);
+          if (slotDoc.exists()) {
+            // Return the full object the app needs
+            return {
+              name: slotDoc.data().slot_name,
+              id: slotDoc.id,
+              bookingDocId: bookingDoc.id,
+            };
+          }
         }
-      });
-
-      return currentSlot;
+      }
+      return null; // No active booking found
     } catch (err) {
       console.error("Error fetching current booking:", err);
       return null;
@@ -909,6 +935,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize
   (async () => {
     await loadSlotsFromDB();
+    // On load, check if user already has a booking to sync state
+    try {
+      const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
+      const vehicles = await getEmployeeVehicles(employee.id);
+      if (vehicles.length > 0) {
+        currentBooking = await getCurrentBooking(employee.id, vehicles[0].id);
+        if (currentBooking) {
+          console.log("Found active booking on load:", currentBooking.name);
+          // Also update the local slot list to reflect this booking
+          Object.keys(slotsByFloor).forEach((floor) => {
+            const freeIndex = slotsByFloor[floor].free.indexOf(
+              currentBooking.name
+            );
+            if (freeIndex > -1) {
+              slotsByFloor[floor].free.splice(freeIndex, 1);
+              slotsByFloor[floor].booked.push(currentBooking.name);
+            }
+            const unauthIndex = slotsByFloor[floor].unauthorized.indexOf(
+              currentBooking.name
+            );
+            if (unauthIndex > -1) {
+              slotsByFloor[floor].unauthorized.splice(unauthIndex, 1);
+              slotsByFloor[floor].booked.push(currentBooking.name);
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.error("Could not check for active booking on initial load.", e);
+    }
     showInitialOptions();
   })();
 });
