@@ -574,3 +574,372 @@
 
 
 
+
+/* Parking Overview */
+.parking-overview {
+    background: var(--neutral-white);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.parking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 16px;
+}
+
+.parking-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.legend-container{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: end;
+}
+
+.parking-legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+.second-row {
+    display: flex;
+    gap: 16px;
+    justify-content: end;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-color.pillar {
+    background: var(--secondary-gray);
+}
+
+.legend-color.corner {
+    background: var(--neutral-gray);
+}
+
+.legend-color.available {
+    background: var(--secondary-green);
+}
+
+.legend-color.occupied {
+    background: var(--primary-red);
+}
+
+.legend-color.reserved {
+    background: var(--secondary-orange);
+}
+
+.legend-color.unbooked {
+    background: var(--secondary-coral);
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.5; }
+}
+
+/* Level Tabs */
+.level-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.level-tab {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--neutral-white);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.level-tab:hover {
+    background: var(--hover-color);
+}
+
+.level-tab.active {
+    background: var(--secondary-light-blue);
+    color: var(--neutral-white);
+    border-color: var(--secondary-light-blue);
+}
+
+/* Parking Grid */
+.parking-grid {
+    display: flex;
+    gap: 14px;
+
+}
+
+.parking-block {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafafa;
+}
+
+.parking-block h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.parking-slot {
+    /* aspect-ratio: 1; */
+    border-radius: 12px 0px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+    min-height: 50px;
+}
+
+.parking-slot:hover {
+    transform: scale(1.05);
+    border-color: var(--secondary-light-blue);
+}
+
+.parking-slot.available {
+    background: var(--secondary-green-transparent);
+    border: 1.5px solid var(--secondary-green);
+    color: var(--secondary-green);
+}
+
+.parking-slot.occupied {
+    background: var(--primary-red-transparent);
+    border: 1.5px solid var(--primary-red);
+    color: var(--primary-red);
+}
+.parking-slot.named {
+    background: var(--neutral-gray-transparent);
+    border: 1.5px solid var(--neutral-gray);
+    color: var(--neutral-black);
+}
+
+.parking-slot.reserved {
+    background: var(--secondary-orange-transparent);
+    border: 1.5px solid var(--secondary-orange);
+    color: var(--secondary-orange);
+}
+
+.parking-slot.unbooked {
+    background: var(--secondary-coral);
+    color: var(--neutral-white);
+    animation: blink 1s infinite;
+}
+
+.slot-id {
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.slot-icon {
+    font-size: 12px;
+}
+.pillar{
+    scale: 0.75;
+}
+.icon-list {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .parking-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-left: 240px;
+    }
+    
+    .parking-legend {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    
+    
+    .header-content {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .datetime {
+        display: none;    
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .dashboard-row {
+        flex-direction: column;
+    }
+
+    .alert-card.no-alerts {
+        display: none;
+    }
+
+    .parking-legend {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .parking-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+    }
+    
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-bold {
+    font-weight: 600;
+}
+
+.mb-16 {
+    margin-bottom: 16px;
+}
+
+.mb-24 {
+    margin-bottom: 24px;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--secondary-light-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-black);
+    color: var(--neutral-white);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+.hidden{
+    display: none;
+}
+
+/*font sizes*/
+.small-text{
+    font-size: 12px;
+}
+.medium-text{
+    font-size: 14px;
+}
+.large-text{
+    font-size: 16px;
+}
+/* Extra Large Text */
+.xlarge-text{
+    font-size: 18px;
+}
