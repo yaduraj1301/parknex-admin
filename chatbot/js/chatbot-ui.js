@@ -1,4 +1,9 @@
-import { db } from "../../public/js/firebase-config.js";
+import { db, auth } from "../../public/js/firebase-config.js";
+import { GEMINI_API_KEY } from "../../public/js/api-config.js";
+import {
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
   collection,
   addDoc,
@@ -15,17 +20,69 @@ document.addEventListener("DOMContentLoaded", () => {
   const messagesEl = document.getElementById("messages");
   const inputEl = document.getElementById("userInput");
   const sendBtn = document.getElementById("sendBtn");
-  const EMPLOYEE_CONTACT = "+91-99999999";
+  const loadingScreen = document.getElementById("loadingScreen");
+  const chatInterface = document.getElementById("chatInterface");
+  const logoutBtn = document.getElementById("logoutBtn");
 
-  // Replace with your actual Gemini API key
-  const GEMINI_API_KEY = "AIzaSyCp-51BuOXJq1V58Dz79AleKh2Nnm8DLUc";
+  let currentUser = null;
+  let employeeData = null;
+  
+  // Replace the hardcoded EMPLOYEE_CONTACT with a variable
+  let employeeContact = null;
 
-  // Firestore-backed slot lists - now organized by floor
-  let slotsByFloor = {}; // Structure: { "Level 0": { free: [], unauthorized: [], booked: [] }, ... }
-  let employeeBuilding = null; // Will store employee's building
-  let currentBooking = null; // User's current booked slot
+  // Authentication check
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      currentUser = user;
+      try {
+        // Fetch employee data based on user_id
+        const employeesRef = collection(db, "employees");
+        const q = query(employeesRef, where("user_id", "==", user.uid));
+        const snapshot = await getDocs(q);
 
+        if (snapshot.empty) {
+          console.error("No employee found for this user");
+          window.location.href = "../admin/login.html";
+          return;
+        }
+
+        employeeData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+        employeeContact = employeeData.contact_number;
+
+        // Initialize chatbot after getting employee data
+        await loadSlotsFromDB();
+        showInitialOptions();
+
+        // Show chat interface
+        loadingScreen.style.display = "none";
+        chatInterface.style.display = "flex";
+      } catch (error) {
+        console.error("Error fetching employee data:", error);
+        window.location.href = "../admin/login.html";
+      }
+    } else {
+      // Not logged in, redirect to login
+      window.location.href = "../admin/login.html";
+    }
+  });
+
+  // Handle logout
+  logoutBtn.addEventListener("click", async () => {
+    try {
+      await signOut(auth);
+      window.location.href = "../admin/login.html";
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  });
+
+  // Modify the getEmployeeByContact function to use the dynamic contact
   async function getEmployeeByContact(contactNo) {
+    // If we already have employee data, return it
+    if (employeeData && employeeData.contact_number === contactNo) {
+      return { id: employeeData.id, data: employeeData };
+    }
+
     const q = query(
       collection(db, "employees"),
       where("contact_number", "==", contactNo)
@@ -52,12 +109,17 @@ document.addEventListener("DOMContentLoaded", () => {
     return vehicles;
   }
 
+  // Firestore-backed slot lists - now organized by floor
+  let slotsByFloor = {}; // Structure: { "Level 0": { free: [], unauthorized: [], booked: [] }, ... }
+  let employeeBuilding = null; // Will store employee's building
+  let currentBooking = null; // User's current booked slot
+
   async function loadSlotsFromDB() {
     slotsByFloor = {};
 
     try {
       // First get employee's building
-      const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
+      const employee = await getEmployeeByContact(employeeContact);
       employeeBuilding = employee.data.building;
       console.log("Employee building:", employeeBuilding);
 
@@ -652,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.style.cssText = "opacity: 0.5; cursor: not-allowed;";
     });
     try {
-      const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
+      const employee = await getEmployeeByContact(employeeContact);
       const vehicles = await getEmployeeVehicles(employee.id);
       if (vehicles.length === 0)
         throw new Error("No vehicles found for this employee");
@@ -690,7 +752,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // *** THIS IS THE CRITICAL FIX ***
       if (err.message.includes("Active booking")) {
         try {
-          const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
+          const employee = await getEmployeeByContact(employeeContact);
           const vehicles = await getEmployeeVehicles(employee.id);
           const activeBooking = await getCurrentBooking(
             employee.id,
@@ -934,37 +996,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize
   (async () => {
-    await loadSlotsFromDB();
-    // On load, check if user already has a booking to sync state
-    try {
-      const employee = await getEmployeeByContact(EMPLOYEE_CONTACT);
-      const vehicles = await getEmployeeVehicles(employee.id);
-      if (vehicles.length > 0) {
-        currentBooking = await getCurrentBooking(employee.id, vehicles[0].id);
-        if (currentBooking) {
-          console.log("Found active booking on load:", currentBooking.name);
-          // Also update the local slot list to reflect this booking
-          Object.keys(slotsByFloor).forEach((floor) => {
-            const freeIndex = slotsByFloor[floor].free.indexOf(
-              currentBooking.name
-            );
-            if (freeIndex > -1) {
-              slotsByFloor[floor].free.splice(freeIndex, 1);
-              slotsByFloor[floor].booked.push(currentBooking.name);
-            }
-            const unauthIndex = slotsByFloor[floor].unauthorized.indexOf(
-              currentBooking.name
-            );
-            if (unauthIndex > -1) {
-              slotsByFloor[floor].unauthorized.splice(unauthIndex, 1);
-              slotsByFloor[floor].booked.push(currentBooking.name);
-            }
-          });
-        }
-      }
-    } catch (e) {
-      console.error("Could not check for active booking on initial load.", e);
-    }
-    showInitialOptions();
+    // Remove initialization code from here since it's now handled in onAuthStateChanged
   })();
 });
