@@ -3,12 +3,15 @@ import { db, auth, app } from '../../../public/js/firebase-config.js';
 import { collection, getDocs, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Global variables
+
 let currentLevel = 1;
 let slots = {};
 let weeklyData = [45, 48, 15, 46, 42, 58, 60];
 let currentBuildingSlots = [];
+let availableLevels = [];
 
-// Function to fetch and populate building dropdown only
+
+// Function to fetch and populate building dropdownf only
 async function populateBuildingDropdown() {
     try {
         console.log('Fetching buildings from Firebase...');
@@ -62,6 +65,75 @@ async function populateBuildingDropdown() {
             buildingSelector.innerHTML = '<option value="">Error loading buildings</option>';
         }
         
+        return [];
+    }
+}
+
+// Function to populate level tabs based on Firebase data
+async function populateLevelTabs(selectedBuilding = null) {
+    try {
+        console.log('Fetching levels for building:', selectedBuilding);
+        
+        // Use currentBuildingSlots if already loaded, otherwise fetch
+        let slotsToCheck = currentBuildingSlots;
+        
+        if (slotsToCheck.length === 0 && selectedBuilding) {
+            // Fetch data if not already loaded
+            const parkingSlotsRef = collection(db, 'ParkingSlots');
+            const q = query(parkingSlotsRef, where('building', '==', selectedBuilding));
+            const snapshot = await getDocs(q);
+            
+            slotsToCheck = [];
+            snapshot.forEach(doc => {
+                slotsToCheck.push(doc.data());
+            });
+        }
+        
+        // Extract unique levels from floor field
+        const levels = new Set();
+        slotsToCheck.forEach(slot => {
+            if (slot.floor) {
+                // Extract number from "Level 0", "Level 1", etc.
+                const levelMatch = slot.floor.match(/level\s*(\d+)/i);
+                if (levelMatch) {
+                    levels.add(parseInt(levelMatch[1]));
+                }
+            }
+        });
+        
+        // Convert to sorted array
+        availableLevels = Array.from(levels).sort((a, b) => a - b);
+        
+        console.log('Available levels:', availableLevels);
+        
+        // Update level tabs in DOM
+        const levelTabsContainer = document.querySelector('.level-tabs');
+        if (levelTabsContainer && availableLevels.length > 0) {
+            levelTabsContainer.innerHTML = '';
+            
+            availableLevels.forEach((level, index) => {
+                const button = document.createElement('button');
+                button.className = `level-tab ${index === 0 ? 'active' : ''}`;
+                button.dataset.level = level;
+                button.textContent = `Level ${level}`;
+                
+                button.addEventListener('click', (e) => {
+                    switchLevel(parseInt(e.target.dataset.level));
+                });
+                
+                levelTabsContainer.appendChild(button);
+            });
+            
+            // Set current level to first available level
+            if (availableLevels.length > 0) {
+                currentLevel = availableLevels[0];
+            }
+        }
+        
+        return availableLevels;
+        
+    } catch (error) {
+        console.error('Error fetching levels:', error);
         return [];
     }
 }
@@ -248,9 +320,9 @@ function updateAlertCounts(stats) {
     if (sensorCardMain) sensorCardMain.classList.add('hidden');
     
     // ALWAYS hide secondary section since we're not using sensors
-    if (alertInsightsSecondary) {
-        alertInsightsSecondary.style.display = 'none';
-    }
+    // if (alertInsightsSecondary) {
+    //     alertInsightsSecondary.style.display = 'none';
+    // }
     
     // Always show main insights
     if (alertInsightsMain) {
@@ -277,6 +349,8 @@ function updateAlertCounts(stats) {
 }
 
 // Function to setup real-time stats updates
+
+// Update setupRealTimeStatsUpdates to also update slot layout
 function setupRealTimeStatsUpdates(selectedBuilding = null) {
     try {
         const parkingSlotsRef = collection(db, 'ParkingSlots');
@@ -292,7 +366,7 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
         
         // Listen for real-time updates
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            console.log('Real-time update received for stats');
+            console.log('Real-time update received for stats and slots');
             
             currentBuildingSlots = [];
             snapshot.forEach(doc => {
@@ -303,7 +377,11 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
                 });
             });
             
+            // Update both stats and slot layout
             updateStatsCards();
+            populateLevelTabs(selectedBuilding).then(() => {
+                renderParkingSlots();
+            });
         });
         
         // Store unsubscribe function globally so we can clean up later
@@ -350,7 +428,7 @@ async function testFirebaseConnection() {
 // Generate sample slots for testing (kept as fallback)
 function generateSampleSlots() {
     const sampleSlots = {};
-    const statuses = ['available', 'occupied', 'reserved', 'unbooked'];
+    const statuses = ['available', 'occupied', 'reserved', 'unbooked','named'];
     const blocks = ['A', 'B', 'C'];
 
     blocks.forEach(block => {
@@ -472,19 +550,37 @@ function switchLevel(level) {
     // Re-render parking slots for the selected level
     renderParkingSlots();
 }
-
+function updateSlotLayoutForBuilding() {
+    // Re-render slots when building changes
+    renderParkingSlots();
+}
 // Handle slot clicks
+
+// Updated handleSlotClick to work with Firebase data
 function handleSlotClick(slotElement) {
     const slotId = slotElement.dataset.slot;
-    const slotKey = `${slotId}_L${currentLevel}`;
-    const slot = slots[slotKey];
+    const docId = slotElement.dataset.docId;
+    
+    // Find the slot in currentBuildingSlots
+    const slot = currentBuildingSlots.find(s => s.slot_name === slotId);
+    
+    if (!slot) {
+        alert('Slot data not found');
+        return;
+    }
 
-    if (!slot) return;
-
-    let message = `Slot: ${slotId}\nStatus: ${slot.status.toUpperCase()}\nLevel: ${slot.level}`;
-
-    if (slot.vehicle) {
-        message += `\nVehicle: ${slot.vehicle.plate}\nOwner: ${slot.vehicle.owner}`;
+    let message = `Slot: ${slot.slot_name}\nStatus: ${slot.status}\nBuilding: ${slot.building}\nFloor: ${slot.floor}`;
+    
+    if (slot.block) {
+        message += `\nBlock: ${slot.block}`;
+    }
+    
+    if (slot.notes) {
+        message += `\nNotes: ${slot.notes}`;
+    }
+    
+    if (slot.is_special) {
+        message += `\nSpecial Slot: Yes`;
     }
 
     alert(message);
@@ -502,10 +598,13 @@ function handleAlertAction(button) {
 }
 
 // Updated handle building selector change with Firebase integration
+
+// Update your handleBuildingChange function to include slot layout update
+// Updated handleBuildingChange to populate levels and update layout
 function handleBuildingChange(building) {
     if (!building) return;
     
-    console.log(`Building selected for stats: ${building}`);
+    console.log(`Building selected: ${building}`);
     
     // Store selected building globally
     window.selectedBuilding = building;
@@ -516,7 +615,12 @@ function handleBuildingChange(building) {
     }
     
     // Fetch and update stats for selected building
-    fetchAndUpdateStats(building);
+    fetchAndUpdateStats(building).then(() => {
+        // After data is loaded, populate level tabs and render slots
+        populateLevelTabs(building).then(() => {
+            renderParkingSlots();
+        });
+    });
     
     // Setup real-time updates for this building
     setupRealTimeStatsUpdates(building);
@@ -524,15 +628,52 @@ function handleBuildingChange(building) {
 
 // Render parking slots for current level (kept for backwards compatibility)
 function renderParkingSlots() {
-    const blocks = ['A', 'B', 'C'];
     const parkingGrid = document.getElementById('parking-grid');
-
     if (!parkingGrid) return;
 
     // Clear existing content
     parkingGrid.innerHTML = '';
 
-    blocks.forEach(blockName => {
+    // Check if we have Firebase data
+    if (currentBuildingSlots.length === 0) {
+        parkingGrid.innerHTML = '<div class="loading">Loading parking slots...</div>';
+        return;
+    }
+
+    // Filter slots by current level (handle "Level 0", "Level 1", etc.)
+    const currentLevelSlots = currentBuildingSlots.filter(slot => {
+        if (!slot.floor) return false;
+        
+        // Extract level number from floor field
+        const levelMatch = slot.floor.match(/level\s*(\d+)/i);
+        if (levelMatch) {
+            const slotLevel = parseInt(levelMatch[1]);
+            return slotLevel === currentLevel;
+        }
+        return false;
+    });
+
+    // Group slots by block
+    const slotsByBlock = currentLevelSlots.reduce((blocks, slot) => {
+        const blockName = slot.block || 'Unknown';
+        if (!blocks[blockName]) {
+            blocks[blockName] = [];
+        }
+        blocks[blockName].push(slot);
+        return blocks;
+    }, {});
+
+    // Get unique blocks and sort them
+    const blockNames = Object.keys(slotsByBlock).sort();
+
+    // If no slots for current level
+    if (blockNames.length === 0) {
+        parkingGrid.innerHTML = `<div class="no-slots">No parking slots found for Level ${currentLevel}</div>`;
+        return;
+    }
+
+    // Render each block
+    blockNames.forEach(blockName => {
         const blockDiv = document.createElement('div');
         blockDiv.className = 'parking-block';
 
@@ -543,25 +684,45 @@ function renderParkingSlots() {
         const slotsGrid = document.createElement('div');
         slotsGrid.className = 'slots-grid';
 
-        // Get slots for this block and current level
-        const blockSlots = Object.values(slots).filter(slot =>
-            slot.block === blockName && slot.level === currentLevel
-        );
+        // Sort slots within block by slot_name
+        const blockSlots = slotsByBlock[blockName].sort((a, b) => {
+            return a.slot_name?.localeCompare(b.slot_name) || 0;
+        });
 
+        // Render each slot
         blockSlots.forEach(slot => {
             const slotDiv = document.createElement('div');
-            slotDiv.className = `parking-slot ${slot.status}`;
-            slotDiv.dataset.slot = slot.id;
+            
+            // Map Firebase status to CSS classes
+            const status = mapFirebaseStatusToCss(slot.status);
+            slotDiv.className = `parking-slot ${status}`;
+            slotDiv.dataset.slot = slot.slot_name;
+            slotDiv.dataset.docId = slot.docId; // Store document ID for potential updates
 
-            if (slot.vehicle) {
-                slotDiv.setAttribute('data-tooltip', `${slot.vehicle.plate} - ${slot.vehicle.owner}`);
-                slotDiv.classList.add('tooltip');
+            // Add slot ID
+            const slotId = document.createElement('span');
+            slotId.className = 'slot-id';
+            slotId.textContent = slot.slot_name;
+            slotDiv.appendChild(slotId);
+
+            // Create icon container
+            const iconList = document.createElement('div');
+            iconList.className = 'icon-list';
+
+            // Add special indicators based on is_special and notes
+            if (slot.is_special) {
+                addSpecialIcons(iconList, slot);
             }
 
-            slotDiv.innerHTML = `
-                <span class="slot-id">${slot.id}</span>
-                <i class="slot-icon fas fa-car"></i>
-            `;
+            // Add car icon
+            const carIcon = document.createElement('i');
+            carIcon.className = 'slot-icon fas fa-car';
+            iconList.appendChild(carIcon);
+
+            slotDiv.appendChild(iconList);
+
+            // Add tooltip with slot details
+            addSlotTooltip(slotDiv, slot);
 
             slotsGrid.appendChild(slotDiv);
         });
@@ -570,7 +731,70 @@ function renderParkingSlots() {
         parkingGrid.appendChild(blockDiv);
     });
 
-    // Note: Stats are now updated via updateStatsCards() function
+    console.log(`Rendered ${currentLevelSlots.length} slots for Level ${currentLevel}`);
+}
+
+
+// Helper function to map Firebase status to CSS classes
+function mapFirebaseStatusToCss(firebaseStatus) {
+    if (!firebaseStatus) return 'available';
+    
+    const status = firebaseStatus.toLowerCase();
+    switch (status) {
+        case 'free':
+            return 'available';
+        case 'booked':
+            return 'occupied';
+        case 'reserved':
+            return 'reserved';
+        case 'named':
+            return 'named';
+        case 'unbooked':
+            return 'unbooked';
+        default:
+            return 'available';
+    }
+}
+
+function addSpecialIcons(iconContainer, slot) {
+    const notes = slot.notes?.toLowerCase() || '';
+    
+    // Add pillar icon
+    if (notes.includes('pillar')) {
+        const pillarIcon = document.createElement('img');
+        pillarIcon.src = '../public/assets/icons/pillar.png';
+        pillarIcon.className = 'slot-icon pillar';
+        pillarIcon.title = 'Pillar nearby';
+        pillarIcon.alt = 'Pillar';
+        iconContainer.appendChild(pillarIcon);
+    }
+    
+    // Add corner icon
+    if (notes.includes('corner')) {
+        const cornerIcon = document.createElement('i');
+        cornerIcon.className = 'slot-icon fas fa-turn-down corner';
+        cornerIcon.title = 'Corner slot';
+        iconContainer.appendChild(cornerIcon);
+    }
+    
+    // Add EV icon
+    if (notes.includes('ev') || notes.includes('electric')) {
+        const evIcon = document.createElement('i');
+        evIcon.className = 'slot-icon fas fa-bolt';
+        evIcon.title = 'EV Charging';
+        iconContainer.appendChild(evIcon);
+    }
+}
+
+function addSlotTooltip(slotElement, slot) {
+    let tooltipText = `Slot: ${slot.slot_name}\nStatus: ${slot.status}\nBuilding: ${slot.building}\nFloor: ${slot.floor}`;
+    
+    if (slot.notes) {
+        tooltipText += `\nNotes: ${slot.notes}`;
+    }
+    
+    slotElement.setAttribute('data-tooltip', tooltipText);
+    slotElement.classList.add('tooltip');
 }
 
 // Render weekly usage chart
@@ -656,6 +880,7 @@ function simulateRealTimeUpdates() {
 }
 
 // Updated main initialization function
+// Update init function to populate levels for default building
 async function init() {
     // Test Firebase connection first
     await testFirebaseConnection();
@@ -679,55 +904,58 @@ async function init() {
         // Fetch stats for default building
         await fetchAndUpdateStats(defaultBuilding);
         
+        // Populate level tabs and render slots
+        await populateLevelTabs(defaultBuilding);
+        renderParkingSlots();
+        
         // Setup real-time stats updates for default building
         setupRealTimeStatsUpdates(defaultBuilding);
     } else {
         console.warn('No buildings found, loading all slots');
         // Fallback: load all slots if no buildings found
         await fetchAndUpdateStats();
+        await populateLevelTabs();
+        renderParkingSlots();
         setupRealTimeStatsUpdates();
     }
-    
-    // Generate sample data as fallback for parking grid
-    slots = generateSampleSlots();
     
     // Setup the dashboard
     updateDateTime();
     setupEventListeners();
     renderChart();
-    renderParkingSlots();
 
     // Start intervals
     setInterval(updateDateTime, 1000);
-    // Keep simulation for parking grid until we integrate that with Firebase too
-    setInterval(simulateRealTimeUpdates, 30000);
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
 
 // Export functions for external use
+// Export updated functions
 window.ParkingAPI = {
     updateSlot: (slotId, status, vehicleInfo) => {
-        const slotKey = `${slotId}_L${currentLevel}`;
-        if (slots[slotKey]) {
-            slots[slotKey].status = status;
-            slots[slotKey].vehicle = vehicleInfo;
+        // Updated to work with Firebase data structure
+        const slot = currentBuildingSlots.find(s => s.slot_name === slotId);
+        if (slot) {
+            slot.status = status;
+            // In real implementation, you'd update Firebase here
             renderParkingSlots();
         }
     },
     
     getSlot: (slotId) => {
-        const slotKey = `${slotId}_L${currentLevel}`;
-        return slots[slotKey] || null;
+        return currentBuildingSlots.find(s => s.slot_name === slotId) || null;
     },
     
-    getAllSlots: () => slots,
+    getAllSlots: () => currentBuildingSlots,
     
-    refresh: () => simulateRealTimeUpdates(),
+    refresh: () => renderParkingSlots(),
     
-    // New Firebase-based functions
+    // Firebase-based functions
     updateStats: fetchAndUpdateStats,
     getCurrentSlots: () => currentBuildingSlots,
-    setupRealTimeStats: setupRealTimeStatsUpdates
+    setupRealTimeStats: setupRealTimeStatsUpdates,
+    populateLevels: populateLevelTabs,
+    getAvailableLevels: () => availableLevels
 };

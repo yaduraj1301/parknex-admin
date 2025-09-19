@@ -279,19 +279,16 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Parking Lot Overview -->
                 <div class="parking-overview">
                     <div class="parking-header">
                         <h3>Parking Lot Overview</h3>
-                        <div class="parking-legend">
-                            <div class="legend-item">
-                                <span class="legend-color pillar"></span>
-                                Pillar
-                            </div>
+                        <div class="legend-container">
+                            <div class="parking-legend">
+                            
                             <div class="legend-item">
                                 <span class="legend-color corner"></span>
-                                Corner
+                                Named
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color available"></span>
@@ -299,7 +296,7 @@
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color occupied"></span>
-                                Occupied
+                                Booked
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color reserved"></span>
@@ -310,6 +307,25 @@
                                 Unbooked
                             </div>
                         </div>
+
+                        <div class="parking-legend second-row">
+                            
+                            <div class="legend-item">
+                                <img src="../public/assets/icons/pillar.png" class="pillar-icon" alt="">
+                                Pillar
+                            </div>
+                            <div class="legend-item">
+                                <i class="fa fa-turn-down"></i>
+                                Corner
+                            </div>
+                            <div class="legend-item">
+                                <i class="fa fa-bolt available"></i>
+                                EV Slot
+                            </div>
+                        </div>
+
+                        </div>
+                        
                     </div>
 
                     <!-- Level Tabs -->
@@ -365,7 +381,7 @@
                                     <span class="slot-id">A08</span>
                                     <i class="slot-icon fas fa-car"></i>
                                 </div>
-                                <div class="parking-slot reserved" data-slot="A09">
+                                <div class="parking-slot named" data-slot="A09">
                                     <span class="slot-id">A09</span>
                                     <i class="slot-icon fas fa-car"></i>
                                 </div>

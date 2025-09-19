@@ -432,7 +432,7 @@ background: var(--primary-red);
 .parking-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: start;
     margin-bottom: 16px;
 }
 
@@ -442,10 +442,22 @@ background: var(--primary-red);
     color: var(--text-primary);
 }
 
+.legend-container{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: end;
+}
+
 .parking-legend {
     display: flex;
     gap: 16px;
     align-items: center;
+}
+.second-row {
+    display: flex;
+    gap: 16px;
+    justify-content: end;
 }
 
 .legend-item {
@@ -579,6 +591,11 @@ background: var(--primary-red);
     background: var(--primary-red-transparent);
     border: 1px solid var(--primary-red);
     color: var(--primary-red);
+}
+.parking-slot.named {
+    background: var(--neutral-gray-transparent);
+    border: 1px solid var(--neutral-gray);
+    color: var(--neutral-black);
 }
 
 .parking-slot.reserved {
