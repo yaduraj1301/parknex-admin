@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Initialize chatbot after getting employee data
         await loadSlotsFromDB();
+        await loadExistingBooking(); // Add this line
         showInitialOptions();
 
         // Show chat interface
@@ -167,6 +168,62 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Slots loaded by floor:", slotsByFloor);
     } catch (err) {
       console.error("Error loading slots:", err);
+    }
+  }
+
+  // Add this new function after loadSlotsFromDB()
+
+  async function loadExistingBooking() {
+    try {
+      if (!employeeData || !employeeData.id) {
+        console.error("No employee data available");
+        return null;
+      }
+
+      const now = new Date();
+      const bookingsRef = collection(db, "bookings");
+      
+      // Simplified query - just check status first
+      const q = query(
+        bookingsRef,
+        where("status", "==", "Confirmed")
+      );
+
+      const snapshot = await getDocs(q);
+      
+      for (const bookingDoc of snapshot.docs) {
+        const data = bookingDoc.data();
+        
+        // Client-side filtering for employee's bookings
+        if (data.vehicle_id.startsWith(`employees/${employeeData.id}/`)) {
+          const expiryTime = data.expiry_time.toDate();
+
+          // Check if booking is still valid
+          if (expiryTime > now) {
+            // Get slot details
+            const slotRef = data.slot_id;
+            const slotDoc = await getDoc(slotRef);
+
+            if (slotDoc.exists()) {
+              // Set currentBooking
+              currentBooking = {
+                name: slotDoc.data().slot_name,
+                id: slotDoc.id,
+                bookingDocId: bookingDoc.id
+              };
+              console.log("Restored existing booking:", currentBooking);
+              return;
+            }
+          }
+        }
+      }
+      
+      console.log("No active bookings found");
+      currentBooking = null;
+
+    } catch (err) {
+      console.error("Error loading existing booking:", err);
+      currentBooking = null;
     }
   }
 
