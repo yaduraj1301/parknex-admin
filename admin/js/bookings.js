@@ -1,7 +1,148 @@
 import { db } from "../../public/js/firebase-config.js";
-import { collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { collection, getDocs, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Function to fetch and display bookings data
+    const fetchAndDisplayBookings = async () => {
+        try {
+            console.log('Fetching bookings data...');
+            const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
+            const bookingsTableBody = document.querySelector('.table tbody');
+
+            if (!bookingsTableBody) {
+                console.error('Bookings table body not found');
+                return;
+            }
+
+            // Clear existing rows
+            bookingsTableBody.innerHTML = '';
+
+            if (bookingsSnapshot.empty) {
+                console.log('No bookings found');
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px;">No bookings found</td>';
+                bookingsTableBody.appendChild(emptyRow);
+                return;
+            }
+
+            console.log(`Found ${bookingsSnapshot.size} bookings`);
+
+            // Process each booking
+            for (const bookingDoc of bookingsSnapshot.docs) {
+                const bookingData = bookingDoc.data();
+                console.log('Processing booking:', bookingData);
+
+                // Fetch related data
+                const relatedData = await fetchRelatedBookingData(bookingData);
+
+                // Create table row
+                const row = document.createElement('tr');
+
+                // Format date
+                const bookingDate = bookingData.booking_time ? new Date(bookingData.booking_time.seconds * 1000).toLocaleDateString() : 'N/A';
+
+                // Resolve vehicle snap -> data safely (supports id string, full path string, or DocumentReference)
+                let vehicleSnap;
+                const vehicleRefOrId = bookingData.vehicle_id || bookingData.vehicleId;
+
+                if (!vehicleRefOrId) {
+                    vehicleSnap = null;
+                } else if (typeof vehicleRefOrId === 'object' && vehicleRefOrId.id) {
+                    // DocumentReference
+                    vehicleSnap = await getDoc(vehicleRefOrId);
+                } else if (typeof vehicleRefOrId === 'string' && vehicleRefOrId.includes('/')) {
+                    // Full path like 'Vehicles/abc123'
+                    vehicleSnap = await getDoc(doc(db, vehicleRefOrId));
+                } else if (typeof vehicleRefOrId === 'string') {
+                    // Plain ID; adjust collection name if yours is different (Vehicles vs vehicles)
+                    vehicleSnap = await getDoc(doc(db, 'Vehicles', vehicleRefOrId));
+                }
+                console.log('vehicleSnap:', vehicleSnap);
+                const vehicle = vehicleSnap && vehicleSnap.exists() ? vehicleSnap.data() : null;
+                console.log('vehicle data:', vehicle);
+
+                // Use vehicle fields when rendering
+                row.innerHTML = `
+                    <td>${bookingData.bookingId || bookingDoc.id}</td>
+                    <td>${(vehicle && (vehicle.registration_no || vehicle.vehicleNumber || vehicle.number || vehicle.plateNumber)) || 'N/A'}</td>
+                    <td>${relatedData.employeeName || 'N/A'}</td>
+                    <td>${relatedData.slotName || 'N/A'}</td>
+                    <td><span class="status-${bookingData.status || 'unknown'}">${bookingData.status || 'Unknown'}</span></td>
+                    <td>${bookingDate}</td>
+                    <td><button class="btn-action">View</button></td>
+                `;
+
+                bookingsTableBody.appendChild(row);
+            }
+
+            console.log('Bookings table populated successfully');
+
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            const bookingsTableBody = document.querySelector('.table tbody');
+            if (bookingsTableBody) {
+                bookingsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading bookings data</td></tr>';
+            }
+        }
+    };
+
+    // Function to fetch related data for a booking
+    const fetchRelatedBookingData = async (bookingData) => {
+        const relatedData = {
+            vehicleNumber: 'N/A' ,
+            employeeName: 'N/A',
+            slotName: 'N/A'
+        };
+
+        try {
+            // Fetch vehicle data if vehicleId exists
+            if (bookingData.vehicleId) {
+                try {
+                    const vehicleDoc = await getDoc(doc(db, 'Vehicles', bookingData.vehicleId));
+                    if (vehicleDoc.exists()) {
+                        const vehicleData = vehicleDoc.data();
+                        relatedData.vehicleNumber = vehicleData.registration_no || vehicleData.vehicleNumber || vehicleData.number || vehicleData.plateNumber || 'N/A';
+                    }
+                } catch (error) {
+                    console.warn('Error fetching vehicle data:', error);
+                }
+            }
+
+            // Fetch employee data if employeeId exists
+            if (bookingData.employeeId) {
+                try {
+                    const employeeDoc = await getDoc(doc(db, 'Employees', bookingData.employeeId));
+                    if (employeeDoc.exists()) {
+                        const employeeData = employeeDoc.data();
+                        relatedData.employeeName = employeeData.name || employeeData.fullName || `${employeeData.firstName || ''} ${employeeData.lastName || ''}`.trim() || 'N/A';
+                    }
+                } catch (error) {
+                    console.warn('Error fetching employee data:', error);
+                }
+            }
+
+            // Fetch slot data if slotId exists
+            if (bookingData.slotId) {
+                try {
+                    const slotDoc = await getDoc(doc(db, 'ParkingSlots', bookingData.slotId));
+                    if (slotDoc.exists()) {
+                        const slotData = slotDoc.data();
+                        relatedData.slotName = slotData.slot_name || slotData.slotNumber || slotDoc.id;
+                    }
+                } catch (error) {
+                    console.warn('Error fetching slot data:', error);
+                }
+            }
+
+        } catch (error) {
+            console.error('Error fetching related booking data:', error);
+        }
+
+        return relatedData;
+    };
+
+    // Load bookings data when page loads
+    fetchAndDisplayBookings();
     const bookSlotButton = document.querySelector('.btn-primary');
 
     bookSlotButton.addEventListener('click', () => {
@@ -274,14 +415,16 @@ document.addEventListener('DOMContentLoaded', () => {
                                 slotsByBlock[blockName].forEach(slot => {
                                     const slotElement = document.createElement('div');
                                     slotElement.classList.add('parking-slot');
-                                    slotElement.textContent = slot.slot_name || slot.slotNumber || slot.id;
-                                    
-                                    // Apply status-based styling
-                                    if (slot.status === 'available') {
+                                    slotElement.textContent = slot.slot_name;
+                                    console.log("Slot id:", slot.slot_name, "\nSlot status:", slot.status);
+
+                                    // Apply status-based styling based on database status
+                                    if (slot.status === 'Free') {
+                                        console.log('Slot available:', slot);
                                         slotElement.classList.add('available');
-                                    } else if (slot.status === 'occupied') {
+                                    } else if (slot.status === 'Booked') {
                                         slotElement.classList.add('occupied');
-                                    } else if (slot.status === 'reserved') {
+                                    } else if (slot.status === 'Reserved') {
                                         slotElement.classList.add('reserved');
                                     } else {
                                         slotElement.classList.add('unbooked');
@@ -289,12 +432,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                     // Add click event for slot selection
                                     slotElement.addEventListener('click', () => {
-                                        if (slot.status === 'available' || slot.status === 'unbooked') {
-                                            // Select the slot
+                                        if (slot.status === 'Free') {
+                                            // Find the slot number input field in the booking form
+                                            const allInputs = document.querySelectorAll('input[type="text"]');
+                                            
+                                            // The slot number input should be the 3rd input (index 2)
+                                            // Order: Vehicle Number (0), Employee Name (1), Slot Number (2), Contact Number (3)
+                                            if (allInputs.length >= 3) {
+                                                allInputs[2].value = slot.slot_name || slot.slotNumber || slot.id;
+                                            }
+                                            
                                             console.log('Slot selected:', slot);
-                                            // You can add logic here to handle slot selection
-                                            // For now, we'll just close the overlay
+                                            // Close the slot selection overlay
                                             document.body.removeChild(slotOverlay);
+                                        } else {
+                                            // Show message for unavailable slots
+                                            alert('This slot is not available for booking.');
                                         }
                                     });
 
