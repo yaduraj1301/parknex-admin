@@ -498,28 +498,18 @@
                 />
               </div>
               <div class="form-group">
-                <label class="form-label">Group name</label>
+                <label class="form-label">Level Number</label>
                 <input
                   type="text"
                   class="form-input"
                   id="slotGroup"
-                  placeholder="e.g. Yamuna"
+                  placeholder="e.g. 0, 1, 2..."
                 />
               </div>
             </div>
 
             <!-- Slot Type + Initial Status -->
             <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">
-                  Slot Type <span class="required">*</span>
-                </label>
-                <select class="form-select" id="slotType" required>
-                  <option value="normal">Normal</option>
-                  <option value="ev">EV</option>
-                  <option value="handicap">Handicap</option>
-                </select>
-              </div>
               <div class="form-group">
                 <label class="form-label">
                   Initial Status <span class="required">*</span>
@@ -531,25 +521,71 @@
                   <option value="unauthorized">Unauthorized</option>
                 </select>
               </div>
+              <div class="form-group">
+                <label class="form-label">Is Special</label>
+                <select class="form-select" id="slotIsSpecial">
+                  <option value="no" selected>No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+              
             </div>
-
-            <!-- Is Special -->
             <div class="form-group">
-              <label class="form-label">Is Special</label>
-              <select class="form-select" id="slotIsSpecial">
-                <option value="no" selected>No</option>
-                <option value="yes">Yes</option>
-              </select>
-            </div>
+                <label class="form-label">Is Special</label>
+                <select class="form-select" id="slotIsSpecial">
+                  <option value="A" selected>A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                </select>
+              </div>
 
-            <!-- Notes (hidden unless "Is Special = Yes") -->
+            <!-- Updated Notes section with ONLY radio buttons -->
             <div class="form-group" id="notesSection" style="display: none">
-              <label class="form-label">Notes</label>
-              <textarea
-                class="form-textarea"
-                id="slotNotes"
-                placeholder="e.g. Near pillar, small parking space, tight corner etc."
-              ></textarea>
+              <label class="form-label"
+                >Special Slot Type <span class="required">*</span></label
+              >
+
+              <!-- Only radio buttons, no textarea -->
+              <div id="notesRadio">
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="pillar"
+                      name="slotNotesRadio"
+                      value="Has a pillar in it"
+                    />
+                    <label for="pillar">Has a pillar in it</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="evSlot"
+                      name="slotNotesRadio"
+                      value="EV slot"
+                    />
+                    <label for="evSlot">EV slot</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="corner"
+                      name="slotNotesRadio"
+                      value="Is in a corner"
+                    />
+                    <label for="corner">Is in a corner</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="handicapped"
+                      name="slotNotesRadio"
+                      value="Handicapped slot"
+                    />
+                    <label for="handicapped">Handicapped slot</label>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Actions -->
@@ -626,14 +662,6 @@
 
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Slot Type</label>
-                <select class="form-select" id="configSlotType">
-                  <option value="normal">Normal</option>
-                  <option value="ev">EV</option>
-                  <option value="handicap">Handicap</option>
-                </select>
-              </div>
-              <div class="form-group">
                 <label class="form-label">Initial Status</label>
                 <select class="form-select" id="configSlotStatus">
                   <option value="available">Available</option>
@@ -645,12 +673,63 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Notes</label>
-              <textarea
-                class="form-textarea"
-                id="configSlotNotes"
-                placeholder="Around a corner, near a Pillar"
-              ></textarea>
+              <label class="form-label">Is Special</label>
+              <select class="form-select" id="configSlotIsSpecial">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+
+            <div
+              class="form-group"
+              id="configNotesSection"
+              style="display: none"
+            >
+              <label class="form-label"
+                >Special Slot Type <span class="required">*</span></label
+              >
+
+              <!-- Only radio buttons for configure modal -->
+              <div id="configNotesRadio">
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configPillar"
+                      name="configSlotNotesRadio"
+                      value="Has a pillar in it"
+                    />
+                    <label for="configPillar">Has a pillar in it</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configEvSlot"
+                      name="configSlotNotesRadio"
+                      value="EV slot"
+                    />
+                    <label for="configEvSlot">EV slot</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configCorner"
+                      name="configSlotNotesRadio"
+                      value="Is in a corner"
+                    />
+                    <label for="configCorner">Is in a corner</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configHandicapped"
+                      name="configSlotNotesRadio"
+                      value="Handicapped slot"
+                    />
+                    <label for="configHandicapped">Handicapped slot</label>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="modal-actions">
