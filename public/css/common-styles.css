@@ -72,14 +72,14 @@ body {
 .sidebar .nav-link {
     display: flex;
     align-items: center;
-    padding: 14px;
+    padding: 12px;
     text-decoration: none;
     color: #333;
     font-weight: 500;
     font-size: 12px;
     transition: all 0.3s ease;
     border-radius: 12px;
-    margin: 0 12px;
+    margin: 0 14px;
 
 
 }
@@ -87,11 +87,15 @@ body {
 .sidebar .nav-link:hover {
     background-color: rgba(100, 162, 245, 0.1);
     color: #64A2F5;
+        transform: scale(1.05);
+
 }
 
 .sidebar .nav-item.active .nav-link {
     background-color: #64A2F5;
     color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: -2px 4px 5px rgba(0, 0, 0, 0.114);
 }
 
 .sidebar .nav-icon {
@@ -110,7 +114,7 @@ body {
 .sidebar .admin-profile {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .sidebar .admin-avatar {
@@ -137,6 +141,13 @@ body {
     font-size: 10px;
     color: #666;
     margin: 0;
+}
+.sidebar .logout-button {
+    /* margin-top: 10px; */
+    cursor: pointer;
+    color: #4d4d4d;
+    font-size: 16px;
+    transition: color 0.3s ease;
 }
 
 /* Sidebar responsive adjustments */

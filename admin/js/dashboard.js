@@ -586,15 +586,45 @@ function handleSlotClick(slotElement) {
     alert(message);
 }
 
+function scrollToParkingOverview() {
+    const parkingSection = document.querySelector('.parking-overview');
+    if (parkingSection) {
+        parkingSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+
 // Handle alert action buttons
 function handleAlertAction(button) {
     const alertType = button.closest('.alert-card').classList.contains('attention') ? 'attention' : 'sensor';
 
     if (alertType === 'attention') {
-        alert('Redirecting to unbooked vehicles management...');
+        scrollToParkingOverview();
+
+        setTimeout(() => {
+            highlightUnbookedSlots();
+        }, 500);
     } else {
         alert('Redirecting to sensor diagnostics...');
     }
+}
+
+function highlightUnbookedSlots() {
+    const unbookedSlots = document.querySelectorAll('.parking-slot.unbooked');
+    
+    unbookedSlots.forEach(slot => {
+        slot.style.transform = 'scale(1.1)';
+        slot.style.boxShadow = '0 0 10px rgba(220, 20, 60, 0.5)';
+        
+        // Remove highlight after 2 seconds
+        setTimeout(() => {
+            slot.style.transform = '';
+            slot.style.boxShadow = '';
+        }, 1000);
+    });
 }
 
 // Updated handle building selector change with Firebase integration
