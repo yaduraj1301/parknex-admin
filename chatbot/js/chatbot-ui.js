@@ -454,10 +454,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function processUserInput(userInput) {
+    // --- START OF FIX ---
+    const lowerInput = userInput.toLowerCase().trim();
+    const greetingKeywords = [
+      "hi",
+      "hello",
+      "hey",
+      "yo",
+      "start",
+      "menu",
+      "options",
+    ];
+
+    // Check if the user's input is one of the simple, instant keywords.
+    if (greetingKeywords.includes(lowerInput)) {
+      showMainMenu(); // If it is, show the menu immediately.
+      return; // IMPORTANT: Stop the function here to prevent the API call.
+    }
+    // --- END OF FIX ---
+
+    // This code below will now ONLY run if the input is not a simple greeting.
     const analysis = await analyzeUserIntent(userInput);
 
     switch (analysis.intent) {
-      case "greet":
+      case "greet": // This case is still useful as a fallback if Gemini is used.
         showMainMenu();
         break;
 

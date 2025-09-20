@@ -150,19 +150,23 @@ body {
 }
 
 .logout-btn {
-    position: absolute;
-    right: 10px;
-    background: #fff3;
+    background: transparent;
     color: white;
     border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
+    padding: 8px;
+    border-radius: 50%;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
 }
 
 .logout-btn:hover {
-    background: #fff5;
+    background: rgba(255, 255, 255, 0.2);
 }
 
 .options-vertical {
