@@ -538,8 +538,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function validateAndBookSlot(slot) {
-    slot = slot.toUpperCase();
+  function validateAndBookSlot(slotName) {
+    slotName = slotName.toUpperCase();
 
     if (currentBooking) {
       addMessage(
@@ -551,33 +551,38 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const getSlotsByStatus = (status) => {
-      const slots = [];
-      Object.values(slotsByFloor).forEach((floor) => {
-        slots.push(...floor[status]);
-      });
-      return slots;
-    };
-
-    const unauthorizedSlots = getSlotsByStatus("unauthorized");
-
-    // The only valid slots to book are those that are occupied but not yet booked.
-    if (unauthorizedSlots.find((s) => s.name === slot)) {
-      // MODIFICATION: Instead of calling handleBooking, we now prompt for a vehicle.
-      promptForVehicle(slot);
-      return;
+    // Step 1: Find ALL slots with the given name, regardless of their current status.
+    const allMatchingSlots = [];
+    for (const floorName in slotsByFloor) {
+      const floor = slotsByFloor[floorName];
+      const allSlotsOnFloor = [
+        ...floor.unauthorized,
+        ...floor.free,
+        ...floor.booked,
+      ];
+      const foundSlot = allSlotsOnFloor.find((s) => s.name === slotName);
+      if (foundSlot) {
+        // Determine the real status of the found slot
+        const status = floor.unauthorized.some(
+          (s) => s.docId === foundSlot.docId
+        )
+          ? "unauthorized"
+          : floor.free.some((s) => s.docId === foundSlot.docId)
+          ? "free"
+          : "booked";
+        allMatchingSlots.push({
+          ...foundSlot,
+          floor: floorName,
+          status: status,
+        });
+      }
     }
 
-    const bookedSlots = getSlotsByStatus("booked");
-    if (bookedSlots.find((s) => s.name === slot)) {
-      addMessage(`❌ Slot ${slot} is already booked.`, "bot", false, "error");
-      return;
-    }
-
-    const freeSlots = getSlotsByStatus("free");
-    if (freeSlots.find((s) => s.name === slot)) {
+    // Step 2: Apply logic based on the number of matches found.
+    if (allMatchingSlots.length === 0) {
+      // Case A: Slot name does not exist anywhere.
       addMessage(
-        `❌ Slot ${slot} is free. You can only book occupied-unbooked slots.`,
+        `❌ Slot ${slotName} does not exist in ${employeeBuilding} building.`,
         "bot",
         false,
         "error"
@@ -585,12 +590,62 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    if (allMatchingSlots.length > 1) {
+      // Case B: The name is ambiguous. This is the critical fix.
+      // We must ask the user to choose.
+      promptForFloorSelection(allMatchingSlots);
+      return;
+    }
+
+    if (allMatchingSlots.length === 1) {
+      // Case C: The name is unique. NOW we can check its status.
+      const theOnlySlot = allMatchingSlots[0];
+      if (theOnlySlot.status === "unauthorized") {
+        // Unique and bookable. Proceed to vehicle selection.
+        promptForVehicle(theOnlySlot.name);
+      } else {
+        // Unique but not bookable. Explain why.
+        let reason = "it's not available right now";
+        if (theOnlySlot.status === "free")
+          reason = "it's currently free. You can only book occupied slots.";
+        if (theOnlySlot.status === "booked")
+          reason = "it's already booked by someone else.";
+        addMessage(
+          `❌ Slot ${slotName} cannot be booked because ${reason}`,
+          "bot",
+          false,
+          "error"
+        );
+      }
+    }
+  }
+
+  // NEW: Asks the user to choose a floor when a slot name is ambiguous.
+  // Asks the user to choose a floor and visually indicates which slots are available.
+  function promptForFloorSelection(slots) {
     addMessage(
-      `❌ Slot ${slot} doesn't exist or isn't available for booking.`,
+      `I found multiple slots named <b>${slots[0].name}</b>. Please select the correct one:`,
       "bot",
-      false,
-      "error"
+      true
     );
+
+    let optionsHtml = '<div class="options-vertical">';
+    slots.forEach((slot) => {
+      if (slot.status === "unauthorized") {
+        // This one is clickable and bookable
+        optionsHtml += `<button class="option-btn clarify-floor-btn" data-doc-id="${slot.docId}" style="margin-bottom: 8px;">
+                          📍 Slot ${slot.name} on <b>${slot.floor}</b> (Available to book)
+                      </button>`;
+      } else {
+        // This one is not bookable, so we show it as a disabled button.
+        optionsHtml += `<button class="option-btn" disabled style="margin-bottom: 8px; opacity: 0.5; cursor: not-allowed;">
+                          📍 Slot ${slot.name} on <b>${slot.floor}</b> (Currently ${slot.status})
+                      </button>`;
+      }
+    });
+    optionsHtml += "</div>";
+
+    addMessage(optionsHtml, "bot", true);
   }
 
   // NEW: Displays vehicle choices or an "add vehicle" button.
@@ -797,7 +852,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (opt === "book") {
       if (currentBooking) {
         addMessage(
-          `❌ You already have slot ${currentBooking.name} booked. Please leave it first before booking another slot.`,
+          `❌ You already have slot ${currentBooking.name} booked. Please leave it first.`,
           "bot",
           false,
           "error"
@@ -818,17 +873,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       addMessage(
-        `Here are the available slots in ${employeeBuilding} building (occupied but not booked):`
+        `Here are the available slots in ${employeeBuilding} building, grouped by floor:`
       );
 
-      // Display slots grouped by floor
+      // Display slots grouped by floor (Restored Logic)
       Object.keys(slotsByFloor).forEach((floor) => {
         if (slotsByFloor[floor].unauthorized.length > 0) {
-          addMessage(`🏢 <b>${floor}:</b>`, "bot", true, "info");
+          // 1. RE-ADD THE FLOOR HEADER for clear visual grouping.
+          addMessage(`🏢 <b>${floor}</b>:`, "bot", true, "info");
 
-          let btns = '<div class="options">';
+          // 2. Use a container that allows buttons to wrap nicely.
+          let btns =
+            '<div class="options" style="flex-wrap: wrap; justify-content: flex-start; gap: 8px;">';
           slotsByFloor[floor].unauthorized.forEach((slot) => {
-            btns += `<button class="option-btn book-slot" data-slot="${slot.name}">📍 Slot ${slot.name}</button>`;
+            // 3. SIMPLIFY the button text for the user, but KEEP the essential data-doc-id.
+            btns += `<button class="option-btn book-slot" data-doc-id="${slot.docId}">
+                        📍 Slot ${slot.name}
+                     </button>`;
           });
           btns += "</div>";
           addMessage(btns, "bot", true);
@@ -1166,16 +1227,71 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Bind for dynamic buttons (after they are added)
   function bindDynamicButtons() {
-    // --- START OF FIX ---
-    // The specific handlers MUST run before the generic '.option-btn' handler.
+    // --- BIND MORE SPECIFIC BUTTONS FIRST ---
 
-    // Handler for selecting a specific slot to book
+    // Handler for floor clarification buttons
+    document
+      .querySelectorAll(".clarify-floor-btn:not(.bound)")
+      .forEach((btn) => {
+        btn.classList.add("bound");
+        btn.onclick = () => {
+          const docId = btn.dataset.docId;
+          let slotName = null;
+
+          // Find the full slot object using the unique docId
+          for (const floor of Object.values(slotsByFloor)) {
+            const slot = floor.unauthorized.find((s) => s.docId === docId);
+            if (slot) {
+              slotName = slot.name;
+              break;
+            }
+          }
+
+          if (slotName) {
+            // Now that we have the unique, user-confirmed slot, proceed to vehicle selection.
+            promptForVehicle(slotName);
+          } else {
+            console.error("Could not find slot by docId after clarification.");
+            addMessage(
+              "❌ Something went wrong. Please try again.",
+              "bot",
+              false,
+              "error"
+            );
+          }
+        };
+      });
+
+    // Handler for selecting a specific slot to book from the main list
     document.querySelectorAll(".book-slot:not(.bound)").forEach((btn) => {
       btn.classList.add("bound");
       btn.onclick = () => {
-        const slot = btn.dataset.slot;
-        // This function now correctly starts the vehicle selection process
-        validateAndBookSlot(slot);
+        // FIX: We now use the unique docId from the button.
+        const docId = btn.dataset.docId;
+        let slotName = null;
+
+        // Find the slot's name using its unique ID.
+        for (const floor of Object.values(slotsByFloor)) {
+          const slot = floor.unauthorized.find((s) => s.docId === docId);
+          if (slot) {
+            slotName = slot.name;
+            break;
+          }
+        }
+
+        if (slotName) {
+          // Since the user clicked a unique, unambiguous button, we can
+          // go directly to the vehicle selection step.
+          promptForVehicle(slotName);
+        } else {
+          console.error("Could not find slot by docId from button click.");
+          addMessage(
+            "❌ Something went wrong. Please try again.",
+            "bot",
+            false,
+            "error"
+          );
+        }
       };
     });
 
@@ -1183,10 +1299,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".vehicle-select:not(.bound)").forEach((btn) => {
       btn.classList.add("bound");
       btn.onclick = () => {
-        const slot = btn.dataset.slot;
-        const vehicleId = btn.dataset.vehicleId;
-        // This function finalizes the booking
-        handleBooking(slot, vehicleId);
+        handleBooking(btn.dataset.slot, btn.dataset.vehicleId);
       };
     });
 
@@ -1194,18 +1307,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".add-vehicle:not(.bound)").forEach((btn) => {
       btn.classList.add("bound");
       btn.onclick = () => {
-        const slot = btn.dataset.slot;
-        startAddVehicleFlow(slot);
+        startAddVehicleFlow(btn.dataset.slot);
       };
     });
 
-    // Generic handler for main menu buttons with a `data-action`
-    // This now runs LAST to avoid overriding the specific handlers above.
+    // --- BIND GENERIC '.option-btn' LAST ---
     document.querySelectorAll(".option-btn:not(.bound)").forEach((btn) => {
       btn.classList.add("bound");
       btn.onclick = () => {
         const action = btn.dataset.action;
         if (action) {
+          // ... (rest of this handler remains the same)
           if (["book", "manage", "list", "report"].includes(action)) {
             handleOption(action);
           } else if (action === "extend" && currentBooking) {
@@ -1220,7 +1332,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
     });
-    // --- END OF FIX ---
   }
 
   // Initialize
