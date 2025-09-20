@@ -183,31 +183,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const now = new Date();
       const bookingsRef = collection(db, "bookings");
-
-      // Simplified query - just check status first
       const q = query(bookingsRef, where("status", "==", "Confirmed"));
-
       const snapshot = await getDocs(q);
 
       for (const bookingDoc of snapshot.docs) {
         const data = bookingDoc.data();
 
-        // Client-side filtering for employee's bookings
         if (data.vehicle_id.startsWith(`employees/${employeeData.id}/`)) {
           const expiryTime = data.expiry_time.toDate();
 
-          // Check if booking is still valid
           if (expiryTime > now) {
-            // Get slot details
             const slotRef = data.slot_id;
             const slotDoc = await getDoc(slotRef);
 
             if (slotDoc.exists()) {
-              // Set currentBooking
+              // FIX: Add the 'floor' property to the currentBooking object.
               currentBooking = {
                 name: slotDoc.data().slot_name,
                 id: slotDoc.id,
                 bookingDocId: bookingDoc.id,
+                floor: slotDoc.data().floor || "Unknown Floor", // <-- ADD THIS LINE
               };
               console.log("Restored existing booking:", currentBooking);
               return;
@@ -739,17 +734,17 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     try {
       const employee = await getEmployeeByContact(employeeContact);
-
-      // Pass the selected/new vehicleId to the bookSlot function
       const bookingResult = await bookSlot(slotName, employee.id, vehicleId);
 
+      // FIX: Save the 'floor' from the bookingResult into the currentBooking object.
       currentBooking = {
         name: bookingResult.slotName,
         id: bookingResult.slotDocId,
         bookingDocId: bookingResult.bookingId,
+        floor: bookingResult.floor, // <-- ADD THIS LINE
       };
 
-      await loadSlotsFromDB(); // Refresh local slot data to reflect the change
+      await loadSlotsFromDB();
 
       const vehicles = await getEmployeeVehicles(employee.id);
       const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
@@ -762,7 +757,6 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     } catch (err) {
       console.error("❌ Error booking slot:", err);
-      // The rest of your original error handling logic can stay here
       addMessage(
         `❌ Failed to book ${slotName}. Reason: ${err.message}`,
         "bot",
@@ -824,17 +818,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (opt === "manage") {
       if (currentBooking) {
+        // FIX: Display the slot name and the floor. Use <b> tags for boldness.
         addMessage(
-          `📍 Current Booking: Slot ${currentBooking.name}`,
+          `📍 Current Booking: Slot <b>${currentBooking.name}</b> on <b>${currentBooking.floor}</b>`,
           "bot",
-          false,
+          true, // <-- Set to true to enable HTML bold tags
           "success"
         );
         const opts = `
-                            <div class="options">
-                                <button class="option-btn" data-action="extend">⏰ Extend Booking</button>
-                                <button class="option-btn" data-action="leave">⬅ Leave Slot</button>
-                            </div>`;
+            <div class="options">
+                <button class="option-btn" data-action="extend">⏰ Extend Booking</button>
+                <button class="option-btn" data-action="leave">⬅ Leave Slot</button>
+            </div>`;
         addMessage(opts, "bot", true);
       } else {
         addMessage("❌ You have no current booking.", "bot", false, "error");
@@ -946,18 +941,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Modify bookSlot function to check for active bookings first
   async function bookSlot(slotName, employeeId, vehicleId) {
-    // First check if user has any active booking
     const hasBooking = await hasActiveBooking(employeeId, vehicleId);
     if (hasBooking) {
       throw new Error("Active booking exists");
     }
 
-    // Find the slot docId from our stored data
+    // FIX: Find the floor name at the same time we find the slot ID.
     let slotDocId = null;
-    for (const floor of Object.values(slotsByFloor)) {
-      const slot = floor.unauthorized.find((s) => s.name === slotName);
+    let slotFloor = null; // <-- Add a variable to store the floor
+
+    for (const floorName in slotsByFloor) {
+      // <-- Change how we loop
+      const floorData = slotsByFloor[floorName];
+      const slot = floorData.unauthorized.find((s) => s.name === slotName);
       if (slot) {
         slotDocId = slot.docId;
+        slotFloor = floorName; // <-- Store the floor name when found
         break;
       }
     }
@@ -970,8 +969,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const bookingsRef = collection(db, "bookings");
       const now = new Date();
       const expiry = getTodayExpiry();
-
-      // Create the booking using the slot's document ID
       const bookingData = {
         vehicle_id: `employees/${employeeId}/vehicles/${vehicleId}`,
         slot_id: doc(db, "ParkingSlots", slotDocId),
@@ -980,26 +977,19 @@ document.addEventListener("DOMContentLoaded", () => {
         status: "Confirmed",
       };
 
-      // Start a batch write to ensure both operations succeed or fail together
       const batch = writeBatch(db);
-
-      // 1. Create the booking document
       const newBookingRef = doc(bookingsRef);
       batch.set(newBookingRef, bookingData);
-
-      // 2. Update the slot status
       const slotRef = doc(db, "ParkingSlots", slotDocId);
-      batch.update(slotRef, {
-        status: "Booked", // Update status from "Unbooked" to "Booked"
-      });
-
-      // Commit both operations
+      batch.update(slotRef, { status: "Booked" });
       await batch.commit();
 
+      // FIX: Return the floor along with the other booking details.
       return {
         bookingId: newBookingRef.id,
         slotName: slotName,
         slotDocId: slotDocId,
+        floor: slotFloor, // <-- ADD THIS
       };
     } catch (err) {
       console.error("Error during booking:", err);
