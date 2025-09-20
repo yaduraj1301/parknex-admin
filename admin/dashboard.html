@@ -74,6 +74,9 @@
                         <p class="admin-name">Admin User</p>
                         <p class="admin-email">admin@park.com</p>
                     </div>
+                    <div class="logout-button" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -84,8 +87,13 @@
             <header class="dashboard-header">
                 <div class="header-content">
                     <div class="header-left">
-                        <h1>Dashboard</h1>
-                        <p>Real time parking lot management and monitoring</p>
+                        <div class="header-left-text">
+                            <h1>Dashboard</h1>
+                            <p>Real time parking lot management and monitoring</p>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i> Logout</button>
+                        </div>
                     </div>
                     <div class="header-right">
                         <select class="building-selector" id="building-selector">
@@ -238,7 +246,7 @@
                                     <h4>Attention Required</h4>
                                 </div>
                                 <p>N vehicles are parked without booking.</p>
-                                <button class="alert-action attention">View Details</button>
+                                <button class="alert-action attention" >View Details</button>
                             </div>
 
                             <!-- Sensor Issues -->
@@ -280,7 +288,7 @@
                     </div>
                 </div>
                 <!-- Parking Lot Overview -->
-                <div class="parking-overview">
+                <div class="parking-overview" id="parking-overview">
                     <div class="parking-header">
                         <h3>Parking Lot Overview</h3>
                         <div class="legend-container">
