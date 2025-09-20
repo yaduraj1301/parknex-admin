@@ -1,5 +1,5 @@
 // Dashboard JavaScript - Functional Approach
-import { db, auth, app } from '../../../public/js/firebase-config.js';
+import { db, auth, app } from '../../public/js/firebase-config.js';
 import { collection, getDocs, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Global variables
@@ -12,11 +12,11 @@ let currentBuildingSlots = [];
 async function populateBuildingDropdown() {
     try {
         console.log('Fetching buildings from Firebase...');
-        
+
         // Reference to ParkingSlots collection
         const parkingSlotsRef = collection(db, 'ParkingSlots');
         const snapshot = await getDocs(parkingSlotsRef);
-        
+
         // Extract unique buildings
         const buildings = new Set();
         snapshot.forEach(doc => {
@@ -25,19 +25,19 @@ async function populateBuildingDropdown() {
                 buildings.add(data.building);
             }
         });
-        
+
         // Convert Set to Array and sort
         const buildingList = Array.from(buildings).sort();
-        
+
         console.log('Found buildings:', buildingList);
-        
+
         // Get the building selector dropdown
         const buildingSelector = document.querySelector('.building-selector');
-        
+
         if (buildingSelector) {
             // Clear existing options
             buildingSelector.innerHTML = '';
-            
+
             // Add buildings as options
             buildingList.forEach(building => {
                 const option = document.createElement('option');
@@ -45,23 +45,23 @@ async function populateBuildingDropdown() {
                 option.textContent = building;
                 buildingSelector.appendChild(option);
             });
-            
+
             console.log(`Building dropdown populated with ${buildingList.length} buildings`);
         } else {
             console.error('Building selector not found in DOM');
         }
-        
+
         return buildingList;
-        
+
     } catch (error) {
         console.error('Error fetching buildings:', error);
-        
+
         // Fallback: show error in dropdown
         const buildingSelector = document.querySelector('.building-selector');
         if (buildingSelector) {
             buildingSelector.innerHTML = '<option value="">Error loading buildings</option>';
         }
-        
+
         return [];
     }
 }
@@ -70,21 +70,21 @@ async function populateBuildingDropdown() {
 async function fetchAndUpdateStats(selectedBuilding = null) {
     try {
         console.log('Fetching slots for stats update...');
-        
+
         const parkingSlotsRef = collection(db, 'ParkingSlots');
-        
+
         // If building is selected, filter by building
         let q;
         if (selectedBuilding) {
-            q = query(parkingSlotsRef, 
+            q = query(parkingSlotsRef,
                 where('building', '==', selectedBuilding)
             );
         } else {
             q = query(parkingSlotsRef);
         }
-        
+
         const snapshot = await getDocs(q);
-        
+
         // Store slots data
         currentBuildingSlots = [];
         snapshot.forEach(doc => {
@@ -94,12 +94,12 @@ async function fetchAndUpdateStats(selectedBuilding = null) {
                 docId: doc.id
             });
         });
-        
+
         console.log(`Loaded ${currentBuildingSlots.length} slots for stats`);
-        
+
         // Update the stats cards
         updateStatsCards();
-        
+
     } catch (error) {
         console.error('Error fetching slots for stats:', error);
     }
@@ -115,7 +115,7 @@ function updateStatsCards() {
     console.log('=== ALL SLOTS IN CURRENT BUILDING ===');
     console.log(`Total slots found: ${currentBuildingSlots.length}`);
     console.log('Detailed slot information:');
-    
+
     currentBuildingSlots.forEach((slot, index) => {
         console.log(`Slot ${index + 1}:`, {
             slot_name: slot.slot_name,
@@ -128,7 +128,7 @@ function updateStatsCards() {
             docId: slot.docId
         });
     });
-    
+
     // Group by status for summary
     const statusGroups = currentBuildingSlots.reduce((groups, slot) => {
         const status = slot.status || 'undefined';
@@ -138,7 +138,7 @@ function updateStatsCards() {
         groups[status].push(slot.slot_name);
         return groups;
     }, {});
-    
+
     console.log('=== SLOTS GROUPED BY STATUS ===');
     Object.keys(statusGroups).forEach(status => {
         console.log(`${status.toUpperCase()}: [${statusGroups[status].join(', ')}] (${statusGroups[status].length} slots)`);
@@ -146,28 +146,28 @@ function updateStatsCards() {
     // Calculate stats from current slots
     const stats = {
         total: currentBuildingSlots.length,
-        available: currentBuildingSlots.filter(slot => 
+        available: currentBuildingSlots.filter(slot =>
             slot.status?.toLowerCase() === 'free'
         ).length,
-        occupied: currentBuildingSlots.filter(slot => 
+        occupied: currentBuildingSlots.filter(slot =>
             slot.status?.toLowerCase() === 'booked' || slot.status?.toLowerCase() === 'unbooked'
         ).length,
-        reserved: currentBuildingSlots.filter(slot => 
+        reserved: currentBuildingSlots.filter(slot =>
             slot.status?.toLowerCase() === 'reserved'
         ).length,
-        named: currentBuildingSlots.filter(slot => 
+        named: currentBuildingSlots.filter(slot =>
             slot.status?.toLowerCase() === 'named'
         ).length,
-        unbooked: currentBuildingSlots.filter(slot => 
+        unbooked: currentBuildingSlots.filter(slot =>
             slot.status?.toLowerCase() === 'unbooked'
         ).length
     };
-    
+
     console.log('Calculated stats:', stats);
-    
+
     // Get all stat cards
     const statCards = document.querySelectorAll('.stat-card');
-    
+
     if (statCards.length >= 5) {
         // Update Total Slots (first card)
         const totalCard = statCards[0];
@@ -175,24 +175,24 @@ function updateStatsCards() {
         if (totalNumber) {
             totalNumber.textContent = stats.total;
         }
-        
+
         // Update Available (second card)
         const availableCard = statCards[1];
         updateStatCard(availableCard, stats.available, stats.total, 'available');
-        
+
         // Update Occupied (third card)
         const occupiedCard = statCards[2];
         updateStatCard(occupiedCard, stats.occupied, stats.total, 'occupied');
-        
+
         // Update Reserved (fourth card)
         const reservedCard = statCards[3];
         updateStatCard(reservedCard, stats.reserved, stats.total, 'reserved');
-        
+
         // Update Named (fifth card)
         const namedCard = statCards[4];
         updateStatCard(namedCard, stats.named, stats.total, 'named');
     }
-    
+
     // Update alert counts
     updateAlertCounts(stats);
 }
@@ -200,19 +200,19 @@ function updateStatsCards() {
 // Helper function to update individual stat card
 function updateStatCard(cardElement, count, total, type) {
     if (!cardElement) return;
-    
+
     const statNumber = cardElement.querySelector('.stat-number');
     const statPercentage = cardElement.querySelector('.stat-percentage');
     const statProgressFill = cardElement.querySelector('.stat-progress-fill');
-    
+
     // Calculate percentage
     const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
-    
-    
+
+
     if (statNumber) {
         statNumber.innerHTML = `${count} <span class="stat-total">/ ${total}</span>`;
     }
-    
+
     if (statPercentage) {
         statPercentage.textContent = `${percentage}%`;
     }
@@ -234,35 +234,35 @@ function updateStatCard(cardElement, count, total, type) {
 function updateAlertCounts(stats) {
     const hasUnbookedIssue = stats.unbooked > 0;
     console.log(`Unbooked vehicles count: ${stats.unbooked}`);
-    
+
     // Get alert elements
     const alertInsightsSecondary = document.querySelector('.alert-insights-secondary');
     const alertInsightsMain = document.querySelector('.insights .alert-insights');
-    
+
     // Individual alert cards in main insights only
     const attentionCardMain = document.querySelector('.insights .alert-card.attention');
     const noAlertsCard = document.querySelector('.insights .alert-card.no-alerts');
-    
+
     // Always hide sensor cards and secondary section completely
     const sensorCardMain = document.querySelector('.insights .alert-card.sensor');
     if (sensorCardMain) sensorCardMain.classList.add('hidden');
-    
+
     // ALWAYS hide secondary section since we're not using sensors
     if (alertInsightsSecondary) {
         alertInsightsSecondary.style.display = 'none';
     }
-    
+
     // Always show main insights
     if (alertInsightsMain) {
         alertInsightsMain.style.display = 'block';
     }
-    
+
     // Case 1: No unbooked vehicles - show congratulations
     if (!hasUnbookedIssue) {
         if (attentionCardMain) attentionCardMain.classList.add('hidden');
         if (noAlertsCard) noAlertsCard.classList.remove('hidden');
     }
-    
+
     // Case 2: Has unbooked vehicles - show attention alert in main section
     else {
         if (noAlertsCard) noAlertsCard.classList.add('hidden');
@@ -280,20 +280,20 @@ function updateAlertCounts(stats) {
 function setupRealTimeStatsUpdates(selectedBuilding = null) {
     try {
         const parkingSlotsRef = collection(db, 'ParkingSlots');
-        
+
         let q;
         if (selectedBuilding) {
-            q = query(parkingSlotsRef, 
+            q = query(parkingSlotsRef,
                 where('building', '==', selectedBuilding)
             );
         } else {
             q = query(parkingSlotsRef);
         }
-        
+
         // Listen for real-time updates
         const unsubscribe = onSnapshot(q, (snapshot) => {
             console.log('Real-time update received for stats');
-            
+
             currentBuildingSlots = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
@@ -302,13 +302,13 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
                     docId: doc.id
                 });
             });
-            
+
             updateStatsCards();
         });
-        
+
         // Store unsubscribe function globally so we can clean up later
         window.statsUnsubscribe = unsubscribe;
-        
+
     } catch (error) {
         console.error('Error setting up real-time stats updates:', error);
     }
@@ -321,11 +321,11 @@ async function testFirebaseConnection() {
         console.log('Firebase App:', app);
         console.log('Firebase Auth:', auth);
         console.log('Firebase Firestore:', db);
-        
+
         // Test basic Firestore connection by getting app info
         console.log('Firebase App Name:', app.name);
         console.log('Firebase Project ID:', app.options.projectId);
-        
+
         // Test if we can access Firestore
         if (db) {
             console.log('✅ Firebase Firestore connection successful');
@@ -333,7 +333,7 @@ async function testFirebaseConnection() {
         } else {
             console.error('❌ Firebase Firestore not initialized');
         }
-        
+
         // Test if we can access Auth
         if (auth) {
             console.log('✅ Firebase Auth connection successful');
@@ -341,7 +341,7 @@ async function testFirebaseConnection() {
         } else {
             console.error('❌ Firebase Auth not initialized');
         }
-        
+
     } catch (error) {
         console.error('❌ Firebase connection failed:', error);
     }
@@ -369,7 +369,7 @@ function generateSampleSlots() {
             }
         }
     });
-    
+
     console.log('Sample slots generated:', Object.keys(sampleSlots).length);
     return sampleSlots;
 }
@@ -440,24 +440,24 @@ function setupEventListeners() {
     }
 }
 
-    // handleNavigation(navLink) {
-    //     // Remove active class from all nav items
-    //     document.querySelectorAll('.nav-item').forEach(item => {
-    //         item.classList.remove('active');
-    //     });
+// handleNavigation(navLink) {
+//     // Remove active class from all nav items
+//     document.querySelectorAll('.nav-item').forEach(item => {
+//         item.classList.remove('active');
+//     });
 
-    //     // Add active class to clicked nav item
-    //     navLink.closest('.nav-item').classList.add('active');
+//     // Add active class to clicked nav item
+//     navLink.closest('.nav-item').classList.add('active');
 
-    //     const section = navLink.dataset.section;
-    //     console.log(`Navigating to: ${section}`);
+//     const section = navLink.dataset.section;
+//     console.log(`Navigating to: ${section}`);
 
-    //     // Here you would typically load different content based on the section
-    //     // For now, we'll just show an alert
-    //     if (section !== 'bookings') {
-    //         alert(`${section.replace('-', ' ').toUpperCase()} section coming soon!`);
-    //     }
-    // }
+//     // Here you would typically load different content based on the section
+//     // For now, we'll just show an alert
+//     if (section !== 'bookings') {
+//         alert(`${section.replace('-', ' ').toUpperCase()} section coming soon!`);
+//     }
+// }
 
 // Switch between parking levels
 function switchLevel(level) {
@@ -504,20 +504,20 @@ function handleAlertAction(button) {
 // Updated handle building selector change with Firebase integration
 function handleBuildingChange(building) {
     if (!building) return;
-    
+
     console.log(`Building selected for stats: ${building}`);
-    
+
     // Store selected building globally
     window.selectedBuilding = building;
-    
+
     // Clean up previous listener
     if (window.statsUnsubscribe) {
         window.statsUnsubscribe();
     }
-    
+
     // Fetch and update stats for selected building
     fetchAndUpdateStats(building);
-    
+
     // Setup real-time updates for this building
     setupRealTimeStatsUpdates(building);
 }
@@ -659,26 +659,26 @@ function simulateRealTimeUpdates() {
 async function init() {
     // Test Firebase connection first
     await testFirebaseConnection();
-    
+
     // Populate building dropdown
     const buildingList = await populateBuildingDropdown();
-    
+
     // Set default building (first one in the list) and fetch its stats
     if (buildingList && buildingList.length > 0) {
         const defaultBuilding = buildingList[0];
-        
+
         // Set the dropdown to show the default building
         const buildingSelector = document.querySelector('.building-selector');
         if (buildingSelector) {
             buildingSelector.value = defaultBuilding;
         }
-        
+
         // Store as selected building
         window.selectedBuilding = defaultBuilding;
-        
+
         // Fetch stats for default building
         await fetchAndUpdateStats(defaultBuilding);
-        
+
         // Setup real-time stats updates for default building
         setupRealTimeStatsUpdates(defaultBuilding);
     } else {
@@ -687,10 +687,10 @@ async function init() {
         await fetchAndUpdateStats();
         setupRealTimeStatsUpdates();
     }
-    
+
     // Generate sample data as fallback for parking grid
     slots = generateSampleSlots();
-    
+
     // Setup the dashboard
     updateDateTime();
     setupEventListeners();
@@ -716,16 +716,16 @@ window.ParkingAPI = {
             renderParkingSlots();
         }
     },
-    
+
     getSlot: (slotId) => {
         const slotKey = `${slotId}_L${currentLevel}`;
         return slots[slotKey] || null;
     },
-    
+
     getAllSlots: () => slots,
-    
+
     refresh: () => simulateRealTimeUpdates(),
-    
+
     // New Firebase-based functions
     updateStats: fetchAndUpdateStats,
     getCurrentSlots: () => currentBuildingSlots,
