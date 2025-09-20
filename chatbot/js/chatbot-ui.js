@@ -579,16 +579,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // NEW: Displays vehicle choices or an "add vehicle" button.
+  // Displays vehicle choices, with the default vehicle sorted to the top.
   async function promptForVehicle(slotName) {
     try {
       const employee = await getEmployeeByContact(employeeContact);
       const vehicles = await getEmployeeVehicles(employee.id);
 
+      // NEW: Sort the array to put the default vehicle first.
+      vehicles.sort((a, b) => b.is_default - a.is_default);
+
       addMessage(
         `You are booking slot ${slotName}. Please select your vehicle:`
       );
 
-      let vehicleOptions = '<div class="options-vertical">'; // Use a class for vertical stacking if needed
+      let vehicleOptions = '<div class="options-vertical">';
       vehicles.forEach((v) => {
         const isDefault = v.is_default ? " (Default)" : "";
         vehicleOptions += `<button class="option-btn vehicle-select" data-slot="${slotName}" data-vehicle-id="${v.id}">
@@ -619,7 +623,9 @@ document.addEventListener("DOMContentLoaded", () => {
       details: {},
     };
     addMessage(
-      "Let's add your new vehicle. What is the **registration number**? (e.g., KL01AA1111)"
+      "Let's add your new vehicle. What is the <b>registration number</b>? (e.g., KL01AA1111)",
+      "bot",
+      true
     );
   }
 
@@ -634,24 +640,36 @@ document.addEventListener("DOMContentLoaded", () => {
         details.registration_no = userInput.toUpperCase();
         conversationState.step = "model";
         addMessage(
-          "Great. What is the vehicle **model**? (e.g., Maruti Baleno)"
+          "Great. What is the vehicle <b>model</b>? (e.g., Maruti Baleno)",
+          "bot",
+          true
         );
         break;
       case "model":
         details.model = userInput;
         conversationState.step = "color";
-        addMessage("Got it. What's the **color** of the vehicle?");
+        addMessage(
+          "Got it. What's the <b>color</b> of the vehicle?",
+          "bot",
+          true
+        );
         break;
       case "color":
         details.color = userInput;
         conversationState.step = "type";
-        addMessage("And the vehicle **type**? (e.g., Car, Bike)");
+        addMessage(
+          "And the vehicle <b>type</b>? (e.g., Car, Bike)",
+          "bot",
+          true
+        );
         break;
       case "type":
         details.vehicle_type = userInput;
         conversationState.step = "is_default";
         addMessage(
-          "Last step. Do you want to set this as your **default vehicle**? (Please type 'yes' or 'no')"
+          "Last step. Do you want to set this as your <b>default vehicle</b>? (Please type 'yes' or 'no')",
+          "bot",
+          true
         );
         break;
       case "is_default":
@@ -786,13 +804,13 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       addMessage(
-        `Here are the available slots in ${employeeBuilding} building (occupied but not booked), grouped by floor:`
+        `Here are the available slots in ${employeeBuilding} building (occupied but not booked):`
       );
 
       // Display slots grouped by floor
       Object.keys(slotsByFloor).forEach((floor) => {
         if (slotsByFloor[floor].unauthorized.length > 0) {
-          addMessage(`🏢 ${floor}:`, "bot", false, "info");
+          addMessage(`🏢 <b>${floor}:</b>`, "bot", true, "info");
 
           let btns = '<div class="options">';
           slotsByFloor[floor].unauthorized.forEach((slot) => {
@@ -828,7 +846,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (freeSlots.length > 0) {
         addMessage(
-          `🅿 Currently Free Slots in ${employeeBuilding} building, grouped by floor:`,
+          `🅿 Currently Free Slots in ${employeeBuilding} building:`,
           "bot",
           false,
           "success"
@@ -837,10 +855,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Display free slots grouped by floor
         Object.keys(slotsByFloor).forEach((floor) => {
           if (slotsByFloor[floor].free.length > 0) {
+            // FIX: Map the array of objects to an array of names before joining.
+            const slotNames = slotsByFloor[floor].free
+              .map((slot) => slot.name)
+              .join(", ");
             addMessage(
-              `🏢 **${floor}:** ${slotsByFloor[floor].free.join(", ")}`,
+              `🏢 <b>${floor}:</b> ${slotNames}`,
               "bot",
-              false,
+              true,
               "success"
             );
           }
@@ -1047,33 +1069,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const slotDocId = currentBooking.id;
 
     try {
-      // Use batch to update both booking and slot
       const batch = writeBatch(db);
-
-      // 1. Update the booking document
       const bookingDocRef = doc(db, "bookings", bookingDocId);
       batch.update(bookingDocRef, {
         status: "Cancelled",
         expiry_time: Timestamp.now(),
       });
 
-      // 2. Update the slot status back to free
       const slotRef = doc(db, "ParkingSlots", slotDocId);
       batch.update(slotRef, {
-        status: "Free", // Set status back to free when slot is left
+        status: "Free",
       });
 
-      // Commit both operations
       await batch.commit();
 
-      // Update local arrays
-      Object.keys(slotsByFloor).forEach((floor) => {
-        const index = slotsByFloor[floor].booked.indexOf(leftSlotName);
-        if (index > -1) {
-          slotsByFloor[floor].booked.splice(index, 1);
-          slotsByFloor[floor].free.push(leftSlotName);
-        }
-      });
+      // FIX: Instead of manually editing the local array, reload it from the database
+      // to ensure data is always consistent.
+      await loadSlotsFromDB();
 
       addMessage(
         `✅ Left slot ${leftSlotName}. The slot is now available for others.`,

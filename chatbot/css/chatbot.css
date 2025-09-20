@@ -164,3 +164,9 @@ body {
 .logout-btn:hover {
     background: #fff5;
 }
+
+.options-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* This creates an 8px space between each button */
+}
