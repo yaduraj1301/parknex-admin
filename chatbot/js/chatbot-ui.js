@@ -2,7 +2,7 @@ import { db, auth } from "../../public/js/firebase-config.js";
 import { GEMINI_API_KEY } from "../../public/js/api-config.js";
 import {
   onAuthStateChanged,
-  signOut
+  signOut,
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 import {
   collection,
@@ -14,7 +14,7 @@ import {
   doc,
   Timestamp,
   updateDoc,
-  writeBatch,  // Add this
+  writeBatch, // Add this
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -27,9 +27,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentUser = null;
   let employeeData = null;
-  
+
   // Replace the hardcoded EMPLOYEE_CONTACT with a variable
   let employeeContact = null;
+  let conversationState = null;
 
   // Authentication check
   onAuthStateChanged(auth, async (user) => {
@@ -137,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.building && data.building.includes(employeeBuilding)) {
           const slotInfo = {
             name: data.slot_name,
-            docId: doc.id
+            docId: doc.id,
           };
           const floor = data.floor || "Unknown Floor";
 
@@ -182,18 +183,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const now = new Date();
       const bookingsRef = collection(db, "bookings");
-      
+
       // Simplified query - just check status first
-      const q = query(
-        bookingsRef,
-        where("status", "==", "Confirmed")
-      );
+      const q = query(bookingsRef, where("status", "==", "Confirmed"));
 
       const snapshot = await getDocs(q);
-      
+
       for (const bookingDoc of snapshot.docs) {
         const data = bookingDoc.data();
-        
+
         // Client-side filtering for employee's bookings
         if (data.vehicle_id.startsWith(`employees/${employeeData.id}/`)) {
           const expiryTime = data.expiry_time.toDate();
@@ -209,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
               currentBooking = {
                 name: slotDoc.data().slot_name,
                 id: slotDoc.id,
-                bookingDocId: bookingDoc.id
+                bookingDocId: bookingDoc.id,
               };
               console.log("Restored existing booking:", currentBooking);
               return;
@@ -217,10 +215,9 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       }
-      
+
       console.log("No active bookings found");
       currentBooking = null;
-
     } catch (err) {
       console.error("Error loading existing booking:", err);
       currentBooking = null;
@@ -231,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function getFlatSlotsByStatus(status) {
     const slots = [];
     Object.values(slotsByFloor).forEach((floor) => {
-      slots.push(...floor[status].map(slot => slot.name));
+      slots.push(...floor[status].map((slot) => slot.name));
     });
     return slots;
   }
@@ -527,70 +524,241 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function validateAndBookSlot(slot) {
-    // Remove the padding logic since we're using exact names from DB
     slot = slot.toUpperCase();
 
-    // Check if user already has a booking
     if (currentBooking) {
-        addMessage(
-            `❌ You already have slot ${currentBooking.name} booked. Please leave it first before booking another slot.`,
-            "bot",
-            false,
-            "error"
-        );
-        return;
-    }
-
-    // Get arrays of slot objects instead of just names
-    const getSlotsByStatus = (status) => {
-        const slots = [];
-        Object.values(slotsByFloor).forEach((floor) => {
-            slots.push(...floor[status]);
-        });
-        return slots;
-    };
-
-    const unauthorizedSlots = getSlotsByStatus("unauthorized");
-    const bookedSlots = getSlotsByStatus("booked");
-    const freeSlots = getSlotsByStatus("free");
-
-    // Check if the slot is in unauthorized (occupied but not booked) category
-    if (unauthorizedSlots.find(s => s.name === slot)) {
-        handleBooking(slot);
-        return;
-    }
-
-    // Check if slot is already booked
-    if (bookedSlots.find(s => s.name === slot)) {
-        addMessage(
-            `❌ Slot ${slot} is already booked by someone else.`,
-            "bot",
-            false,
-            "error"
-        );
-        return;
-    }
-
-    // Check if slot is free (can't book free slots directly)
-    if (freeSlots.find(s => s.name === slot)) {
-        const availableSlots = unauthorizedSlots.map(s => s.name).join(", ");
-        addMessage(
-            `❌ Slot ${slot} is currently free. You can only book occupied-unbooked slots. Available slots: ${availableSlots}`,
-            "bot",
-            false,
-            "error"
-        );
-        return;
-    }
-
-    // Slot doesn't exist
-    const availableSlots = unauthorizedSlots.map(s => s.name).join(", ");
-    addMessage(
-        `❌ Slot ${slot} doesn't exist or isn't available for booking. Available slots: ${availableSlots}`,
+      addMessage(
+        `❌ You already have slot ${currentBooking.name} booked. Please leave it first.`,
         "bot",
         false,
         "error"
+      );
+      return;
+    }
+
+    const getSlotsByStatus = (status) => {
+      const slots = [];
+      Object.values(slotsByFloor).forEach((floor) => {
+        slots.push(...floor[status]);
+      });
+      return slots;
+    };
+
+    const unauthorizedSlots = getSlotsByStatus("unauthorized");
+
+    // The only valid slots to book are those that are occupied but not yet booked.
+    if (unauthorizedSlots.find((s) => s.name === slot)) {
+      // MODIFICATION: Instead of calling handleBooking, we now prompt for a vehicle.
+      promptForVehicle(slot);
+      return;
+    }
+
+    const bookedSlots = getSlotsByStatus("booked");
+    if (bookedSlots.find((s) => s.name === slot)) {
+      addMessage(`❌ Slot ${slot} is already booked.`, "bot", false, "error");
+      return;
+    }
+
+    const freeSlots = getSlotsByStatus("free");
+    if (freeSlots.find((s) => s.name === slot)) {
+      addMessage(
+        `❌ Slot ${slot} is free. You can only book occupied-unbooked slots.`,
+        "bot",
+        false,
+        "error"
+      );
+      return;
+    }
+
+    addMessage(
+      `❌ Slot ${slot} doesn't exist or isn't available for booking.`,
+      "bot",
+      false,
+      "error"
     );
+  }
+
+  // NEW: Displays vehicle choices or an "add vehicle" button.
+  async function promptForVehicle(slotName) {
+    try {
+      const employee = await getEmployeeByContact(employeeContact);
+      const vehicles = await getEmployeeVehicles(employee.id);
+
+      addMessage(
+        `You are booking slot ${slotName}. Please select your vehicle:`
+      );
+
+      let vehicleOptions = '<div class="options-vertical">'; // Use a class for vertical stacking if needed
+      vehicles.forEach((v) => {
+        const isDefault = v.is_default ? " (Default)" : "";
+        vehicleOptions += `<button class="option-btn vehicle-select" data-slot="${slotName}" data-vehicle-id="${v.id}">
+                                    ${v.model} - ${v.registration_no}${isDefault}
+                                 </button>`;
+      });
+      vehicleOptions += `<button class="option-btn add-vehicle" data-slot="${slotName}" style="background-color: #4CAF50;">+ Add a New Vehicle</button>`;
+      vehicleOptions += "</div>";
+
+      addMessage(vehicleOptions, "bot", true);
+    } catch (err) {
+      console.error("Error fetching vehicles:", err);
+      addMessage(
+        `❌ Could not fetch your vehicle list. ${err.message}`,
+        "bot",
+        false,
+        "error"
+      );
+    }
+  }
+
+  // NEW: Kicks off the multi-step process for adding a vehicle.
+  function startAddVehicleFlow(slotName) {
+    conversationState = {
+      action: "addVehicle",
+      step: "reg_no", // The first step
+      slotName: slotName,
+      details: {},
+    };
+    addMessage(
+      "Let's add your new vehicle. What is the **registration number**? (e.g., KL01AA1111)"
+    );
+  }
+
+  // NEW: Handles user text input during the "add vehicle" conversation.
+  async function handleOngoingConversation(userInput) {
+    if (!conversationState || conversationState.action !== "addVehicle") return;
+
+    const { details } = conversationState;
+
+    switch (conversationState.step) {
+      case "reg_no":
+        details.registration_no = userInput.toUpperCase();
+        conversationState.step = "model";
+        addMessage(
+          "Great. What is the vehicle **model**? (e.g., Maruti Baleno)"
+        );
+        break;
+      case "model":
+        details.model = userInput;
+        conversationState.step = "color";
+        addMessage("Got it. What's the **color** of the vehicle?");
+        break;
+      case "color":
+        details.color = userInput;
+        conversationState.step = "type";
+        addMessage("And the vehicle **type**? (e.g., Car, Bike)");
+        break;
+      case "type":
+        details.vehicle_type = userInput;
+        conversationState.step = "is_default";
+        addMessage(
+          "Last step. Do you want to set this as your **default vehicle**? (Please type 'yes' or 'no')"
+        );
+        break;
+      case "is_default":
+        const answer = userInput.toLowerCase();
+        if (answer === "yes" || answer === "y") {
+          details.is_default = true;
+        } else {
+          details.is_default = false;
+        }
+        conversationState.step = "saving";
+        await saveNewVehicle(); // Final step, save data
+        break;
+    }
+  }
+
+  // NEW: Saves the collected vehicle data to Firestore.
+  async function saveNewVehicle() {
+    if (!conversationState || !conversationState.details) return;
+
+    const { slotName, details } = conversationState;
+    addMessage("💾 Saving your new vehicle...", "bot", false, "loading");
+
+    try {
+      const employee = await getEmployeeByContact(employeeContact);
+      const vehiclesRef = collection(db, "employees", employee.id, "vehicles");
+      const batch = writeBatch(db);
+
+      if (details.is_default) {
+        // Find the current default vehicle and set its is_default to false
+        const q = query(vehiclesRef, where("is_default", "==", true));
+        const snapshot = await getDocs(q);
+        snapshot.forEach((doc) => {
+          batch.update(doc.ref, { is_default: false });
+        });
+      }
+
+      const newVehicleRef = doc(vehiclesRef);
+      batch.set(newVehicleRef, details);
+      await batch.commit();
+
+      messagesEl.removeChild(messagesEl.lastChild); // Remove loading message
+      addMessage("✅ Vehicle added successfully!", "bot", false, "success");
+
+      // Automatically proceed to book the slot with the newly added vehicle
+      await handleBooking(slotName, newVehicleRef.id);
+    } catch (err) {
+      console.error("Error saving vehicle:", err);
+      messagesEl.removeChild(messagesEl.lastChild); // Ensure loading is removed on error
+      addMessage(
+        "❌ Failed to save vehicle. Please try again.",
+        "bot",
+        false,
+        "error"
+      );
+    } finally {
+      conversationState = null; // Reset the conversation state
+    }
+  }
+
+  // MODIFIED: Rename and repurpose your old `handleBooking` function to take a `vehicleId`.
+  async function handleBooking(slotName, vehicleId) {
+    document
+      .querySelectorAll(".option-btn, .vehicle-select, .add-vehicle")
+      .forEach((btn) => {
+        btn.disabled = true;
+        btn.style.cssText = "opacity: 0.5; cursor: not-allowed;";
+      });
+    try {
+      const employee = await getEmployeeByContact(employeeContact);
+
+      // Pass the selected/new vehicleId to the bookSlot function
+      const bookingResult = await bookSlot(slotName, employee.id, vehicleId);
+
+      currentBooking = {
+        name: bookingResult.slotName,
+        id: bookingResult.slotDocId,
+        bookingDocId: bookingResult.bookingId,
+      };
+
+      await loadSlotsFromDB(); // Refresh local slot data to reflect the change
+
+      const vehicles = await getEmployeeVehicles(employee.id);
+      const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
+
+      addMessage(
+        `✅ Slot ${slotName} booked successfully for vehicle ${selectedVehicle.registration_no}.`,
+        "bot",
+        false,
+        "success"
+      );
+    } catch (err) {
+      console.error("❌ Error booking slot:", err);
+      // The rest of your original error handling logic can stay here
+      addMessage(
+        `❌ Failed to book ${slotName}. Reason: ${err.message}`,
+        "bot",
+        false,
+        "error"
+      );
+
+      document
+        .querySelectorAll(".option-btn, .vehicle-select, .add-vehicle")
+        .forEach((btn) => {
+          btn.disabled = false;
+          btn.style.cssText = "opacity: 1; cursor: pointer;";
+        });
+    }
   }
 
   function handleOption(opt) {
@@ -708,14 +876,16 @@ document.addEventListener("DOMContentLoaded", () => {
     slotName = slotName.toUpperCase().replace(/(\D)(\d)$/, "$10$2");
 
     const q = query(
-        collection(db, "ParkingSlots"),
-        where("slot_name", "==", slotName),
-        where("building", "==", building)
+      collection(db, "ParkingSlots"),
+      where("slot_name", "==", slotName),
+      where("building", "==", building)
     );
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-        throw new Error(`Parking slot "${slotName}" not found in building "${building}".`);
+      throw new Error(
+        `Parking slot "${slotName}" not found in building "${building}".`
+      );
     }
 
     return snapshot.docs[0].id;
@@ -724,27 +894,31 @@ document.addEventListener("DOMContentLoaded", () => {
   // Add this new function to check for active bookings
   async function hasActiveBooking(employeeId, vehicleId) {
     try {
-        const bookingsRef = collection(db, "bookings");
-        const q = query(
-            bookingsRef,
-            where("vehicle_id", "==", `employees/${employeeId}/vehicles/${vehicleId}`),
-            where("status", "==", "Confirmed")
-        );
+      const bookingsRef = collection(db, "bookings");
+      const q = query(
+        bookingsRef,
+        where(
+          "vehicle_id",
+          "==",
+          `employees/${employeeId}/vehicles/${vehicleId}`
+        ),
+        where("status", "==", "Confirmed")
+      );
 
-        const snapshot = await getDocs(q);
-        const now = new Date();
+      const snapshot = await getDocs(q);
+      const now = new Date();
 
-        // Check if any booking is still active (not expired)
-        for (const doc of snapshot.docs) {
-            const data = doc.data();
-            if (data.expiry_time.toDate() > now) {
-                return true;
-            }
+      // Check if any booking is still active (not expired)
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        if (data.expiry_time.toDate() > now) {
+          return true;
         }
-        return false;
+      }
+      return false;
     } catch (err) {
-        console.error("Error checking active bookings:", err);
-        throw err;
+      console.error("Error checking active bookings:", err);
+      throw err;
     }
   }
 
@@ -753,159 +927,65 @@ document.addEventListener("DOMContentLoaded", () => {
     // First check if user has any active booking
     const hasBooking = await hasActiveBooking(employeeId, vehicleId);
     if (hasBooking) {
-        throw new Error("Active booking exists");
+      throw new Error("Active booking exists");
     }
 
     // Find the slot docId from our stored data
     let slotDocId = null;
     for (const floor of Object.values(slotsByFloor)) {
-        const slot = floor.unauthorized.find(s => s.name === slotName);
-        if (slot) {
-            slotDocId = slot.docId;
-            break;
-        }
+      const slot = floor.unauthorized.find((s) => s.name === slotName);
+      if (slot) {
+        slotDocId = slot.docId;
+        break;
+      }
     }
 
     if (!slotDocId) {
-        throw new Error(`Slot ${slotName} not found`);
+      throw new Error(`Slot ${slotName} not found`);
     }
 
     try {
-        const bookingsRef = collection(db, "bookings");
-        const now = new Date();
-        const expiry = getTodayExpiry();
+      const bookingsRef = collection(db, "bookings");
+      const now = new Date();
+      const expiry = getTodayExpiry();
 
-        // Create the booking using the slot's document ID
-        const bookingData = {
-            vehicle_id: `employees/${employeeId}/vehicles/${vehicleId}`,
-            slot_id: doc(db, "ParkingSlots", slotDocId),
-            booking_time: Timestamp.fromDate(now),
-            expiry_time: Timestamp.fromDate(expiry),
-            status: "Confirmed"
-        };
+      // Create the booking using the slot's document ID
+      const bookingData = {
+        vehicle_id: `employees/${employeeId}/vehicles/${vehicleId}`,
+        slot_id: doc(db, "ParkingSlots", slotDocId),
+        booking_time: Timestamp.fromDate(now),
+        expiry_time: Timestamp.fromDate(expiry),
+        status: "Confirmed",
+      };
 
-        // Start a batch write to ensure both operations succeed or fail together
-        const batch = writeBatch(db);
+      // Start a batch write to ensure both operations succeed or fail together
+      const batch = writeBatch(db);
 
-        // 1. Create the booking document
-        const newBookingRef = doc(bookingsRef);
-        batch.set(newBookingRef, bookingData);
+      // 1. Create the booking document
+      const newBookingRef = doc(bookingsRef);
+      batch.set(newBookingRef, bookingData);
 
-        // 2. Update the slot status
-        const slotRef = doc(db, "ParkingSlots", slotDocId);
-        batch.update(slotRef, {
-            status: "Booked"  // Update status from "Unbooked" to "Booked"
-        });
+      // 2. Update the slot status
+      const slotRef = doc(db, "ParkingSlots", slotDocId);
+      batch.update(slotRef, {
+        status: "Booked", // Update status from "Unbooked" to "Booked"
+      });
 
-        // Commit both operations
-        await batch.commit();
+      // Commit both operations
+      await batch.commit();
 
-        return {
-            bookingId: newBookingRef.id,
-            slotName: slotName,
-            slotDocId: slotDocId
-        };
-
+      return {
+        bookingId: newBookingRef.id,
+        slotName: slotName,
+        slotDocId: slotDocId,
+      };
     } catch (err) {
-        console.error("Error during booking:", err);
-        throw new Error("Failed to create booking");
+      console.error("Error during booking:", err);
+      throw new Error("Failed to create booking");
     }
   }
 
   // Example usage:
-  async function handleBooking(slotName) {
-    // Disable all booking buttons to prevent multiple clicks
-    document.querySelectorAll(".book-slot").forEach((btn) => {
-      btn.disabled = true;
-      btn.style.cssText = "opacity: 0.5; cursor: not-allowed;";
-    });
-    try {
-      const employee = await getEmployeeByContact(employeeContact);
-      const vehicles = await getEmployeeVehicles(employee.id);
-      if (vehicles.length === 0)
-        throw new Error("No vehicles found for this employee");
-
-      const selectedVehicle = vehicles[0];
-      const bookingResult = await bookSlot(
-        slotName,
-        employee.id,
-        selectedVehicle.id
-      );
-
-      currentBooking = {
-        name: bookingResult.slotName,
-        id: bookingResult.slotDocId,
-        bookingDocId: bookingResult.bookingId,
-      };
-
-      // Update local arrays
-      Object.keys(slotsByFloor).forEach((floor) => {
-        const index = slotsByFloor[floor].unauthorized.indexOf(slotName);
-        if (index > -1) {
-          slotsByFloor[floor].unauthorized.splice(index, 1);
-          slotsByFloor[floor].booked.push(slotName);
-        }
-      });
-      addMessage(
-        `✅ Slot ${slotName} booked successfully for vehicle ${selectedVehicle.registration_no}.`,
-        "bot",
-        false,
-        "success"
-      );
-    } catch (err) {
-      console.error("❌ Error booking slot:", err);
-
-      // *** THIS IS THE CRITICAL FIX ***
-      if (err.message.includes("Active booking")) {
-        try {
-          const employee = await getEmployeeByContact(employeeContact);
-          const vehicles = await getEmployeeVehicles(employee.id);
-          const activeBooking = await getCurrentBooking(
-            employee.id,
-            vehicles[0].id
-          );
-
-          if (activeBooking) {
-            // Synchronize the local state with the database state
-            currentBooking = activeBooking;
-            addMessage(
-              `⚠️ You already have an active booking for slot ${activeBooking.name}.`,
-              "bot",
-              false,
-              "warning"
-            );
-          } else {
-            addMessage(
-              "⚠️ You already have an active booking.",
-              "bot",
-              false,
-              "warning"
-            );
-          }
-        } catch (fetchErr) {
-          addMessage(
-            "⚠️ You already have an active booking.",
-            "bot",
-            false,
-            "warning"
-          );
-        }
-      } else {
-        addMessage(
-          `❌ Failed to create booking for ${slotName}. Please try again. Reason: ${err.message}`,
-          "bot",
-          false,
-          "error"
-        );
-      }
-
-      // Re-enable buttons only if booking failed
-      document.querySelectorAll(".book-slot").forEach((btn) => {
-        btn.disabled = false;
-        btn.style.cssText = "opacity: 1; cursor: pointer;";
-      });
-    }
-  }
 
   // Add this new helper function
   async function getCurrentBooking(employeeId, vehicleId) {
@@ -980,7 +1060,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 2. Update the slot status back to free
       const slotRef = doc(db, "ParkingSlots", slotDocId);
       batch.update(slotRef, {
-        status: "Free"  // Set status back to free when slot is left
+        status: "Free", // Set status back to free when slot is left
       });
 
       // Commit both operations
@@ -1048,7 +1128,12 @@ document.addEventListener("DOMContentLoaded", () => {
     addMessage(text, "user");
     inputEl.value = "";
 
-    await processUserInput(text);
+    // NEW: Check for an ongoing conversation first.
+    if (conversationState) {
+      await handleOngoingConversation(text);
+    } else {
+      await processUserInput(text);
+    }
   }
 
   // Bind clicks for static elements
@@ -1059,41 +1144,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Bind for dynamic buttons (after they are added)
   function bindDynamicButtons() {
-    document.querySelectorAll(".option-btn").forEach((btn) => {
-      if (btn.onclick) return; // Already bound
+    // --- START OF FIX ---
+    // The specific handlers MUST run before the generic '.option-btn' handler.
 
+    // Handler for selecting a specific slot to book
+    document.querySelectorAll(".book-slot:not(.bound)").forEach((btn) => {
+      btn.classList.add("bound");
+      btn.onclick = () => {
+        const slot = btn.dataset.slot;
+        // This function now correctly starts the vehicle selection process
+        validateAndBookSlot(slot);
+      };
+    });
+
+    // Handler for selecting a registered vehicle
+    document.querySelectorAll(".vehicle-select:not(.bound)").forEach((btn) => {
+      btn.classList.add("bound");
+      btn.onclick = () => {
+        const slot = btn.dataset.slot;
+        const vehicleId = btn.dataset.vehicleId;
+        // This function finalizes the booking
+        handleBooking(slot, vehicleId);
+      };
+    });
+
+    // Handler for the "Add a New Vehicle" button
+    document.querySelectorAll(".add-vehicle:not(.bound)").forEach((btn) => {
+      btn.classList.add("bound");
+      btn.onclick = () => {
+        const slot = btn.dataset.slot;
+        startAddVehicleFlow(slot);
+      };
+    });
+
+    // Generic handler for main menu buttons with a `data-action`
+    // This now runs LAST to avoid overriding the specific handlers above.
+    document.querySelectorAll(".option-btn:not(.bound)").forEach((btn) => {
+      btn.classList.add("bound");
       btn.onclick = () => {
         const action = btn.dataset.action;
         if (action) {
-          if (
-            action === "book" ||
-            action === "manage" ||
-            action === "list" ||
-            action === "report"
-          ) {
+          if (["book", "manage", "list", "report"].includes(action)) {
             handleOption(action);
-          } else if (action === "extend") {
-            if (currentBooking) {
-              extendBooking();
-            } else {
-              addMessage(
-                "❌ You don't have any active booking to extend.",
-                "bot",
-                false,
-                "error"
-              );
-            }
-          } else if (action === "leave") {
-            if (currentBooking) {
-              leaveSlot();
-            } else {
-              addMessage(
-                "❌ You don't have any active booking to leave.",
-                "bot",
-                false,
-                "error"
-              );
-            }
+          } else if (action === "extend" && currentBooking) {
+            extendBooking();
+          } else if (action === "leave" && currentBooking) {
+            leaveSlot();
           } else if (action === "reportSlot") {
             reportSlot();
           } else if (action === "reportUnauthorized") {
@@ -1102,15 +1198,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       };
     });
-
-    document.querySelectorAll(".book-slot").forEach((btn) => {
-      // Remove existing event listener and add new one
-      btn.onclick = null;
-      btn.onclick = () => {
-        const slot = btn.dataset.slot;
-        validateAndBookSlot(slot);
-      };
-    });
+    // --- END OF FIX ---
   }
 
   // Initialize
