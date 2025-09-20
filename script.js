@@ -1,7 +1,8 @@
+// Import onSnapshot for real-time updates
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, getDocs, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+import { getFirestore, collection, query, orderBy, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-// TODO: Replace with your actual Firebase project configuration
+// USE PLACEHOLDERS - NEVER EXPOSE YOUR REAL KEYS
 const firebaseConfig = {
   apiKey: "AIzaSyBh0XI8p736BK2Zn-PuC9r2FbDNBSddWRE",
   authDomain: "parknex-admin.firebaseapp.com",
@@ -26,7 +27,7 @@ const notificationTypeMap = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Element Selectors ---
+    // --- Element Selectors (FIXED) ---
     const criticalCountEl = document.getElementById('critical-count');
     const unreadCountEl = document.getElementById('unread-count');
     const todayCountEl = document.getElementById('today-count');
@@ -35,34 +36,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterStatusEl = document.getElementById('filter-status');
     const filterDateEl = document.getElementById('filter-date');
     const markAllReadBtn = document.getElementById('mark-all-read-btn');
-
+    
     let allNotifications = []; // Cache for all fetched notifications
 
-    // --- Main function to fetch and render data ---
-    async function fetchAndRenderNotifications() {
-        // ... this function is unchanged ...
-        try {
-            const notificationsRef = collection(db, 'notifications');
-            const q = query(notificationsRef, orderBy('timestamp', 'desc'));
-            const querySnapshot = await getDocs(q);
-            
+    // --- Sets up a REAL-TIME LISTENER ---
+    function setupNotificationListener() {
+        const notificationsRef = collection(db, 'notifications');
+        const q = query(notificationsRef, orderBy('timestamp', 'desc'));
+
+        onSnapshot(q, (querySnapshot) => {
+            console.log("Notification data updated in real-time!");
             allNotifications = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
             updateSummaryCards(allNotifications);
-            applyFilters(); 
-
-        } catch (error) {
-            console.error("Error fetching notifications: ", error);
+            applyFilters();
+        }, (error) => {
+            console.error("Error with real-time listener: ", error);
             notificationListEl.innerHTML = '<p>Error loading notifications. Please try again later.</p>';
-        }
+        });
     }
 
     // --- Update the three summary cards ---
     function updateSummaryCards(notifications) {
-        // ... this function is unchanged ...
         const unreadCount = notifications.filter(n => !n.isRead).length;
         const criticalCount = notifications.filter(n => n.isCritical && !n.isRead).length;
-
         const twentyFourHoursAgo = new Date();
         twentyFourHoursAgo.setDate(twentyFourHoursAgo.getDate() - 1);
         const todayCount = notifications.filter(n => n.timestamp && n.timestamp.toDate() > twentyFourHoursAgo).length;
@@ -74,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- Render the list of notifications ---
     function renderNotifications(notifications) {
-        // ... this function is unchanged ...
         if (!notifications.length) {
             notificationListEl.innerHTML = '<p>No notifications match the current filters.</p>';
             return;
@@ -84,6 +79,15 @@ document.addEventListener('DOMContentLoaded', () => {
         notifications.forEach(notif => {
             const config = notificationTypeMap[notif.type] || { title: 'Notification', cssClass: 'info', icon: 'fa-bell', tag: 'General', tagClass: 'tag-gray' };
             
+            // Prepare the timestamp part of the HTML
+            let timeMetaHTML = 'No date';
+            if (notif.timestamp) {
+                const date = notif.timestamp.toDate();
+                // We store the full timestamp in a data attribute for our real-time updater
+                // and add a class to easily find this element later.
+                timeMetaHTML = `<span class="time-ago" data-timestamp="${date.toISOString()}">${formatTimeAgo(date)}</span>`;
+            }
+
             notificationsHTML += `
                 <div class="notification-item notification-item--${config.cssClass}">
                     <div class="notification-icon"><i class="fas ${config.icon}"></i></div>
@@ -94,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                         <p>${notif.message}</p>
                         <div class="notification-meta">
-                            <i class="fas fa-clock"></i> ${notif.timestamp ? formatTimeAgo(notif.timestamp.toDate()) : 'No date'}
+                            <i class="fas fa-clock"></i> ${timeMetaHTML}
                             ${!notif.isRead ? '<span class="badge-new">New</span>' : ''}
                         </div>
                     </div>
@@ -105,166 +109,135 @@ document.addEventListener('DOMContentLoaded', () => {
         notificationListEl.innerHTML = notificationsHTML;
     }
 
+
     // --- Handle filtering ---
     function applyFilters() {
+        // ... (This function remains unchanged and correct)
         const type = filterTypeEl.value;
         const status = filterStatusEl.value;
         const dateFilter = filterDateEl.value;
 
         let filteredNotifications = allNotifications;
 
-        // Filter by Type
         if (type !== 'all') {
             filteredNotifications = filteredNotifications.filter(n => n.type === type);
         }
-
-        // Filter by Read/Unread Status
         if (status !== 'all') {
             const isRead = status === 'read';
             filteredNotifications = filteredNotifications.filter(n => n.isRead === isRead);
         }
-        
-        // Filter by Date
         if (dateFilter !== 'all') {
             const now = new Date();
             const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             const startOfYesterday = new Date(startOfToday);
             startOfYesterday.setDate(startOfYesterday.getDate() - 1);
-
             if (dateFilter === 'today') {
-                filteredNotifications = filteredNotifications.filter(n => {
-                    // BUG FIX: Check if timestamp exists before using it
-                    return n.timestamp && n.timestamp.toDate() >= startOfToday;
-                });
+                filteredNotifications = filteredNotifications.filter(n => n.timestamp && n.timestamp.toDate() >= startOfToday);
             } else if (dateFilter === 'yesterday') {
                 filteredNotifications = filteredNotifications.filter(n => {
-                    // BUG FIX: Check if timestamp exists before using it
                     if (!n.timestamp) return false;
                     const notifDate = n.timestamp.toDate();
                     return notifDate >= startOfYesterday && notifDate < startOfToday;
                 });
             }
         }
-
         renderNotifications(filteredNotifications);
     }
     
     // --- Helper function for time formatting ---
     function formatTimeAgo(date) {
-        // ... this function is unchanged ...
+        // Your improved singular/plural logic is good!
         const seconds = Math.floor((new Date() - date) / 1000);
         let interval = seconds / 31536000;
-
-
-        if (interval > 1){
-
-            if(Math.floor(interval) > 1){
-                return Math.floor(interval) + " years ago";
-            }
-            return Math.floor(interval) + " year ago";
+        if (interval > 1) {
+            const count = Math.floor(interval);
+            return count > 1 ? `${count} years ago` : `${count} year ago`;
         }
         interval = seconds / 2592000;
-
-
-        if (interval > 1){
-            if (Math.floor(interval) > 1){
-                return Math.floor(interval) + " months ago";
-            }
-            return Math.floor(interval) + " month ago";
-        } 
+        if (interval > 1) {
+            const count = Math.floor(interval);
+            return count > 1 ? `${count} months ago` : `${count} month ago`;
+        }
         interval = seconds / 86400;
-
-
-        if (interval > 1){
-            if (Math.floor(interval) > 1){
-                return Math.floor(interval) + " days ago";
-            }
-            return Math.floor(interval) + " day ago";
-        } 
+        if (interval > 1) {
+            const count = Math.floor(interval);
+            return count > 1 ? `${count} days ago` : `${count} day ago`;
+        }
         interval = seconds / 3600;
-
-        if (interval > 1){
-
-            if ((Math.floor(interval)) > 1){
-                return Math.floor(interval) + " hours ago";
-            }
-            return Math.floor(interval) + " hour ago";
-
-        } 
+        if (interval > 1) {
+            const count = Math.floor(interval);
+            return count > 1 ? `${count} hours ago` : `${count} hour ago`;
+        }
         interval = seconds / 60;
-
-
-        if (interval > 1){
-
-            if(Math.floor(interval) > 1){
-                return Math.floor(interval) + " minutes ago";
-            }
-            return Math.floor(interval) + " minute ago";
+        if (interval > 1) {
+            const count = Math.floor(interval);
+            return count > 1 ? `${count} minutes ago` : `${count} minute ago`;
         }
-
-        if(Math.floor(seconds) > 1){
-            return Math.floor(seconds) + " seconds ago";
-        }
-        return Math.floor(seconds) + " second ago";
+        const count = Math.floor(seconds);
+        return count > 1 || count === 0 ? `${count} seconds ago` : `${count} second ago`;
     }
 
-    // --- Mark as Read Logic ---
+    function updateTimestamps() {
+        const timeElements = document.querySelectorAll('.time-ago');
+        timeElements.forEach(element => {
+            const timestamp = element.dataset.timestamp;
+            if (timestamp) {
+                const date = new Date(timestamp);
+                element.textContent = formatTimeAgo(date);
+            }
+        });
+    }
+
+    // --- Mark as Read Logic (FIXED) ---
     async function markSingleAsRead(notificationId) {
         try {
             const notifRef = doc(db, 'notifications', notificationId);
-            await updateDoc(notifRef, {
-                isRead: true
-            });
+            await updateDoc(notifRef, { isRead: true });
             console.log(`Notification ${notificationId} marked as read.`);
-            // Refresh all data from Firestore to ensure UI is in sync
-            await fetchAndRenderNotifications();
+            // No need to refetch, onSnapshot will handle the UI update automatically!
         } catch (error) {
             console.error("Error updating notification: ", error);
         }
     }
 
-    // --- Mark ALL notifications as read ---
     async function markAllAsRead() {
         try {
             const unreadNotifications = allNotifications.filter(n => !n.isRead);
-            if (unreadNotifications.length === 0) {
-                console.log("No unread notifications to mark.");
-                return;
-            }
+            if (unreadNotifications.length === 0) return;
 
             const updatePromises = unreadNotifications.map(notif => {
                 const notifRef = doc(db, 'notifications', notif.id);
                 return updateDoc(notifRef, { isRead: true });
             });
-            
             await Promise.all(updatePromises);
             console.log("All notifications marked as read.");
-            await fetchAndRenderNotifications();
-
+            // No need to refetch, onSnapshot will handle the UI update automatically!
         } catch (error) {
             console.error("Error marking all notifications as read: ", error);
         }
     }
 
-    // --- Event Listeners ---
+    // --- Event Listeners (Cleaned up) ---
     filterTypeEl.addEventListener('change', applyFilters);
     filterStatusEl.addEventListener('change', applyFilters);
     filterDateEl.addEventListener('change', applyFilters);
+    
     markAllReadBtn.addEventListener('click', (e) => {
         e.preventDefault();
         markAllAsRead();
     });
+    
     notificationListEl.addEventListener('click', (e) => {
         const target = e.target.closest('.notification-mark-read');
         if (target) {
             e.preventDefault();
             const notificationId = target.dataset.id;
-            if (notificationId) {
-                markSingleAsRead(notificationId);
-            }
+            if (notificationId) markSingleAsRead(notificationId);
         }
     });
 
     // --- Initial Load ---
-    fetchAndRenderNotifications();
+    setupNotificationListener(); 
+
+    setInterval(updateTimestamps, 10000);
 });
