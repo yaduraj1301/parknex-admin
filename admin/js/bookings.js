@@ -1,3 +1,6 @@
+import { db } from "../../public/js/firebase-config.js";
+import { collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
 document.addEventListener('DOMContentLoaded', () => {
     const bookSlotButton = document.querySelector('.btn-primary');
 
@@ -152,10 +155,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend.classList.add('parking-legend');
                     legend.innerHTML = `
                         <div class="legend-item">
-                            <span class="legend-color available"></span> Available
+                            <span class="legend-color available"></span> Free
                         </div>
                         <div class="legend-item">
-                            <span class="legend-color occupied"></span> Occupied
+                            <span class="legend-color occupied"></span> Named
                         </div>
                         <div class="legend-item">
                             <span class="legend-color reserved"></span> Reserved
@@ -166,80 +169,294 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                     parkingOverview.appendChild(legend);
 
-                    // Add level tabs
+                    // Add level tabs (will be populated dynamically)
                     const levelTabs = document.createElement('div');
                     levelTabs.classList.add('level-tabs');
-                    for (let i = 1; i <= 3; i++) {
-                        const tab = document.createElement('button');
-                        tab.classList.add('level-tab');
-                        if (i === 1) tab.classList.add('active');
-                        tab.dataset.level = i;
-                        tab.textContent = `Level ${i}`;
-                        tab.addEventListener('click', () => {
-                            document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
-                            tab.classList.add('active');
-                            renderParkingGrid(i);
-                        });
-                        levelTabs.appendChild(tab);
-                    }
                     parkingOverview.appendChild(levelTabs);
+
+                    // Add building dropdown
+                    const buildingDropdownContainer = document.createElement('div');
+                    buildingDropdownContainer.style.marginBottom = '15px';
+
+                    const buildingLabel = document.createElement('label');
+                    buildingLabel.textContent = 'Select Building';
+                    buildingLabel.style.display = 'block';
+                    buildingLabel.style.marginBottom = '5px';
+
+                    const buildingDropdown = document.createElement('select');
+                    buildingDropdown.style.width = '100%';
+                    buildingDropdown.style.padding = '8px';
+                    buildingDropdown.style.border = '1px solid #ccc';
+                    buildingDropdown.style.borderRadius = '4px';
+
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = '';
+                    defaultOption.textContent = 'Select a building';
+                    buildingDropdown.appendChild(defaultOption);
+
+                    buildingDropdownContainer.appendChild(buildingLabel);
+                    buildingDropdownContainer.appendChild(buildingDropdown);
+                    parkingOverview.insertBefore(buildingDropdownContainer, levelTabs);
 
                     // Add parking grid
                     const parkingGrid = document.createElement('div');
                     parkingGrid.classList.add('parking-grid');
                     parkingOverview.appendChild(parkingGrid);
 
-                    // Function to render parking grid for a level
-                    const renderParkingGrid = (level) => {
-                        parkingGrid.innerHTML = '';
-                        const blocks = ['A', 'B', 'C'];
-                        blocks.forEach(block => {
-                            const blockDiv = document.createElement('div');
-                            blockDiv.classList.add('parking-block');
+                    // Initially hide parking grid and level tabs
+                    levelTabs.style.display = 'none';
+                    parkingGrid.style.display = 'none';
 
-                            const blockHeader = document.createElement('h4');
-                            blockHeader.textContent = `${block}-Block`;
-                            blockDiv.appendChild(blockHeader);
+                    // Store all slots data
+                    let allSlotsData = [];
+                    let availableFloors = [];
 
-                            const slotsGrid = document.createElement('div');
-                            slotsGrid.classList.add('slots-grid');
-
-                            for (let i = 1; i <= 12; i++) {
-                                const slot = document.createElement('div');
-                                slot.classList.add('parking-slot', 'available');
-                                if (i%4 === 0) slot.classList.remove('available'), slot.classList.add('slot-blinking', 'occupied');
-                                slot.textContent = `${block}${i}`;
-                                slotsGrid.appendChild(slot);
-                            }
-
-                            blockDiv.appendChild(slotsGrid);
-                            parkingGrid.appendChild(blockDiv);
+                    // Function to populate floor tabs dynamically
+                    const populateFloorTabs = (floors) => {
+                        console.log('Populating floor tabs with:', floors);
+                        levelTabs.innerHTML = '';
+                        
+                        if (floors.length === 0) {
+                            levelTabs.innerHTML = '<div style="text-align: center; padding: 10px;">No floors available</div>';
+                            return;
+                        }
+                        
+                        floors.forEach((floor, index) => {
+                            const tab = document.createElement('button');
+                            tab.classList.add('level-tab');
+                            if (index === 0) tab.classList.add('active');
+                            tab.dataset.level = floor;
+                            tab.textContent = floor;
+                            tab.addEventListener('click', () => {
+                                document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+                                tab.classList.add('active');
+                                renderParkingGrid(floor);
+                            });
+                            levelTabs.appendChild(tab);
                         });
                     };
 
-                    // Initial render for Level 1
-                    renderParkingGrid(1);
+                    // Function to render parking grid for a level
+                    const renderParkingGrid = (floor, slots = allSlotsData) => {
+                        try {
+                            console.log(`Rendering parking grid for floor: ${floor}`);
+                            parkingGrid.innerHTML = '';
+                            
+                            // Filter slots by floor
+                            const floorSlots = slots.filter(slot => slot.floor === floor);
+                            console.log(`Slots for floor ${floor}:`, floorSlots);
+                            
+                            if (floorSlots.length === 0) {
+                                parkingGrid.innerHTML = '<div style="text-align: center; padding: 20px;">No slots available for this floor</div>';
+                                return;
+                            }
 
-                    // Add close button
-                    const closeButton = document.createElement('button');
-                    closeButton.textContent = 'Close';
-                    closeButton.style.marginTop = '20px';
-                    closeButton.style.padding = '10px 20px';
-                    closeButton.style.border = 'none';
-                    closeButton.style.backgroundColor = '#6c757d';
-                    closeButton.style.color = '#fff';
-                    closeButton.style.borderRadius = '4px';
-                    closeButton.style.cursor = 'pointer';
+                            // Group slots by block
+                            const slotsByBlock = floorSlots.reduce((blocks, slot) => {
+                                const block = slot.block || 'Default';
+                                if (!blocks[block]) blocks[block] = [];
+                                blocks[block].push(slot);
+                                return blocks;
+                            }, {});
 
-                    closeButton.addEventListener('click', () => {
-                        document.body.removeChild(slotOverlay);
+                            // Create blocks
+                            Object.keys(slotsByBlock).forEach(blockName => {
+                                const blockDiv = document.createElement('div');
+                                blockDiv.classList.add('parking-block');
+                                
+                                const blockTitle = document.createElement('h4');
+                                blockTitle.textContent = `Block ${blockName}`;
+                                blockDiv.appendChild(blockTitle);
+
+                                const slotsGrid = document.createElement('div');
+                                slotsGrid.classList.add('slots-grid');
+
+                                slotsByBlock[blockName].forEach(slot => {
+                                    const slotElement = document.createElement('div');
+                                    slotElement.classList.add('parking-slot');
+                                    slotElement.textContent = slot.slot_name || slot.slotNumber || slot.id;
+                                    
+                                    // Apply status-based styling
+                                    if (slot.status === 'available') {
+                                        slotElement.classList.add('available');
+                                    } else if (slot.status === 'occupied') {
+                                        slotElement.classList.add('occupied');
+                                    } else if (slot.status === 'reserved') {
+                                        slotElement.classList.add('reserved');
+                                    } else {
+                                        slotElement.classList.add('unbooked');
+                                    }
+
+                                    // Add click event for slot selection
+                                    slotElement.addEventListener('click', () => {
+                                        if (slot.status === 'available' || slot.status === 'unbooked') {
+                                            // Select the slot
+                                            console.log('Slot selected:', slot);
+                                            // You can add logic here to handle slot selection
+                                            // For now, we'll just close the overlay
+                                            document.body.removeChild(slotOverlay);
+                                        }
+                                    });
+
+                                    slotsGrid.appendChild(slotElement);
+                                });
+
+                                blockDiv.appendChild(slotsGrid);
+                                parkingGrid.appendChild(blockDiv);
+                            });
+                        } catch (error) {
+                            console.error('Error rendering parking grid:', error);
+                        }
+                    };
+
+                    // Function to fetch buildings and populate dropdown
+                    const fetchBuildings = async () => {
+                        try {
+                            console.log('Fetching buildings from database...');
+                            
+                            // First, let's try to fetch from 'Buildings' collection
+                            let buildingsSnapshot;
+                            try {
+                                buildingsSnapshot = await getDocs(collection(db, 'Buildings'));
+                                console.log('Buildings collection exists, documents found:', buildingsSnapshot.size);
+                            } catch (error) {
+                                console.log('Buildings collection not found, trying ParkingSlots...');
+                                // If Buildings collection doesn't exist, get unique buildings from ParkingSlots
+                                const slotsSnapshot = await getDocs(collection(db, 'ParkingSlots'));
+                                const buildingsSet = new Set();
+                                
+                                slotsSnapshot.forEach((doc) => {
+                                    const slotData = doc.data();
+                                    if (slotData.building) {
+                                        buildingsSet.add(slotData.building);
+                                    }
+                                });
+                                
+                                const buildings = Array.from(buildingsSet).sort();
+                                console.log('Buildings found from ParkingSlots:', buildings);
+                                
+                                buildings.forEach((building) => {
+                                    const option = document.createElement('option');
+                                    option.value = building;
+                                    option.textContent = building;
+                                    buildingDropdown.appendChild(option);
+                                });
+                                return;
+                            }
+
+                            const buildings = [];
+                            if (buildingsSnapshot.size === 0) {
+                                console.log('No buildings found in Buildings collection, trying ParkingSlots...');
+                                // Fallback: get buildings from ParkingSlots collection
+                                const slotsSnapshot = await getDocs(collection(db, 'ParkingSlots'));
+                                const buildingsSet = new Set();
+                                
+                                slotsSnapshot.forEach((doc) => {
+                                    const slotData = doc.data();
+                                    if (slotData.building) {
+                                        buildingsSet.add(slotData.building);
+                                    }
+                                });
+                                
+                                const uniqueBuildings = Array.from(buildingsSet).sort();
+                                console.log('Buildings found from ParkingSlots:', uniqueBuildings);
+                                
+                                uniqueBuildings.forEach((building) => {
+                                    const option = document.createElement('option');
+                                    option.value = building;
+                                    option.textContent = building;
+                                    buildingDropdown.appendChild(option);
+                                });
+                            } else {
+                                buildingsSnapshot.forEach((doc) => {
+                                    const buildingData = doc.data();
+                                    console.log('Building document:', buildingData);
+                                    if (buildingData.name) {
+                                        buildings.push(buildingData.name);
+                                    } else if (buildingData.buildingName) {
+                                        buildings.push(buildingData.buildingName);
+                                    } else {
+                                        // Use document ID as building name if no name field
+                                        buildings.push(doc.id);
+                                    }
+                                });
+
+                                buildings.sort();
+                                console.log('Buildings from Buildings collection:', buildings);
+                                buildings.forEach((building) => {
+                                    const option = document.createElement('option');
+                                    option.value = building;
+                                    option.textContent = building;
+                                    buildingDropdown.appendChild(option);
+                                });
+                            }
+                        } catch (error) {
+                            console.error('Error fetching buildings:', error);
+                        }
+                    };
+
+                    // Fetch buildings on overlay creation
+                    console.log('Starting to fetch buildings...');
+                    fetchBuildings();
+
+                    // Event listener for building selection
+                    buildingDropdown.addEventListener('change', async () => {
+                        const selectedBuilding = buildingDropdown.value;
+
+                        if (selectedBuilding) {
+                            console.log(`Building selected: ${selectedBuilding}`);
+                            levelTabs.style.display = 'flex';
+                            parkingGrid.style.display = 'flex';
+
+                            // Fetch slots and floors for the selected building
+                            await fetchSlotsAndFloors(selectedBuilding);
+                            if (availableFloors.length > 0) {
+                                populateFloorTabs(availableFloors);
+                                renderParkingGrid(availableFloors[0]);
+                            }
+                        } else {
+                            levelTabs.style.display = 'none';
+                            parkingGrid.style.display = 'none';
+                        }
                     });
 
-                    parkingOverview.appendChild(closeButton);
+                    // Function to fetch slots and floors for a specific building
+                    const fetchSlotsAndFloors = async (building) => {
+                        try {
+                            console.log(`Fetching slots for building: ${building}`);
+                            const slotsSnapshot = await getDocs(collection(db, 'ParkingSlots'));
+                            allSlotsData = [];
+                            const floorsSet = new Set();
 
-                    // Append parking overview to overlay
+                            slotsSnapshot.forEach((doc) => {
+                                const slotData = { id: doc.id, ...doc.data() };
+
+                                if (slotData.building === building) {
+                                    allSlotsData.push(slotData);
+                                    if (slotData.floor) {
+                                        floorsSet.add(slotData.floor);
+                                    }
+                                }
+                            });
+
+                            availableFloors = Array.from(floorsSet).sort();
+                            console.log('Available floors:', availableFloors);
+                            console.log('Total slots found:', allSlotsData.length);
+                        } catch (error) {
+                            console.error('Error fetching parking slots:', error);
+                        }
+                    };
+
+                    // Append slot overlay to body
                     slotOverlay.appendChild(parkingOverview);
                     document.body.appendChild(slotOverlay);
+
+                    // Close overlay when clicking outside
+                    slotOverlay.addEventListener('click', (e) => {
+                        if (e.target === slotOverlay) {
+                            document.body.removeChild(slotOverlay);
+                        }
+                    });
                 });
             }
         });
