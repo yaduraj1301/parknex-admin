@@ -458,9 +458,9 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
             populateLevelTabs(selectedBuilding).then(() => {
                 renderParkingSlots();
             });
-            populateLevelTabs(selectedBuilding).then(() => {
-                renderParkingSlots();
-            });
+            // populateLevelTabs(selectedBuilding).then(() => {
+            //     renderParkingSlots();
+            // });
         });
 
         window.statsUnsubscribe = unsubscribe;
@@ -601,9 +601,6 @@ function handleAlertAction(button) {
 
 
 
-// Updated handle building selector change with Firebase integration
-
-// Update your handleBuildingChange function to include slot layout update
 // Updated handleBuildingChange to populate levels and update layout
 function handleBuildingChange(building) {
     if (!building) return;
@@ -612,8 +609,10 @@ function handleBuildingChange(building) {
 
     // Store selected building globally
     window.selectedBuilding = building;
+    localStorage.setItem('selectedBuilding', selectedBuilding);
 
-    // Update the weekly usage chart for the selected building
+    document.getElementById('building-card').innerHTML = `<h3>${building}</h3>`;
+
     renderChart(building);
 
     // Clean up previous listener
@@ -729,7 +728,8 @@ function renderParkingSlots() {
             slotDiv.appendChild(iconList);
 
             // Add tooltip with slot details
-            addSlotTooltip(slotDiv, slot);
+            // addSlotTooltip(slotDiv, slot);
+            addSlotPopup(slotDiv, slot);
 
             slotsGrid.appendChild(slotDiv);
         });
@@ -980,6 +980,7 @@ async function init() {
     await testFirebaseConnection();
 
     const buildingList = await populateBuildingDropdown();
+    document.getElementById('building-card').innerHTML = `<h3>${buildingList[0] || 'N/A'}</h3>`;
 
     if (buildingList && buildingList.length > 0) {
         const defaultBuilding = buildingList[0];
@@ -990,6 +991,7 @@ async function init() {
         }
 
         window.selectedBuilding = defaultBuilding;
+        localStorage.setItem('selectedBuilding', selectedBuilding);
 
         await fetchAndUpdateStats(defaultBuilding);
 
