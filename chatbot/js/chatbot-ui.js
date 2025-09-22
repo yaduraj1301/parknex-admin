@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Replace the hardcoded EMPLOYEE_CONTACT with a variable
   let employeeContact = null;
   let conversationState = null;
+  let employeeVehicles = [];
 
   // Authentication check
   onAuthStateChanged(auth, async (user) => {
@@ -50,6 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         employeeData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
         employeeContact = employeeData.contact_number;
+        employeeVehicles = await getEmployeeVehicles(employeeData.id);
 
         // Initialize chatbot after getting employee data
         await loadSlotsFromDB();
@@ -551,18 +553,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Step 1: Find ALL slots with the given name, regardless of their current status.
+    // Step 1: Find ALL slots with the given name, from ALL status arrays. This is the critical change.
     const allMatchingSlots = [];
     for (const floorName in slotsByFloor) {
       const floor = slotsByFloor[floorName];
+      // Combine all slots from the current floor to search them all
       const allSlotsOnFloor = [
         ...floor.unauthorized,
         ...floor.free,
         ...floor.booked,
       ];
-      const foundSlot = allSlotsOnFloor.find((s) => s.name === slotName);
-      if (foundSlot) {
-        // Determine the real status of the found slot
+
+      // Find the slot in the combined list
+      const foundSlotsOnFloor = allSlotsOnFloor.filter(
+        (s) => s.name === slotName
+      );
+
+      for (const foundSlot of foundSlotsOnFloor) {
+        // Determine the REAL status of the found slot by checking the original lists
         const status = floor.unauthorized.some(
           (s) => s.docId === foundSlot.docId
         )
@@ -570,6 +578,8 @@ document.addEventListener("DOMContentLoaded", () => {
           : floor.free.some((s) => s.docId === foundSlot.docId)
           ? "free"
           : "booked";
+
+        // Push the complete object with the correct status
         allMatchingSlots.push({
           ...foundSlot,
           floor: floorName,
@@ -578,9 +588,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // Step 2: Apply logic based on the number of matches found.
+    // Step 2: Apply logic based on the comprehensive results.
     if (allMatchingSlots.length === 0) {
-      // Case A: Slot name does not exist anywhere.
+      // Case A: The slot name does not exist anywhere.
       addMessage(
         `❌ Slot ${slotName} does not exist in ${employeeBuilding} building.`,
         "bot",
@@ -591,17 +601,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (allMatchingSlots.length > 1) {
-      // Case B: The name is ambiguous. This is the critical fix.
-      // We must ask the user to choose.
+      // Case B: The name is ambiguous. This is your scenario.
+      // Ask the user to choose, passing the array that now contains the correct statuses.
       promptForFloorSelection(allMatchingSlots);
       return;
     }
 
     if (allMatchingSlots.length === 1) {
-      // Case C: The name is unique. NOW we can check its status.
+      // Case C: The name is unique. Now we can check its status.
       const theOnlySlot = allMatchingSlots[0];
       if (theOnlySlot.status === "unauthorized") {
-        // Unique and bookable. Proceed to vehicle selection.
+        // Unique and bookable.
         promptForVehicle(theOnlySlot.name);
       } else {
         // Unique but not bookable. Explain why.
@@ -653,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function promptForVehicle(slotName) {
     try {
       const employee = await getEmployeeByContact(employeeContact);
-      const vehicles = await getEmployeeVehicles(employee.id);
+      const vehicles = employeeVehicles;
 
       // NEW: Sort the array to put the default vehicle first.
       vehicles.sort((a, b) => b.is_default - a.is_default);
@@ -783,6 +793,8 @@ document.addEventListener("DOMContentLoaded", () => {
       messagesEl.removeChild(messagesEl.lastChild); // Remove loading message
       addMessage("✅ Vehicle added successfully!", "bot", false, "success");
 
+      employeeVehicles = await getEmployeeVehicles(employee.id);
+
       // Automatically proceed to book the slot with the newly added vehicle
       await handleBooking(slotName, newVehicleRef.id);
     } catch (err) {
@@ -821,8 +833,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       await loadSlotsFromDB();
 
-      const vehicles = await getEmployeeVehicles(employee.id);
-      const selectedVehicle = vehicles.find((v) => v.id === vehicleId);
+      const selectedVehicle = employeeVehicles.find((v) => v.id === vehicleId);
 
       addMessage(
         `✅ Slot ${slotName} booked successfully for vehicle ${selectedVehicle.registration_no}.`,
@@ -989,41 +1000,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return snapshot.docs[0].id;
   }
 
-  // Add this new function to check for active bookings
-  async function hasActiveBooking(employeeId, vehicleId) {
-    try {
-      const bookingsRef = collection(db, "bookings");
-      const q = query(
-        bookingsRef,
-        where(
-          "vehicle_id",
-          "==",
-          `employees/${employeeId}/vehicles/${vehicleId}`
-        ),
-        where("status", "==", "Confirmed")
-      );
-
-      const snapshot = await getDocs(q);
-      const now = new Date();
-
-      // Check if any booking is still active (not expired)
-      for (const doc of snapshot.docs) {
-        const data = doc.data();
-        if (data.expiry_time.toDate() > now) {
-          return true;
-        }
-      }
-      return false;
-    } catch (err) {
-      console.error("Error checking active bookings:", err);
-      throw err;
-    }
-  }
-
   // Modify bookSlot function to check for active bookings first
   async function bookSlot(slotName, employeeId, vehicleId) {
-    const hasBooking = await hasActiveBooking(employeeId, vehicleId);
-    if (hasBooking) {
+    if (currentBooking) {
       throw new Error("Active booking exists");
     }
 
