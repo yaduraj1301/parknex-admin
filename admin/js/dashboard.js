@@ -3,12 +3,15 @@ import { db, auth, app } from '../../public/js/firebase-config.js';
 import { collection, getDocs, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Global variables
+
 let currentLevel = 1;
 let slots = {};
 let weeklyData = [45, 48, 15, 46, 42, 58, 60];
 let currentBuildingSlots = [];
+let availableLevels = [];
 
-// Function to fetch and populate building dropdown only
+
+// Function to fetch and populate building dropdownf only
 async function populateBuildingDropdown() {
     try {
         console.log('Fetching buildings from Firebase...');
@@ -62,6 +65,75 @@ async function populateBuildingDropdown() {
             buildingSelector.innerHTML = '<option value="">Error loading buildings</option>';
         }
 
+        return [];
+    }
+}
+
+// Function to populate level tabs based on Firebase data
+async function populateLevelTabs(selectedBuilding = null) {
+    try {
+        console.log('Fetching levels for building:', selectedBuilding);
+
+        // Use currentBuildingSlots if already loaded, otherwise fetch
+        let slotsToCheck = currentBuildingSlots;
+
+        if (slotsToCheck.length === 0 && selectedBuilding) {
+            // Fetch data if not already loaded
+            const parkingSlotsRef = collection(db, 'ParkingSlots');
+            const q = query(parkingSlotsRef, where('building', '==', selectedBuilding));
+            const snapshot = await getDocs(q);
+
+            slotsToCheck = [];
+            snapshot.forEach(doc => {
+                slotsToCheck.push(doc.data());
+            });
+        }
+
+        // Extract unique levels from floor field
+        const levels = new Set();
+        slotsToCheck.forEach(slot => {
+            if (slot.floor) {
+                // Extract number from "Level 0", "Level 1", etc.
+                const levelMatch = slot.floor.match(/level\s*(\d+)/i);
+                if (levelMatch) {
+                    levels.add(parseInt(levelMatch[1]));
+                }
+            }
+        });
+
+        // Convert to sorted array
+        availableLevels = Array.from(levels).sort((a, b) => a - b);
+
+        console.log('Available levels:', availableLevels);
+
+        // Update level tabs in DOM
+        const levelTabsContainer = document.querySelector('.level-tabs');
+        if (levelTabsContainer && availableLevels.length > 0) {
+            levelTabsContainer.innerHTML = '';
+
+            availableLevels.forEach((level, index) => {
+                const button = document.createElement('button');
+                button.className = `level-tab ${index === 0 ? 'active' : ''}`;
+                button.dataset.level = level;
+                button.textContent = `Level ${level}`;
+
+                button.addEventListener('click', (e) => {
+                    switchLevel(parseInt(e.target.dataset.level));
+                });
+
+                levelTabsContainer.appendChild(button);
+            });
+
+            // Set current level to first available level
+            if (availableLevels.length > 0) {
+                currentLevel = availableLevels[0];
+            }
+        }
+
+        return availableLevels;
+
+    } catch (error) {
+        console.error('Error fetching levels:', error);
         return [];
     }
 }
@@ -248,9 +320,9 @@ function updateAlertCounts(stats) {
     if (sensorCardMain) sensorCardMain.classList.add('hidden');
 
     // ALWAYS hide secondary section since we're not using sensors
-    if (alertInsightsSecondary) {
-        alertInsightsSecondary.style.display = 'none';
-    }
+    // if (alertInsightsSecondary) {
+    //     alertInsightsSecondary.style.display = 'none';
+    // }
 
     // Always show main insights
     if (alertInsightsMain) {
@@ -277,6 +349,8 @@ function updateAlertCounts(stats) {
 }
 
 // Function to setup real-time stats updates
+
+// Update setupRealTimeStatsUpdates to also update slot layout
 function setupRealTimeStatsUpdates(selectedBuilding = null) {
     try {
         const parkingSlotsRef = collection(db, 'ParkingSlots');
@@ -292,7 +366,7 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
 
         // Listen for real-time updates
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            console.log('Real-time update received for stats');
+            console.log('Real-time update received for stats and slots');
 
             currentBuildingSlots = [];
             snapshot.forEach(doc => {
@@ -303,7 +377,11 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
                 });
             });
 
+            // Update both stats and slot layout
             updateStatsCards();
+            populateLevelTabs(selectedBuilding).then(() => {
+                renderParkingSlots();
+            });
         });
 
         // Store unsubscribe function globally so we can clean up later
@@ -350,7 +428,7 @@ async function testFirebaseConnection() {
 // Generate sample slots for testing (kept as fallback)
 function generateSampleSlots() {
     const sampleSlots = {};
-    const statuses = ['available', 'occupied', 'reserved', 'unbooked'];
+    const statuses = ['available', 'occupied', 'reserved', 'unbooked', 'named'];
     const blocks = ['A', 'B', 'C'];
 
     blocks.forEach(block => {
@@ -472,43 +550,97 @@ function switchLevel(level) {
     // Re-render parking slots for the selected level
     renderParkingSlots();
 }
-
+function updateSlotLayoutForBuilding() {
+    // Re-render slots when building changes
+    renderParkingSlots();
+}
 // Handle slot clicks
+
+// Updated handleSlotClick to work with Firebase data
 function handleSlotClick(slotElement) {
     const slotId = slotElement.dataset.slot;
-    const slotKey = `${slotId}_L${currentLevel}`;
-    const slot = slots[slotKey];
+    const docId = slotElement.dataset.docId;
 
-    if (!slot) return;
+    // Find the slot in currentBuildingSlots
+    const slot = currentBuildingSlots.find(s => s.slot_name === slotId);
 
-    let message = `Slot: ${slotId}\nStatus: ${slot.status.toUpperCase()}\nLevel: ${slot.level}`;
+    if (!slot) {
+        alert('Slot data not found');
+        return;
+    }
 
-    if (slot.vehicle) {
-        message += `\nVehicle: ${slot.vehicle.plate}\nOwner: ${slot.vehicle.owner}`;
+    let message = `Slot: ${slot.slot_name}\nStatus: ${slot.status}\nBuilding: ${slot.building}\nFloor: ${slot.floor}`;
+
+    if (slot.block) {
+        message += `\nBlock: ${slot.block}`;
+    }
+
+    if (slot.notes) {
+        message += `\nNotes: ${slot.notes}`;
+    }
+
+    if (slot.is_special) {
+        message += `\nSpecial Slot: Yes`;
     }
 
     alert(message);
 }
+
+function scrollToParkingOverview() {
+    const parkingSection = document.querySelector('.parking-overview');
+    if (parkingSection) {
+        parkingSection.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
 
 // Handle alert action buttons
 function handleAlertAction(button) {
     const alertType = button.closest('.alert-card').classList.contains('attention') ? 'attention' : 'sensor';
 
     if (alertType === 'attention') {
-        alert('Redirecting to unbooked vehicles management...');
+        scrollToParkingOverview();
+
+        setTimeout(() => {
+            highlightUnbookedSlots();
+        }, 500);
     } else {
         alert('Redirecting to sensor diagnostics...');
     }
 }
 
+function highlightUnbookedSlots() {
+    const unbookedSlots = document.querySelectorAll('.parking-slot.unbooked');
+
+    unbookedSlots.forEach(slot => {
+        slot.style.transform = 'scale(1.1)';
+        slot.style.boxShadow = '0 0 10px rgba(220, 20, 60, 0.5)';
+
+        // Remove highlight after 2 seconds
+        setTimeout(() => {
+            slot.style.transform = '';
+            slot.style.boxShadow = '';
+        }, 1000);
+    });
+}
+
 // Updated handle building selector change with Firebase integration
+
+// Update your handleBuildingChange function to include slot layout update
+// Updated handleBuildingChange to populate levels and update layout
 function handleBuildingChange(building) {
     if (!building) return;
 
-    console.log(`Building selected for stats: ${building}`);
+    console.log(`Building selected: ${building}`);
 
     // Store selected building globally
     window.selectedBuilding = building;
+
+    // Update the weekly usage chart for the selected building
+    renderChart(building);
 
     // Clean up previous listener
     if (window.statsUnsubscribe) {
@@ -516,7 +648,12 @@ function handleBuildingChange(building) {
     }
 
     // Fetch and update stats for selected building
-    fetchAndUpdateStats(building);
+    fetchAndUpdateStats(building).then(() => {
+        // After data is loaded, populate level tabs and render slots
+        populateLevelTabs(building).then(() => {
+            renderParkingSlots();
+        });
+    });
 
     // Setup real-time updates for this building
     setupRealTimeStatsUpdates(building);
@@ -524,15 +661,52 @@ function handleBuildingChange(building) {
 
 // Render parking slots for current level (kept for backwards compatibility)
 function renderParkingSlots() {
-    const blocks = ['A', 'B', 'C'];
     const parkingGrid = document.getElementById('parking-grid');
-
     if (!parkingGrid) return;
 
     // Clear existing content
     parkingGrid.innerHTML = '';
 
-    blocks.forEach(blockName => {
+    // Check if we have Firebase data
+    if (currentBuildingSlots.length === 0) {
+        parkingGrid.innerHTML = '<div class="loading">Loading parking slots...</div>';
+        return;
+    }
+
+    // Filter slots by current level (handle "Level 0", "Level 1", etc.)
+    const currentLevelSlots = currentBuildingSlots.filter(slot => {
+        if (!slot.floor) return false;
+
+        // Extract level number from floor field
+        const levelMatch = slot.floor.match(/level\s*(\d+)/i);
+        if (levelMatch) {
+            const slotLevel = parseInt(levelMatch[1]);
+            return slotLevel === currentLevel;
+        }
+        return false;
+    });
+
+    // Group slots by block
+    const slotsByBlock = currentLevelSlots.reduce((blocks, slot) => {
+        const blockName = slot.block || 'Unknown';
+        if (!blocks[blockName]) {
+            blocks[blockName] = [];
+        }
+        blocks[blockName].push(slot);
+        return blocks;
+    }, {});
+
+    // Get unique blocks and sort them
+    const blockNames = Object.keys(slotsByBlock).sort();
+
+    // If no slots for current level
+    if (blockNames.length === 0) {
+        parkingGrid.innerHTML = `<div class="no-slots">No parking slots found for Level ${currentLevel}</div>`;
+        return;
+    }
+
+    // Render each block
+    blockNames.forEach(blockName => {
         const blockDiv = document.createElement('div');
         blockDiv.className = 'parking-block';
 
@@ -543,25 +717,45 @@ function renderParkingSlots() {
         const slotsGrid = document.createElement('div');
         slotsGrid.className = 'slots-grid';
 
-        // Get slots for this block and current level
-        const blockSlots = Object.values(slots).filter(slot =>
-            slot.block === blockName && slot.level === currentLevel
-        );
+        // Sort slots within block by slot_name
+        const blockSlots = slotsByBlock[blockName].sort((a, b) => {
+            return a.slot_name?.localeCompare(b.slot_name) || 0;
+        });
 
+        // Render each slot
         blockSlots.forEach(slot => {
             const slotDiv = document.createElement('div');
-            slotDiv.className = `parking-slot ${slot.status}`;
-            slotDiv.dataset.slot = slot.id;
 
-            if (slot.vehicle) {
-                slotDiv.setAttribute('data-tooltip', `${slot.vehicle.plate} - ${slot.vehicle.owner}`);
-                slotDiv.classList.add('tooltip');
+            // Map Firebase status to CSS classes
+            const status = mapFirebaseStatusToCss(slot.status);
+            slotDiv.className = `parking-slot ${status}`;
+            slotDiv.dataset.slot = slot.slot_name;
+            slotDiv.dataset.docId = slot.docId; // Store document ID for potential updates
+
+            // Add slot ID
+            const slotId = document.createElement('span');
+            slotId.className = 'slot-id';
+            slotId.textContent = slot.slot_name;
+            slotDiv.appendChild(slotId);
+
+            // Create icon container
+            const iconList = document.createElement('div');
+            iconList.className = 'icon-list';
+
+            // Add special indicators based on is_special and notes
+            if (slot.is_special) {
+                addSpecialIcons(iconList, slot);
             }
 
-            slotDiv.innerHTML = `
-                <span class="slot-id">${slot.id}</span>
-                <i class="slot-icon fas fa-car"></i>
-            `;
+            // Add car icon
+            const carIcon = document.createElement('i');
+            carIcon.className = 'slot-icon fas fa-car';
+            iconList.appendChild(carIcon);
+
+            slotDiv.appendChild(iconList);
+
+            // Add tooltip with slot details
+            addSlotTooltip(slotDiv, slot);
 
             slotsGrid.appendChild(slotDiv);
         });
@@ -570,63 +764,234 @@ function renderParkingSlots() {
         parkingGrid.appendChild(blockDiv);
     });
 
-    // Note: Stats are now updated via updateStatsCards() function
+    console.log(`Rendered ${currentLevelSlots.length} slots for Level ${currentLevel}`);
+}
+
+
+// Helper function to map Firebase status to CSS classes
+function mapFirebaseStatusToCss(firebaseStatus) {
+    if (!firebaseStatus) return 'available';
+
+    const status = firebaseStatus.toLowerCase();
+    switch (status) {
+        case 'free':
+            return 'available';
+        case 'booked':
+            return 'occupied';
+        case 'reserved':
+            return 'reserved';
+        case 'named':
+            return 'named';
+        case 'unbooked':
+            return 'unbooked';
+        default:
+            return 'available';
+    }
+}
+
+function addSpecialIcons(iconContainer, slot) {
+    const notes = slot.notes?.toLowerCase() || '';
+
+    // Add pillar icon
+    if (notes.includes('pillar')) {
+        const pillarIcon = document.createElement('img');
+        pillarIcon.src = '../public/assets/icons/pillar.png';
+        pillarIcon.className = 'slot-icon pillar';
+        pillarIcon.title = 'Pillar nearby';
+        pillarIcon.alt = 'Pillar';
+        iconContainer.appendChild(pillarIcon);
+    }
+
+    // Add corner icon
+    if (notes.includes('corner')) {
+        const cornerIcon = document.createElement('i');
+        cornerIcon.className = 'slot-icon fas fa-turn-down corner';
+        cornerIcon.title = 'Corner slot';
+        iconContainer.appendChild(cornerIcon);
+    }
+
+    // Add EV icon
+    if (notes.includes('ev') || notes.includes('electric')) {
+        const evIcon = document.createElement('i');
+        evIcon.className = 'slot-icon fas fa-bolt';
+        evIcon.title = 'EV Charging';
+        iconContainer.appendChild(evIcon);
+    }
+}
+
+function addSlotTooltip(slotElement, slot) {
+    let tooltipText = `Slot: ${slot.slot_name}\nStatus: ${slot.status}\nBuilding: ${slot.building}\nFloor: ${slot.floor}`;
+
+    if (slot.notes) {
+        tooltipText += `\nNotes: ${slot.notes}`;
+    }
+
+    slotElement.setAttribute('data-tooltip', tooltipText);
+    slotElement.classList.add('tooltip');
 }
 
 // Render weekly usage chart
-function renderChart() {
+async function getWeeklyBookingData(building) {
+    try {
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        // First, get all parking slots for the selected building
+        const parkingSlotsRef = collection(db, 'ParkingSlots');
+        const slotsQuery = query(parkingSlotsRef, where('building', '==', building));
+        const slotsSnapshot = await getDocs(slotsQuery);
+        
+        // Create a Set of slot IDs for the selected building
+        const buildingSlotIds = new Set();
+        slotsSnapshot.forEach(doc => {
+            buildingSlotIds.add(doc.id);
+        });
+
+        // Get bookings for the past week
+        const bookingsRef = collection(db, 'bookings');
+        const bookingsQuery = query(
+            bookingsRef,
+            where('booking_time', '>=', oneWeekAgo),
+            orderBy('booking_time', 'desc')
+        );
+
+        const snapshot = await getDocs(bookingsQuery);
+        
+        // Initialize counts for each day
+        const dayCounts = {
+            1: 0, // Monday
+            2: 0,
+            3: 0,
+            4: 0,
+            5: 0,
+            6: 0 // Saturday
+        };
+
+        // Count bookings for each day, only if the slot belongs to the selected building
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            // Check if slot_id exists and handle different possible formats
+            let bookingSlotId;
+            if (data.slot_id) {
+                // Handle different possible formats of slot_id
+                if (typeof data.slot_id === 'string') {
+                    // If it's a full path like "parkingSlots/slotId"
+                    bookingSlotId = data.slot_id.includes('/') ? data.slot_id.split('/').pop() : data.slot_id;
+                } else if (data.slot_id.id) {
+                    // If it's a DocumentReference
+                    bookingSlotId = data.slot_id.id;
+                } else if (data.slot_id.path) {
+                    // If it's a DocumentReference with path
+                    bookingSlotId = data.slot_id.path.split('/').pop();
+                }
+            }
+            
+            if (bookingSlotId && buildingSlotIds.has(bookingSlotId)) {
+                const bookingDate = data.booking_time.toDate();
+                const dayOfWeek = bookingDate.getDay();
+                
+                // Skip Sunday (0)
+                if (dayOfWeek !== 0) {
+                    dayCounts[dayOfWeek]++;
+                }
+            }
+        });
+
+        // Convert to array of daily averages
+        return Object.values(dayCounts).map(count => Math.round(count));
+    } catch (error) {
+        console.error('Error fetching booking data:', error);
+        return [0, 0, 0, 0, 0, 0]; // Return zeros if there's an error
+    }
+}async function renderChart(building) {
     const canvas = document.getElementById('weeklyChart');
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    const data = weeklyData;
-    const labels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    // Fetch the weekly booking data for the specified building
+    const weeklyData = await getWeeklyBookingData(building);
 
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Set canvas size
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 240;
-
-    const padding = 30;
-    const chartWidth = canvas.width - (padding * 2);
-    const chartHeight = canvas.height - (padding * 2);
-    const maxValue = Math.max(...data);
-    const barWidth = chartWidth / data.length;
-
-    // Draw bars
-    data.forEach((value, index) => {
-        const barHeight = (value / maxValue) * chartHeight;
-        const x = padding + (index * barWidth) + (barWidth * 0.2);
-        const y = canvas.height - padding - barHeight;
-        const width = barWidth * 0.6;
-
-        // Draw bar
-        ctx.fillStyle = '#64A2F5';
-        ctx.fillRect(x, y, width, barHeight);
-
-        // Draw label
-        ctx.fillStyle = '#666';
-        ctx.font = '11px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(labels[index], x + width / 2, canvas.height - 8);
-
-        // Draw value
-        ctx.fillStyle = '#333';
-        ctx.font = '10px Arial';
-        ctx.fillText(value.toString(), x + width / 2, y - 4);
-    });
-
-    // Draw Y-axis labels
-    ctx.fillStyle = '#666';
-    ctx.font = '9px Arial';
-    ctx.textAlign = 'right';
-    for (let i = 0; i <= 4; i++) {
-        const value = Math.round((maxValue / 4) * i);
-        const y = canvas.height - padding - (chartHeight / 4) * i;
-        ctx.fillText(value.toString(), padding - 8, y + 2);
+    // Destroy existing chart if it exists
+    if (window.bookingChart) {
+        window.bookingChart.destroy();
     }
+
+    // Create new chart using Chart.js
+    window.bookingChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+            datasets: [{
+                label: 'Daily Bookings',
+                data: weeklyData,
+                backgroundColor: 'rgba(100, 162, 245, 0.8)',
+                borderColor: '#4A90E2',
+                borderWidth: 1,
+                borderRadius: 8,
+                maxBarThickness: 35
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 2.5,
+            layout: {
+                padding: {
+                    top: 10,
+                    right: 15,
+                    bottom: 5,
+                    left: 10
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: true,
+                    text: 'Last Week\'s Daily Bookings',
+                    color: '#333',
+                    font: {
+                        size: 14,
+                        weight: '600',
+                        family: "'Poppins', sans-serif"
+                    },
+                    padding: {
+                        top: 0,
+                        bottom: 20
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color: '#666',
+                        font: {
+                            size: 11,
+                            family: "'Poppins', sans-serif"
+                        },
+                        padding: 8
+                    },
+                    grid: {
+                        color: 'rgba(229, 229, 229, 0.5)',
+                        drawBorder: false
+                    },
+                    border: {
+                        display: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: '#666'
+                    }
+                }
+            }
+        }
+    });
 }
 
 // Simulate real-time slot updates (kept as fallback for sample data)
@@ -656,6 +1021,7 @@ function simulateRealTimeUpdates() {
 }
 
 // Updated main initialization function
+// Update init function to populate levels for default building
 async function init() {
     // Test Firebase connection first
     await testFirebaseConnection();
@@ -679,55 +1045,63 @@ async function init() {
         // Fetch stats for default building
         await fetchAndUpdateStats(defaultBuilding);
 
+        // Populate level tabs and render slots
+        await populateLevelTabs(defaultBuilding);
+        renderParkingSlots();
+
         // Setup real-time stats updates for default building
         setupRealTimeStatsUpdates(defaultBuilding);
     } else {
         console.warn('No buildings found, loading all slots');
         // Fallback: load all slots if no buildings found
         await fetchAndUpdateStats();
+        await populateLevelTabs();
+        renderParkingSlots();
         setupRealTimeStatsUpdates();
     }
-
-    // Generate sample data as fallback for parking grid
-    slots = generateSampleSlots();
 
     // Setup the dashboard
     updateDateTime();
     setupEventListeners();
-    renderChart();
-    renderParkingSlots();
+    
+    // Get the initial selected building and render the chart
+    const buildingSelector = document.querySelector('.building-selector');
+    if (buildingSelector && buildingSelector.value) {
+        renderChart(buildingSelector.value);
+    }
 
     // Start intervals
     setInterval(updateDateTime, 1000);
-    // Keep simulation for parking grid until we integrate that with Firebase too
-    setInterval(simulateRealTimeUpdates, 30000);
 }
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', init);
 
 // Export functions for external use
+// Export updated functions
 window.ParkingAPI = {
     updateSlot: (slotId, status, vehicleInfo) => {
-        const slotKey = `${slotId}_L${currentLevel}`;
-        if (slots[slotKey]) {
-            slots[slotKey].status = status;
-            slots[slotKey].vehicle = vehicleInfo;
+        // Updated to work with Firebase data structure
+        const slot = currentBuildingSlots.find(s => s.slot_name === slotId);
+        if (slot) {
+            slot.status = status;
+            // In real implementation, you'd update Firebase here
             renderParkingSlots();
         }
     },
 
     getSlot: (slotId) => {
-        const slotKey = `${slotId}_L${currentLevel}`;
-        return slots[slotKey] || null;
+        return currentBuildingSlots.find(s => s.slot_name === slotId) || null;
     },
 
-    getAllSlots: () => slots,
+    getAllSlots: () => currentBuildingSlots,
 
-    refresh: () => simulateRealTimeUpdates(),
+    refresh: () => renderParkingSlots(),
 
-    // New Firebase-based functions
+    // Firebase-based functions
     updateStats: fetchAndUpdateStats,
     getCurrentSlots: () => currentBuildingSlots,
-    setupRealTimeStats: setupRealTimeStatsUpdates
+    setupRealTimeStats: setupRealTimeStatsUpdates,
+    populateLevels: populateLevelTabs,
+    getAvailableLevels: () => availableLevels
 };

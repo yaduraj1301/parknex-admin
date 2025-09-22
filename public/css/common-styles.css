@@ -13,11 +13,14 @@ body {
     line-height: 1.6;
 } 
 
+
+
 .main-content {
     flex: 1;
-    margin-left: 280px;
-    min-height: 100vh;
+    margin-left: 17%;
+    max-height: 100vh;
     gap: 18px;
+    overflow-x: hidden;
 }
 .main-container {
     display: flex;
@@ -30,7 +33,7 @@ body {
    ================================= */
 
 .sidebar {
-    width: 280px;
+    width: 17%;
     background: #f5f5f5;
     display: flex;
     flex-direction: column;
@@ -45,14 +48,14 @@ body {
 }
 
 .sidebar .logo {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 700;
     color: #000000;
     margin-bottom: 4px;
 }
 
 .sidebar .logo-subtitle {
-    font-size: 14px;
+    font-size: 12px;
     color: #666;
     font-weight: 400;
 }
@@ -69,14 +72,14 @@ body {
 .sidebar .nav-link {
     display: flex;
     align-items: center;
-    padding: 16px 20px;
+    padding: 12px;
     text-decoration: none;
     color: #333;
     font-weight: 500;
-    font-size: 15px;
+    font-size: 12px;
     transition: all 0.3s ease;
     border-radius: 12px;
-    margin: 0 12px;
+    margin: 0 14px;
 
 
 }
@@ -84,16 +87,20 @@ body {
 .sidebar .nav-link:hover {
     background-color: rgba(100, 162, 245, 0.1);
     color: #64A2F5;
+        transform: scale(1.05);
+
 }
 
 .sidebar .nav-item.active .nav-link {
     background-color: #64A2F5;
     color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: -2px 4px 5px rgba(0, 0, 0, 0.114);
 }
 
 .sidebar .nav-icon {
     margin-right: 12px;
-    font-size: 18px;
+    font-size: 14px;
     width: 20px;
     text-align: center;
 }
@@ -107,38 +114,46 @@ body {
 .sidebar .admin-profile {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
 .sidebar .admin-avatar {
-    width: 40px;
-    height: 40px;
+    width: 20px;
+    height: 20px;
+    padding: 20px;
     border-radius: 50%;
     background: #64A2F5;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 100%;
     color: #ffffff;
 }
 
 .sidebar .admin-name {
     font-weight: 600;
     color: #333;
-    font-size: 14px;
+    font-size: 12px;
     margin-bottom: 2px;
 }
 
 .sidebar .admin-email {
-    font-size: 12px;
+    font-size: 10px;
     color: #666;
     margin: 0;
+}
+.sidebar .logout-button {
+    /* margin-top: 10px; */
+    cursor: pointer;
+    color: #4d4d4d;
+    font-size: 16px;
+    transition: color 0.3s ease;
 }
 
 /* Sidebar responsive adjustments */
 @media (max-width: 1200px) {
     .sidebar {
-        width: 240px;
+        width: 17%;
     }
 }
 
@@ -151,6 +166,9 @@ body {
     
     .sidebar.open {
         transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0;
     }
 }
 
