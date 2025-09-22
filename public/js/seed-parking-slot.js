@@ -10,7 +10,7 @@ const buildingsByLocation = [
   "Thejaswini, Trivandrum",
   "Athulya, Kochi",
 ];
-const statuses = ["Free", "Booked", "Unbooked", "Reserved", "Named"];
+const statuses = ["Free", "Unbooked", "Reserved", "Named"];
 const notesOptions = ["Has a pillar in it", "Is in a corner", "EV slot"];
 
 function randChoice(arr) {
