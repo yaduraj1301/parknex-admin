@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to fetch and display bookings data
     const fetchAndDisplayBookings = async () => {
         try {
+            let counter = 0;
             console.log('Fetching bookings data...');
             const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
             const bookingsTableBody = document.querySelector('.table tbody');
@@ -30,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Process each booking
             for (const bookingDoc of bookingsSnapshot.docs) {
                 const bookingData = bookingDoc.data();
-                console.log('Processing booking:', bookingData);
+                // console.log('Processing booking:', bookingData);
 
                 // Fetch related data
                 const relatedData = await fetchRelatedBookingData(bookingData);
@@ -42,34 +43,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bookingDate = bookingData.booking_time ? new Date(bookingData.booking_time.seconds * 1000).toLocaleDateString() : 'N/A';
 
                 // Resolve vehicle snap -> data safely (supports id string, full path string, or DocumentReference)
-                let vehicleSnap;
-                const vehicleRefOrId = bookingData.vehicle_id || bookingData.vehicleId;
+                // let vehicleSnap;
+                // const vehicleRefOrId = bookingData.vehicle_id;
 
-                if (!vehicleRefOrId) {
-                    vehicleSnap = null;
-                } else if (typeof vehicleRefOrId === 'object' && vehicleRefOrId.id) {
-                    // DocumentReference
-                    vehicleSnap = await getDoc(vehicleRefOrId);
-                } else if (typeof vehicleRefOrId === 'string' && vehicleRefOrId.includes('/')) {
-                    // Full path like 'Vehicles/abc123'
-                    vehicleSnap = await getDoc(doc(db, vehicleRefOrId));
-                } else if (typeof vehicleRefOrId === 'string') {
-                    // Plain ID; adjust collection name if yours is different (Vehicles vs vehicles)
-                    vehicleSnap = await getDoc(doc(db, 'Vehicles', vehicleRefOrId));
-                }
-                const vehicle = vehicleSnap && vehicleSnap.exists() ? vehicleSnap.data() : null;
+                // if (!vehicleRefOrId) {
+                //     vehicleSnap = null;
+                // } else if (typeof vehicleRefOrId === 'object' && vehicleRefOrId.id) {
+                //     // DocumentReference
+                //     vehicleSnap = await getDoc(vehicleRefOrId);
+                // } else if (typeof vehicleRefOrId === 'string' && vehicleRefOrId.includes('/')) {
+                //     // Full path like 'Vehicles/abc123'
+                //     vehicleSnap = await getDoc(doc(db, vehicleRefOrId));
+                // } else if (typeof vehicleRefOrId === 'string') {
+                //     // Plain ID; adjust collection name if yours is different (Vehicles vs vehicles)
+                //     vehicleSnap = await getDoc(doc(db, 'Vehicles', vehicleRefOrId));
+                // }
+                // const vehicle = vehicleSnap && vehicleSnap.exists() ? vehicleSnap.data() : null;
 
-                // Use vehicle fields when rendering
+                // Use vehicle fields when rendering <td>${bookingData.booking_id || bookingDoc.id}</td>
                 row.innerHTML = `
-                    <td>${bookingData.bookingId || bookingDoc.id}</td>
-                    <td>${(vehicle && (vehicle.registration_no || vehicle.vehicleNumber || vehicle.number || vehicle.plateNumber)) || 'N/A'}</td>
+                    <td>BK#${counter}</td>
+                    <td>${(relatedData.vehicleNumber || 'N/A')}</td>
                     <td>${relatedData.employeeName || 'N/A'}</td>
                     <td>${relatedData.slotName || 'N/A'}</td>
                     <td><span class="status-${bookingData.status || 'unknown'}">${bookingData.status || 'Unknown'}</span></td>
                     <td>${bookingDate}</td>
                     <td><button class="btn-action">View</button></td>
                 `;
-
+                counter++;
                 bookingsTableBody.appendChild(row);
             }
 
@@ -86,19 +87,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to fetch related data for a booking
     const fetchRelatedBookingData = async (bookingData) => {
-        console.log('Fetching related data for booking:', bookingData.vehicle_id);
+        // console.log('Fetching related data for booking:', bookingData.vehicle_id);
+        let parts = bookingData.vehicle_id.split('/');
+        const employeePath = parts.slice(0, 2).join('/')
+        const employeeSnap = await getDoc(doc(db, employeePath));
+        const employeeData = employeeSnap && employeeSnap.exists() ? employeeSnap.data() : null;
+        const slotSnap = await getDoc(bookingData.slot_id);
         const relatedData = {
-            employeeName: 'N/A',
-            slotName: 'N/A'
+            vehicleNumber: 'N/A',
+            employeeName: employeeData ? employeeData.full_name : 'N/A',
+            slotName: slotSnap && slotSnap.exists() ? slotSnap.data().slot_name : 'N/A'
         };
 
         try {
             // Fetch vehicle data if vehicleId exists
-            if (bookingData.vehicleId) {
+            if (bookingData.vehicle_id) {
                 try {
-                    const vehicleDoc = await getDoc(doc(db, 'Vehicles', bookingData.vehicleId));
+                    const vehicleDoc = await getDoc(doc(db, bookingData.vehicle_id));
                     if (vehicleDoc.exists()) {
                         const vehicleData = vehicleDoc.data();
+                        console.log(vehicleData);
                         relatedData.vehicleNumber = vehicleData.registration_no || vehicleData.vehicleNumber || vehicleData.number || vehicleData.plateNumber || 'N/A';
                     }
                 } catch (error) {
@@ -120,9 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Fetch slot data if slotId exists
-            if (bookingData.slotId) {
+            if (bookingData.slot_id) {
                 try {
-                    const slotDoc = await getDoc(doc(db, 'ParkingSlots', bookingData.slotId));
+                    const slotDoc = await getDoc(bookingData.slot_id);
                     if (slotDoc.exists()) {
                         const slotData = slotDoc.data();
                         relatedData.slotName = slotData.slot_name || slotData.slotNumber || slotDoc.id;
@@ -354,12 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     const populateFloorTabs = (floors) => {
                         console.log('Populating floor tabs with:', floors);
                         levelTabs.innerHTML = '';
-                        
+
                         if (floors.length === 0) {
                             levelTabs.innerHTML = '<div style="text-align: center; padding: 10px;">No floors available</div>';
                             return;
                         }
-                        
+
                         floors.forEach((floor, index) => {
                             const tab = document.createElement('button');
                             tab.classList.add('level-tab');
@@ -380,11 +388,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         try {
                             console.log(`Rendering parking grid for floor: ${floor}`);
                             parkingGrid.innerHTML = '';
-                            
+
                             // Filter slots by floor
                             const floorSlots = slots.filter(slot => slot.floor === floor);
                             console.log(`Slots for floor ${floor}:`, floorSlots);
-                            
+
                             if (floorSlots.length === 0) {
                                 parkingGrid.innerHTML = '<div style="text-align: center; padding: 20px;">No slots available for this floor</div>';
                                 return;
@@ -402,7 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             Object.keys(slotsByBlock).forEach(blockName => {
                                 const blockDiv = document.createElement('div');
                                 blockDiv.classList.add('parking-block');
-                                
+
                                 const blockTitle = document.createElement('h4');
                                 blockTitle.textContent = `Block ${blockName}`;
                                 blockDiv.appendChild(blockTitle);
@@ -433,13 +441,13 @@ document.addEventListener('DOMContentLoaded', () => {
                                         if (slot.status === 'Free') {
                                             // Find the slot number input field in the booking form
                                             const allInputs = document.querySelectorAll('input[type="text"]');
-                                            
+
                                             // The slot number input should be the 3rd input (index 2)
                                             // Order: Vehicle Number (0), Employee Name (1), Slot Number (2), Contact Number (3)
                                             if (allInputs.length >= 3) {
                                                 allInputs[2].value = slot.slot_name || slot.slotNumber || slot.id;
                                             }
-                                            
+
                                             console.log('Slot selected:', slot);
                                             // Close the slot selection overlay
                                             document.body.removeChild(slotOverlay);
@@ -464,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fetchBuildings = async () => {
                         try {
                             console.log('Fetching buildings from database...');
-                            
+
                             // First, let's try to fetch from 'Buildings' collection
                             let buildingsSnapshot;
                             try {
@@ -475,17 +483,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // If Buildings collection doesn't exist, get unique buildings from ParkingSlots
                                 const slotsSnapshot = await getDocs(collection(db, 'ParkingSlots'));
                                 const buildingsSet = new Set();
-                                
+
                                 slotsSnapshot.forEach((doc) => {
                                     const slotData = doc.data();
                                     if (slotData.building) {
                                         buildingsSet.add(slotData.building);
                                     }
                                 });
-                                
+
                                 const buildings = Array.from(buildingsSet).sort();
                                 console.log('Buildings found from ParkingSlots:', buildings);
-                                
+
                                 buildings.forEach((building) => {
                                     const option = document.createElement('option');
                                     option.value = building;
@@ -501,17 +509,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                 // Fallback: get buildings from ParkingSlots collection
                                 const slotsSnapshot = await getDocs(collection(db, 'ParkingSlots'));
                                 const buildingsSet = new Set();
-                                
+
                                 slotsSnapshot.forEach((doc) => {
                                     const slotData = doc.data();
                                     if (slotData.building) {
                                         buildingsSet.add(slotData.building);
                                     }
                                 });
-                                
+
                                 const uniqueBuildings = Array.from(buildingsSet).sort();
                                 console.log('Buildings found from ParkingSlots:', uniqueBuildings);
-                                
+
                                 uniqueBuildings.forEach((building) => {
                                     const option = document.createElement('option');
                                     option.value = building;
