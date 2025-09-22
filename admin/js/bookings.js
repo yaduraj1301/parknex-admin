@@ -57,9 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Plain ID; adjust collection name if yours is different (Vehicles vs vehicles)
                     vehicleSnap = await getDoc(doc(db, 'Vehicles', vehicleRefOrId));
                 }
-                console.log('vehicleSnap:', vehicleSnap);
                 const vehicle = vehicleSnap && vehicleSnap.exists() ? vehicleSnap.data() : null;
-                console.log('vehicle data:', vehicle);
 
                 // Use vehicle fields when rendering
                 row.innerHTML = `
@@ -88,8 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to fetch related data for a booking
     const fetchRelatedBookingData = async (bookingData) => {
+        console.log('Fetching related data for booking:', bookingData.vehicle_id);
         const relatedData = {
-            vehicleNumber: 'N/A' ,
             employeeName: 'N/A',
             slotName: 'N/A'
         };
