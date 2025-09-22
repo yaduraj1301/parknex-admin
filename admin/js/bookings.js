@@ -2,25 +2,95 @@ import { db } from "../../public/js/firebase-config.js";
 import { collection, getDocs, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Initialize table filters
+    function initTableFilters() {
+        const searchInput = document.querySelector(".search-bar");
+        const statusFilter = document.querySelector("#statusFilter");
+        const dateFilter = document.querySelector("#dateFilter");
+
+        function normalize(s) {
+            return (s || "").toString().trim().toLowerCase();
+        }
+
+        function applyFilters() {
+            const searchTerm = normalize(searchInput.value);
+            const statusVal = normalize(statusFilter.value);
+            const selectedDate = dateFilter.value; // Already in YYYY-MM-DD format
+
+            document.querySelectorAll(".table tbody tr").forEach((row) => {
+                let show = true;
+
+                // Skip empty rows
+                if (row.cells.length === 0 || row.cells[0]?.innerText.includes('No bookings found') || row.cells[0]?.innerText.includes('Error loading')) {
+                    return;
+                }
+
+                const bookingId = normalize(row.cells[0]?.innerText);
+                const vehicleNumber = normalize(row.cells[1]?.innerText);
+                const employeeName = normalize(row.cells[2]?.innerText);
+                const buildingName = normalize(row.cells[3]?.innerText);
+                const slotNumber = normalize(row.cells[4]?.innerText);
+                const status = normalize(row.cells[5]?.innerText);
+                const dateTime = row.cells[6]?.innerText.trim();
+
+                // Search filter (searches in booking ID, vehicle number, employee name, building, slot)
+                if (searchTerm) {
+                    if (!(bookingId.includes(searchTerm) || 
+                          vehicleNumber.includes(searchTerm) || 
+                          employeeName.includes(searchTerm) || 
+                          buildingName.includes(searchTerm) || 
+                          slotNumber.includes(searchTerm))) {
+                        show = false;
+                    }
+                }
+
+                // Status filter
+                if (statusVal && statusVal !== "" && statusVal !== "all status") {
+                    if (status !== statusVal) {
+                        show = false;
+                    }
+                }
+
+                // Date filter
+                if (selectedDate) {
+                    // Extract date from the row's date cell (should be in YYYY-MM-DD format)
+                    const rowDateText = dateTime.trim();
+                    if (rowDateText !== 'N/A' && rowDateText !== selectedDate) {
+                        show = false;
+                    }
+                }
+
+                row.style.display = show ? "" : "none";
+            });
+        }
+
+        // Expose for calling after rows are rendered
+        window.applyFilters = applyFilters;
+
+        // Event listeners
+        if (searchInput) {
+            searchInput.addEventListener("input", applyFilters);
+        }
+        if (statusFilter) {
+            statusFilter.addEventListener("change", applyFilters);
+        }
+        if (dateFilter) {
+            dateFilter.addEventListener("change", applyFilters);
+        }
+    }
+
     // Function to fetch and display bookings data
     const fetchAndDisplayBookings = async () => {
         try {
             let counter = 1;
             console.log('Fetching bookings data...');
             const bookingsTableBody = document.querySelector('.table tbody');
-            const tableContainer = document.querySelector('.table-container');
 
-            if (!bookingsTableBody || !tableContainer) {
-                console.error('Bookings table body or container not found');
+            if (!bookingsTableBody) {
+                console.error('Bookings table body not found');
                 return;
             }
-
-            // Add loading indicator
-            const loadingIndicator = document.createElement('div');
-            loadingIndicator.textContent = 'Loading bookings...';
-            loadingIndicator.style.textAlign = 'center';
-            loadingIndicator.style.padding = '20px';
-            tableContainer.appendChild(loadingIndicator);
 
             // Clear existing rows
             bookingsTableBody.innerHTML = '';
@@ -32,45 +102,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px;">No bookings found</td>';
                 bookingsTableBody.appendChild(emptyRow);
-                tableContainer.removeChild(loadingIndicator); // Remove loading indicator
                 return;
             }
 
             console.log(`Found ${bookingsSnapshot.size} bookings`);
 
-            // Collect rows in memory
-            const rows = [];
             for (const bookingDoc of bookingsSnapshot.docs) {
                 const bookingData = bookingDoc.data();
                 const relatedData = await fetchRelatedBookingData(bookingData);
 
-                // Format date
+                // Format date to YYYY-MM-DD for consistent filtering
                 const bookingDate = bookingData.booking_time
-                    ? new Date(bookingData.booking_time.seconds * 1000).toLocaleDateString()
+                    ? new Date(bookingData.booking_time.seconds * 1000).toISOString().split('T')[0]
                     : 'N/A';
 
                 // Create table row
-                const row = `
-                    <tr>
-                        <td>BK#${counter++}</td>
-                        <td>${relatedData.vehicleNumber}</td>
-                        <td>${relatedData.employeeName}</td>
-                        <td>${relatedData.buildingName}</td>
-                        <td>${relatedData.level}\n${relatedData.slotName}</td>
-                        <td>${bookingData.status || 'N/A'}</td>
-                        <td>${bookingDate}</td>
-                        <td><button class="btn-action">View</button></td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>BK#${counter++}</td>
+                    <td>${relatedData.vehicleNumber}</td>
+                    <td>${relatedData.employeeName}</td>
+                    <td>${relatedData.buildingName}</td>
+                    <td>${relatedData.level}\n${relatedData.slotName}</td>
+                    <td>${bookingData.status || 'N/A'}</td>
+                    <td>${bookingDate}</td>
+                    <td><button class="btn-action">View</button></td>
                 `;
-                rows.push(row);
+
+                // Append row immediately
+                bookingsTableBody.appendChild(row);
             }
 
-            // Append all rows at once
-            bookingsTableBody.innerHTML = rows.join('');
             console.log('Bookings table populated successfully');
-
-            // Remove loading indicator
-            tableContainer.removeChild(loadingIndicator);
+            
+            // Apply filters after data is loaded
+            if (window.applyFilters) {
+                window.applyFilters();
+            }
         } catch (error) {
             console.error('Error fetching bookings:', error);
             const bookingsTableBody = document.querySelector('.table tbody');
@@ -82,9 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to fetch related data for a booking
     const fetchRelatedBookingData = async (bookingData) => {
-        // console.log('Fetching related data for booking:', bookingData.vehicle_id);
+        console.log('Fetching related data for booking:', bookingData.vehicle_id);
         let parts = bookingData.vehicle_id.split('/');
-        const employeePath = parts.slice(0, 2).join('/')
+        const employeePath = parts.slice(0, 2).join('/');
         const employeeSnap = await getDoc(doc(db, employeePath));
         const employeeData = employeeSnap && employeeSnap.exists() ? employeeSnap.data() : null;
         const slotSnap = await getDoc(bookingData.slot_id);
@@ -144,6 +212,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return relatedData;
     };
+
+    // Initialize table filters
+    initTableFilters();
 
     // Load bookings data when page loads
     fetchAndDisplayBookings();
