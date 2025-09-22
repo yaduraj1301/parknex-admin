@@ -5,82 +5,77 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to fetch and display bookings data
     const fetchAndDisplayBookings = async () => {
         try {
-            let counter = 0;
+            let counter = 1;
             console.log('Fetching bookings data...');
-            const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
             const bookingsTableBody = document.querySelector('.table tbody');
+            const tableContainer = document.querySelector('.table-container');
 
-            if (!bookingsTableBody) {
-                console.error('Bookings table body not found');
+            if (!bookingsTableBody || !tableContainer) {
+                console.error('Bookings table body or container not found');
                 return;
             }
 
+            // Add loading indicator
+            const loadingIndicator = document.createElement('div');
+            loadingIndicator.textContent = 'Loading bookings...';
+            loadingIndicator.style.textAlign = 'center';
+            loadingIndicator.style.padding = '20px';
+            tableContainer.appendChild(loadingIndicator);
+
             // Clear existing rows
             bookingsTableBody.innerHTML = '';
+
+            const bookingsSnapshot = await getDocs(collection(db, 'bookings'));
 
             if (bookingsSnapshot.empty) {
                 console.log('No bookings found');
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px;">No bookings found</td>';
                 bookingsTableBody.appendChild(emptyRow);
+                tableContainer.removeChild(loadingIndicator); // Remove loading indicator
                 return;
             }
 
             console.log(`Found ${bookingsSnapshot.size} bookings`);
 
-            // Process each booking
+            // Collect rows in memory
+            const rows = [];
             for (const bookingDoc of bookingsSnapshot.docs) {
                 const bookingData = bookingDoc.data();
-                // console.log('Processing booking:', bookingData);
-
-                // Fetch related data
                 const relatedData = await fetchRelatedBookingData(bookingData);
 
-                // Create table row
-                const row = document.createElement('tr');
-
                 // Format date
-                const bookingDate = bookingData.booking_time ? new Date(bookingData.booking_time.seconds * 1000).toLocaleDateString() : 'N/A';
+                const bookingDate = bookingData.booking_time
+                    ? new Date(bookingData.booking_time.seconds * 1000).toLocaleDateString()
+                    : 'N/A';
 
-                // Resolve vehicle snap -> data safely (supports id string, full path string, or DocumentReference)
-                // let vehicleSnap;
-                // const vehicleRefOrId = bookingData.vehicle_id;
-
-                // if (!vehicleRefOrId) {
-                //     vehicleSnap = null;
-                // } else if (typeof vehicleRefOrId === 'object' && vehicleRefOrId.id) {
-                //     // DocumentReference
-                //     vehicleSnap = await getDoc(vehicleRefOrId);
-                // } else if (typeof vehicleRefOrId === 'string' && vehicleRefOrId.includes('/')) {
-                //     // Full path like 'Vehicles/abc123'
-                //     vehicleSnap = await getDoc(doc(db, vehicleRefOrId));
-                // } else if (typeof vehicleRefOrId === 'string') {
-                //     // Plain ID; adjust collection name if yours is different (Vehicles vs vehicles)
-                //     vehicleSnap = await getDoc(doc(db, 'Vehicles', vehicleRefOrId));
-                // }
-                // const vehicle = vehicleSnap && vehicleSnap.exists() ? vehicleSnap.data() : null;
-
-                // Use vehicle fields when rendering <td>${bookingData.booking_id || bookingDoc.id}</td>
-                row.innerHTML = `
-                    <td>BK#${counter}</td>
-                    <td>${(relatedData.vehicleNumber || 'N/A')}</td>
-                    <td>${relatedData.employeeName || 'N/A'}</td>
-                    <td>${relatedData.slotName || 'N/A'}</td>
-                    <td><span class="status-${bookingData.status || 'unknown'}">${bookingData.status || 'Unknown'}</span></td>
-                    <td>${bookingDate}</td>
-                    <td><button class="btn-action">View</button></td>
+                // Create table row
+                const row = `
+                    <tr>
+                        <td>BK#${counter++}</td>
+                        <td>${relatedData.vehicleNumber}</td>
+                        <td>${relatedData.employeeName}</td>
+                        <td>${relatedData.buildingName}</td>
+                        <td>${relatedData.level}\n${relatedData.slotName}</td>
+                        <td>${bookingData.status || 'N/A'}</td>
+                        <td>${bookingDate}</td>
+                        <td><button class="btn-action">View</button></td>
+                    </tr>
                 `;
-                counter++;
-                bookingsTableBody.appendChild(row);
+                rows.push(row);
             }
 
+            // Append all rows at once
+            bookingsTableBody.innerHTML = rows.join('');
             console.log('Bookings table populated successfully');
 
+            // Remove loading indicator
+            tableContainer.removeChild(loadingIndicator);
         } catch (error) {
             console.error('Error fetching bookings:', error);
             const bookingsTableBody = document.querySelector('.table tbody');
             if (bookingsTableBody) {
-                bookingsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Error loading bookings data</td></tr>';
+                bookingsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Error loading bookings</td></tr>';
             }
         }
     };
@@ -95,6 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const slotSnap = await getDoc(bookingData.slot_id);
         const relatedData = {
             vehicleNumber: 'N/A',
+            buildingName: 'N/A',
+            level: 'N/A',
             employeeName: employeeData ? employeeData.full_name : 'N/A',
             slotName: slotSnap && slotSnap.exists() ? slotSnap.data().slot_name : 'N/A'
         };
@@ -106,7 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const vehicleDoc = await getDoc(doc(db, bookingData.vehicle_id));
                     if (vehicleDoc.exists()) {
                         const vehicleData = vehicleDoc.data();
-                        console.log(vehicleData);
                         relatedData.vehicleNumber = vehicleData.registration_no || vehicleData.vehicleNumber || vehicleData.number || vehicleData.plateNumber || 'N/A';
                     }
                 } catch (error) {
@@ -133,7 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     const slotDoc = await getDoc(bookingData.slot_id);
                     if (slotDoc.exists()) {
                         const slotData = slotDoc.data();
+                        relatedData.buildingName = slotData.building || 'N/A';
                         relatedData.slotName = slotData.slot_name || slotData.slotNumber || slotDoc.id;
+                        relatedData.level = slotData.floor || 'N/A';
                     }
                 } catch (error) {
                     console.warn('Error fetching slot data:', error);
