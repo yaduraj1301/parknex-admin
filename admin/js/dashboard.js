@@ -833,8 +833,21 @@ function addSlotTooltip(slotElement, slot) {
 // Render weekly usage chart
 async function getWeeklyBookingData(building) {
     try {
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+        // Get last week's date range
+        const today = new Date();
+        const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // Calculate last week's Monday (go back to this week's Monday, then 7 more days)
+        const lastMonday = new Date();
+        lastMonday.setDate(today.getDate() - currentDay - 7 + 1); // +1 because we want Monday
+        lastMonday.setHours(0, 0, 0, 0); // Start of day
+        
+        // Calculate last week's Saturday
+        const lastSaturday = new Date(lastMonday);
+        lastSaturday.setDate(lastMonday.getDate() + 5); // +5 to get to Saturday
+        lastSaturday.setHours(23, 59, 59, 999); // End of day
+
+        console.log('Fetching bookings from:', lastMonday, 'to:', lastSaturday);
 
         // First, get all parking slots for the selected building
         const parkingSlotsRef = collection(db, 'ParkingSlots');
@@ -847,25 +860,19 @@ async function getWeeklyBookingData(building) {
             buildingSlotIds.add(doc.id);
         });
 
-        // Get bookings for the past week
+        // Get bookings for last week (Monday to Saturday)
         const bookingsRef = collection(db, 'bookings');
         const bookingsQuery = query(
             bookingsRef,
-            where('booking_time', '>=', oneWeekAgo),
-            orderBy('booking_time', 'desc')
+            where('booking_time', '>=', lastMonday),
+            where('booking_time', '<=', lastSaturday),
+            orderBy('booking_time', 'asc')
         );
 
         const snapshot = await getDocs(bookingsQuery);
         
-        // Initialize counts for each day
-        const dayCounts = {
-            1: 0, // Monday
-            2: 0,
-            3: 0,
-            4: 0,
-            5: 0,
-            6: 0 // Saturday
-        };
+        // Initialize counts for each day (Monday to Saturday)
+        const dayCounts = [0, 0, 0, 0, 0, 0]; // Index 0 = Monday, 5 = Saturday
 
         // Count bookings for each day, only if the slot belongs to the selected building
         snapshot.forEach(doc => {
@@ -888,11 +895,9 @@ async function getWeeklyBookingData(building) {
             
             if (bookingSlotId && buildingSlotIds.has(bookingSlotId)) {
                 const bookingDate = data.booking_time.toDate();
-                const dayOfWeek = bookingDate.getDay();
-                
-                // Skip Sunday (0)
-                if (dayOfWeek !== 0) {
-                    dayCounts[dayOfWeek]++;
+                const dayIndex = bookingDate.getDay() - 1; // Convert to 0-based index (Monday = 0)
+                if (dayIndex >= 0 && dayIndex <= 5) { // Only count Monday (0) to Saturday (5)
+                    dayCounts[dayIndex]++;
                 }
             }
         });
