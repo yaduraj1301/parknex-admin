@@ -273,6 +273,7 @@ function handleAlertAction(button) {
     }
 }
 
+
 function scrollToParkingOverview() {
     const parkingSection = document.querySelector('.parking-overview');
     if (parkingSection) {
@@ -301,114 +302,12 @@ function highlightUnbookedSlots() {
 // CHART FUNCTIONS
 // ========================================
 
-function renderChart() {
-    const canvas = document.getElementById('weeklyChart');
-    if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    const data = weeklyData;
-    const labels = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    canvas.width = canvas.offsetWidth;
-    canvas.height = 240;
-
-    const padding = 30;
-    const chartWidth = canvas.width - (padding * 2);
-    const chartHeight = canvas.height - (padding * 2);
-    const maxValue = Math.max(...data);
-    const barWidth = chartWidth / data.length;
-
-    data.forEach((value, index) => {
-        const barHeight = (value / maxValue) * chartHeight;
-        const x = padding + (index * barWidth) + (barWidth * 0.2);
-        const y = canvas.height - padding - barHeight;
-        const width = barWidth * 0.6;
-
-        ctx.fillStyle = '#64A2F5';
-        ctx.fillRect(x, y, width, barHeight);
-
-        ctx.fillStyle = '#666';
-        ctx.font = '11px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(labels[index], x + width / 2, canvas.height - 8);
-
-        ctx.fillStyle = '#333';
-        ctx.font = '10px Arial';
-        ctx.fillText(value.toString(), x + width / 2, y - 4);
-    });
-
-    ctx.fillStyle = '#666';
-    ctx.font = '9px Arial';
-    ctx.textAlign = 'right';
-    for (let i = 0; i <= 4; i++) {
-        const value = Math.round((maxValue / 4) * i);
-        const y = canvas.height - padding - (chartHeight / 4) * i;
-        ctx.fillText(value.toString(), padding - 8, y + 2);
-    }
-}
 
 // ========================================
 // PARKING OVERVIEW FUNCTIONS
 // ========================================
 
-async function populateLevelTabs(selectedBuilding = null) {
-    try {
-        let slotsToCheck = currentBuildingSlots;
-        
-        if (slotsToCheck.length === 0 && selectedBuilding) {
-            const parkingSlotsRef = collection(db, 'ParkingSlots');
-            const q = query(parkingSlotsRef, where('building', '==', selectedBuilding));
-            const snapshot = await getDocs(q);
-            
-            slotsToCheck = [];
-            snapshot.forEach(doc => {
-                slotsToCheck.push(doc.data());
-            });
-        }
-        
-        const levels = new Set();
-        slotsToCheck.forEach(slot => {
-            if (slot.floor) {
-                const levelMatch = slot.floor.match(/level\s*(\d+)/i);
-                if (levelMatch) {
-                    levels.add(parseInt(levelMatch[1]));
-                }
-            }
-        });
-        
-        availableLevels = Array.from(levels).sort((a, b) => a - b);
-        
-        const levelTabsContainer = document.querySelector('.level-tabs');
-        if (levelTabsContainer && availableLevels.length > 0) {
-            levelTabsContainer.innerHTML = '';
-            
-            availableLevels.forEach((level, index) => {
-                const button = document.createElement('button');
-                button.className = `level-tab ${index === 0 ? 'active' : ''}`;
-                button.dataset.level = level;
-                button.textContent = `Level ${level}`;
-                
-                button.addEventListener('click', (e) => {
-                    switchLevel(parseInt(e.target.dataset.level));
-                });
-                
-                levelTabsContainer.appendChild(button);
-            });
-            
-            if (availableLevels.length > 0) {
-                currentLevel = availableLevels[0];
-            }
-        }
-        
-        return availableLevels;
-        
-    } catch (error) {
-        console.error('Error fetching levels:', error);
-        return [];
-    }
-}
 
 function switchLevel(level) {
     currentLevel = level;
