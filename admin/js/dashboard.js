@@ -273,7 +273,6 @@ function handleAlertAction(button) {
     }
 }
 
-
 function scrollToParkingOverview() {
     const parkingSection = document.querySelector('.parking-overview');
     if (parkingSection) {
