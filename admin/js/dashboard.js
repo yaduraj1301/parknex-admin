@@ -1,11 +1,9 @@
-// Dashboard JavaScript - Functional Approach
 import { db, auth, app } from '../../public/js/firebase-config.js';
 import { collection, getDocs, query, where, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // Global variables
 
 let currentLevel = 1;
-let weeklyData = [45, 48, 15, 46, 42, 58, 60];
 let currentBuildingSlots = [];
 let availableLevels = [];
 
@@ -400,12 +398,6 @@ function highlightUnbookedSlots() {
 // ========================================
 
 
-// ========================================
-// PARKING OVERVIEW FUNCTIONS
-// ========================================
-
-
-
 function addSlotPopup(slotElement, slot) {
     const popup = document.createElement('div');
     popup.className = 'slot-popup';
@@ -524,6 +516,11 @@ function setupEventListeners() {
     }
 }
 
+
+
+// ========================================
+// PARKING OVERVIEW FUNCTIONS
+// ========================================
 
 
 
@@ -977,33 +974,6 @@ async function renderChart(building) {
     });
 }
 
-// Simulate real-time slot updates (kept as fallback for sample data)
-function simulateRealTimeUpdates() {
-    const slotIds = Object.keys(slots);
-    const statuses = ['available', 'occupied', 'reserved'];
-
-    // Update 2-3 random slots
-    for (let i = 0; i < Math.floor(Math.random() * 2) + 2; i++) {
-        const randomSlotId = slotIds[Math.floor(Math.random() * slotIds.length)];
-        const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-
-        if (slots[randomSlotId]) {
-            slots[randomSlotId].status = randomStatus;
-
-            if (randomStatus !== 'available') {
-                slots[randomSlotId].vehicle = generateVehicleInfo();
-            } else {
-                slots[randomSlotId].vehicle = null;
-            }
-        }
-    }
-
-    // Re-render the current level
-    renderParkingSlots();
-    console.log('Real-time update completed');
-}
-
-// Updated main initialization function
 // Update init function to populate levels for default building
 async function init() {
     showLoadingOverlay();
@@ -1063,7 +1033,6 @@ window.ParkingAPI = {
     },
 
     getSlot: (slotId) => {
-        return currentBuildingSlots.find(s => s.slot_name === slotId) || null;
         return currentBuildingSlots.find(s => s.slot_name === slotId) || null;
     },
 
