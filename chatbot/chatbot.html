@@ -8,6 +8,10 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
     <link rel="stylesheet" href="css/chatbot.css" />
   </head>
   <body>
@@ -16,17 +20,29 @@
       <p>Loading...</p>
     </div>
 
-    <div id="chatInterface" class="chat-container" style="display: none;">
+    <div id="chatInterface" class="chat-container" style="display: none">
       <div class="header">
         <div class="logo">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M9 17V7h4a3 3 0 0 1 0 6h-4" />
-                <line x1="9" y1="13" x2="13" y2="13" />
-            </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M9 17V7h4a3 3 0 0 1 0 6h-4" />
+            <line x1="9" y1="13" x2="13" y2="13" />
+          </svg>
         </div>
         ParkNex Assistant
-        <button id="logoutBtn" class="logout-btn">Logout</button>
+        <button id="logoutBtn" class="logout-btn" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
       </div>
       <div class="messages" id="messages"></div>
       <div class="input-box">
@@ -35,7 +51,10 @@
       </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js" type="module"></script>
+    <script
+      src="https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js"
+      type="module"
+    ></script>
     <script src="js/chatbot-ui.js" type="module"></script>
   </body>
 </html>
