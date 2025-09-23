@@ -96,7 +96,7 @@ function showNotificationPopup(notificationData) {
 // ===================================================
 document.addEventListener('DOMContentLoaded', () => {
     // Get the parent link where the badge will be added
-    const notificationLink = document.querySelector('.nav-link[data-section="notifications"]');
+    const notificationLink = document.querySelector('.user-menu') || document.querySelector('.nav-link[data-section="notifications"]');
 
     if (notificationLink) {
         const unreadQuery = query(
