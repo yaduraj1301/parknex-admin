@@ -183,7 +183,7 @@ body {
    HEADER STYLES
    ================================= */
 
-.main-header {
+   .main-header {
     background: var(--neutral-white);
     border-bottom: 1px solid var(--border-color);
     padding: 10px;
@@ -197,18 +197,15 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-
 .header-left {
     display: flex;
     justify-content: space-between;
     gap: 20px;
 }
-
-.logout-button-container {
+.logout-button-container{
     display: none;
 }
-
-.logout-button-container .logout-button {
+.logout-button-container .logout-button{
     padding: 10px 16px;
     border-radius: 4px;
     color: var(--neutral-white);
@@ -291,18 +288,15 @@ body {
         justify-content: space-between;
     }
 
-    .header-left {
+    .header-left{
         width: 100%;
     }
-
-    .header-left .logout-button-container {
+    .header-left .logout-button-container{
         display: block;
     }
-
     .datetime {
-        display: none;
+        display: none;    
     }
-
     .sidebar {
         width: 100%;
         transform: translateX(-100%);
@@ -317,6 +311,6 @@ body {
         margin-left: 0;
     }
 
-
+    
 
 }
