@@ -8,7 +8,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 // --- Configuration ---
-const NUMBER_OF_BOOKINGS_TO_CREATE = 1;
+const NUMBER_OF_BOOKINGS_TO_CREATE = 25;
 const DAYS_IN_THE_PAST = 7; // Bookings will be spread across the last 7 days.
 
 // --- Logging helper ---
