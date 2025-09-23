@@ -1,5 +1,17 @@
 import { db } from "../../public/js/firebase-config.js";
-import { collection, getDocs, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { 
+    collection, 
+    getDocs, 
+    onSnapshot, 
+    doc, 
+    getDoc, 
+    collectionGroup, 
+    query, 
+    where, 
+    addDoc, 
+    updateDoc, 
+    Timestamp 
+} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -36,11 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Search filter (searches in booking ID, vehicle number, employee name, building, slot)
                 if (searchTerm) {
-                    if (!(bookingId.includes(searchTerm) || 
-                          vehicleNumber.includes(searchTerm) || 
-                          employeeName.includes(searchTerm) || 
-                          buildingName.includes(searchTerm) || 
-                          slotNumber.includes(searchTerm))) {
+                    if (!(bookingId.includes(searchTerm) ||
+                        vehicleNumber.includes(searchTerm) ||
+                        employeeName.includes(searchTerm) ||
+                        buildingName.includes(searchTerm) ||
+                        slotNumber.includes(searchTerm))) {
                         show = false;
                     }
                 }
@@ -134,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             console.log('Bookings table populated successfully');
-            
+
             // Apply filters after data is loaded
             if (window.applyFilters) {
                 window.applyFilters();
@@ -150,26 +162,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to fetch related data for a booking
     const fetchRelatedBookingData = async (bookingData) => {
-        console.log('Fetching related data for booking:', bookingData.vehicle_id);
-        let parts = bookingData.vehicle_id.split('/');
-        const employeePath = parts.slice(0, 2).join('/');
-        const employeeSnap = await getDoc(doc(db, employeePath));
-        const employeeData = employeeSnap && employeeSnap.exists() ? employeeSnap.data() : null;
-        const slotSnap = await getDoc(bookingData.slot_id);
+        console.log('Fetching related data for booking:', bookingData);
+        
+        // Initialize with default values
         const relatedData = {
             vehicleNumber: 'N/A',
             buildingName: 'N/A',
             level: 'N/A',
-            employeeName: employeeData ? employeeData.full_name : 'N/A',
-            slotName: slotSnap && slotSnap.exists() ? slotSnap.data().slot_name : 'N/A'
+            employeeName: 'N/A',
+            slotName: 'N/A'
         };
 
         try {
-            // Fetch vehicle data if vehicleId exists
-            if (bookingData.vehicle_id) {
+            // Check if booking has direct fields (new simplified structure)
+            if (bookingData.vehicle_number) {
+                relatedData.vehicleNumber = bookingData.vehicle_number;
+            }
+            if (bookingData.employee_name) {
+                relatedData.employeeName = bookingData.employee_name;
+            }
+            if (bookingData.slot_name) {
+                relatedData.slotName = bookingData.slot_name;
+            }
+            if (bookingData.building) {
+                relatedData.buildingName = bookingData.building;
+            }
+            if (bookingData.floor) {
+                relatedData.level = bookingData.floor;
+            }
+
+            // Fallback: try to fetch from references if direct fields don't exist (old structure)
+            if (bookingData.vehicle_id && typeof bookingData.vehicle_id === 'string') {
                 try {
+                    let parts = bookingData.vehicle_id.split('/');
+                    const employeePath = parts.slice(0, 2).join('/');
+                    const employeeSnap = await getDoc(doc(db, employeePath));
+                    const employeeData = employeeSnap && employeeSnap.exists() ? employeeSnap.data() : null;
+                    
+                    if (employeeData && !bookingData.employee_name) {
+                        relatedData.employeeName = employeeData.full_name || 'N/A';
+                    }
+
                     const vehicleDoc = await getDoc(doc(db, bookingData.vehicle_id));
-                    if (vehicleDoc.exists()) {
+                    if (vehicleDoc.exists() && !bookingData.vehicle_number) {
                         const vehicleData = vehicleDoc.data();
                         relatedData.vehicleNumber = vehicleData.registration_no || vehicleData.vehicleNumber || vehicleData.number || vehicleData.plateNumber || 'N/A';
                     }
@@ -178,28 +213,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Fetch employee data if employeeId exists
-            if (bookingData.employeeId) {
-                try {
-                    const employeeDoc = await getDoc(doc(db, 'Employees', bookingData.employeeId));
-                    if (employeeDoc.exists()) {
-                        const employeeData = employeeDoc.data();
-                        relatedData.employeeName = employeeData.name || employeeData.fullName || `${employeeData.firstName || ''} ${employeeData.lastName || ''}`.trim() || 'N/A';
-                    }
-                } catch (error) {
-                    console.warn('Error fetching employee data:', error);
-                }
-            }
-
-            // Fetch slot data if slotId exists
-            if (bookingData.slot_id) {
+            // Fetch slot data if slotId exists and direct fields are missing
+            if (bookingData.slot_id && (!bookingData.slot_name || !bookingData.building || !bookingData.floor)) {
                 try {
                     const slotDoc = await getDoc(bookingData.slot_id);
                     if (slotDoc.exists()) {
                         const slotData = slotDoc.data();
-                        relatedData.buildingName = slotData.building || 'N/A';
-                        relatedData.slotName = slotData.slot_name || slotData.slotNumber || slotDoc.id;
-                        relatedData.level = slotData.floor || 'N/A';
+                        if (!bookingData.building) {
+                            relatedData.buildingName = slotData.building || 'N/A';
+                        }
+                        if (!bookingData.slot_name) {
+                            relatedData.slotName = slotData.slot_name || slotData.slotNumber || slotDoc.id;
+                        }
+                        if (!bookingData.floor) {
+                            relatedData.level = slotData.floor || 'N/A';
+                        }
                     }
                 } catch (error) {
                     console.warn('Error fetching slot data:', error);
@@ -218,11 +246,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load bookings data when page loads
     fetchAndDisplayBookings();
+    //
+    // ... (keep all the existing code at the top of your file) ...
+    //
+
+    // Load bookings data when page loads
+    fetchAndDisplayBookings();
+
+    // --- REPLACE THE EXISTING bookSlotButton EVENT LISTENER WITH THIS ENTIRE BLOCK ---
+
     const bookSlotButton = document.querySelector('.btn-primary');
+
+    // Function to handle the booking submission
+    const handleAddBooking = async () => {
+        // 1. Get data from form inputs
+        const vehicleNumber = document.getElementById('book-vehicle-number').value.trim();
+        const employeeName = document.getElementById('book-employee-name').value.trim();
+        const slotName = document.getElementById('book-slot-number').value.trim();
+        const contactNumber = document.getElementById('book-contact-number').value.trim();
+        const bookingDateStr = document.getElementById('book-booking-date').value;
+
+        // 2. Basic validation
+        if (!vehicleNumber || !slotName || !bookingDateStr) {
+            alert('Please fill in Vehicle Number, Slot Number, and Booking Date.');
+            return;
+        }
+
+        try {
+            // 3. Find the slot's document reference (slot_id) and verify it's available
+            const slotsRef = collection(db, 'ParkingSlots');
+            const slotQuery = query(slotsRef, where('slot_name', '==', slotName));
+            const slotSnapshot = await getDocs(slotQuery);
+
+            if (slotSnapshot.empty) {
+                alert(`Parking slot "${slotName}" not found.`);
+                return;
+            }
+
+            const slotDoc = slotSnapshot.docs[0];
+            const slotData = slotDoc.data();
+
+            if (slotData.status !== 'Free') {
+                alert(`Slot "${slotName}" is already ${slotData.status}. Please select a free slot.`);
+                return;
+            }
+            const slotRef = slotDoc.ref; // This is the DocumentReference for slot_id
+
+            // 4. Construct the new booking object with simplified structure
+            const bookingDate = new Date(bookingDateStr);
+            const newBooking = {
+                booking_time: Timestamp.fromDate(bookingDate),
+                // Let's set expiry time to 8 hours after booking time as an example
+                expiry_time: Timestamp.fromMillis(bookingDate.getTime() + 8 * 60 * 60 * 1000),
+                status: "Confirmed", // Default status for a new booking
+                vehicle_number: vehicleNumber, // Store vehicle number directly
+                employee_name: employeeName, // Store employee name directly
+                contact_number: contactNumber, // Store contact number
+                slot_id: slotRef,
+                slot_name: slotName, // Store slot name for easier reference
+                building: slotData.building || 'N/A',
+                floor: slotData.floor || 'N/A',
+                created_at: Timestamp.now()
+            };
+
+            // 5. Add the new booking document to Firestore
+            const docRef = await addDoc(collection(db, 'bookings'), newBooking);
+            console.log("Booking added with ID: ", docRef.id);
+
+            // 6. IMPORTANT: Update the status of the parking slot
+            await updateDoc(slotRef, {
+                status: 'Booked'
+            });
+            console.log(`Slot ${slotName} status updated to Booked.`);
+
+            // 7. Close overlay and refresh the table
+            alert('Slot booked successfully!');
+            document.body.removeChild(document.querySelector('.overlay')); // Close the overlay
+            fetchAndDisplayBookings(); // Refresh the booking list
+
+        } catch (error) {
+            console.error("Error booking slot: ", error);
+            alert("Failed to book slot. Please check the console for details.");
+        }
+    };
 
     bookSlotButton.addEventListener('click', () => {
         // Create overlay
         const overlay = document.createElement('div');
+        overlay.className = 'overlay'; // Add a class for easier selection
         overlay.style.position = 'fixed';
         overlay.style.top = '0';
         overlay.style.left = '0';
@@ -243,19 +354,18 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.padding = '20px';
         card.style.position = 'relative';
 
-        // Add heading
         const heading = document.createElement('h3');
         heading.textContent = 'Book Parking Slot';
         heading.style.marginBottom = '20px';
         card.appendChild(heading);
 
-        // Add form fields
+        // --- MODIFICATION: ADD IDs TO INPUTS ---
         const fields = [
-            { label: 'Vehicle Number', type: 'text' },
-            { label: 'Employee Name', type: 'text' },
-            { label: 'Slot Number', type: 'text', button: 'Select Slot' },
-            { label: 'Contact Number', type: 'text' },
-            { label: 'Booking Date', type: 'date' }
+            { label: 'Vehicle Number', type: 'text', id: 'book-vehicle-number' },
+            { label: 'Employee Name', type: 'text', id: 'book-employee-name' },
+            { label: 'Slot Number', type: 'text', id: 'book-slot-number', button: 'Select Slot' },
+            { label: 'Contact Number', type: 'text', id: 'book-contact-number' },
+            { label: 'Booking Date', type: 'date', id: 'book-booking-date' }
         ];
 
         fields.forEach(field => {
@@ -269,6 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const input = document.createElement('input');
             input.type = field.type;
+            input.id = field.id; // Assign the ID
             input.style.width = '100%';
             input.style.padding = '8px';
             input.style.border = '1px solid #ccc';
@@ -280,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (field.button) {
                 const button = document.createElement('button');
                 button.textContent = field.button;
+                // (styling for the 'Select Slot' button remains the same)
                 button.style.marginLeft = '0px';
                 button.style.marginTop = '10px';
                 button.style.padding = '8px';
@@ -288,14 +400,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.style.color = '#fff';
                 button.style.borderRadius = '4px';
                 button.style.cursor = 'pointer';
-
                 fieldContainer.appendChild(button);
             }
 
             card.appendChild(fieldContainer);
         });
 
-        // Add buttons
         const buttonContainer = document.createElement('div');
         buttonContainer.style.display = 'flex';
         buttonContainer.style.justifyContent = 'flex-end';
@@ -303,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cancelButton = document.createElement('button');
         cancelButton.textContent = 'Cancel';
+        // (styling for cancel button remains the same)
         cancelButton.style.marginRight = '10px';
         cancelButton.style.padding = '10px 20px';
         cancelButton.style.border = 'none';
@@ -313,6 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const bookButton = document.createElement('button');
         bookButton.textContent = 'Book Slot';
+        // (styling for book button remains the same)
         bookButton.style.padding = '10px 20px';
         bookButton.style.border = 'none';
         bookButton.style.backgroundColor = '#007bff';
@@ -324,22 +436,17 @@ document.addEventListener('DOMContentLoaded', () => {
         buttonContainer.appendChild(bookButton);
         card.appendChild(buttonContainer);
 
-        // Append card to overlay
         overlay.appendChild(card);
         document.body.appendChild(overlay);
 
-        // Close overlay on cancel
         cancelButton.addEventListener('click', () => {
             document.body.removeChild(overlay);
         });
 
-        // Close overlay on book
-        bookButton.addEventListener('click', () => {
-            alert('Slot booked successfully!');
-            document.body.removeChild(overlay);
-        });
+        // --- MODIFICATION: CALL THE handleAddBooking FUNCTION ---
+        bookButton.addEventListener('click', handleAddBooking);
 
-        // Add event listener for 'Select Slot' buttons
+        // (The 'Select Slot' button listener and related functions remain the same)
         document.querySelectorAll('button').forEach(button => {
             if (button.textContent === 'Select Slot') {
                 button.addEventListener('click', () => {
@@ -688,5 +795,5 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-    });
-});
+    }); // Closing brace for the last event listener
+}); // Closing brace for the DOMContentLoaded event listener
