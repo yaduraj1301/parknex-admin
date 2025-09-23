@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-
+ 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="../public/css/common-styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+ 
 </head>
-
+ 
 <body>
     <div class="main-container">
         <!-- Sidebar -->
@@ -20,7 +20,7 @@
                 <h2 class="logo">ParkNex</h2>
                 <p class="logo-subtitle">Parking Management</p>
             </div>
-
+ 
             <ul class="nav-menu">
                 <li class="nav-item active">
                     <a href="dashboard.html" class="nav-link" data-section="dashboard">
@@ -42,7 +42,7 @@
                 </li>
                 <li class="nav-item">
                     <a href="vehicle-management.html" class="nav-link" data-section="vehicle-management">
-
+ 
                         <i class="nav-icon fas fa-car"></i>
                         Vehicle Management
                     </a>
@@ -66,7 +66,7 @@
                     </a>
                 </li>
             </ul>
-
+ 
             <div class="sidebar-footer">
                 <div class="admin-profile">
                     <div class="admin-avatar">
@@ -82,7 +82,7 @@
                 </div>
             </div>
         </nav>
-
+ 
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
@@ -90,10 +90,10 @@
                 <div class="header-content">
                     <div class="header-left">
                         <div class="header-left-text">
-                            
+                           
                             <h1>Dashboard</h1>
                                 <p>Real time parking lot management and monitoring</p>
-                        
+                       
                        
                          </div>
                         <div class="logout-button-container ">
@@ -119,13 +119,13 @@
                     </div>
                 </div>
             </header>
-
+ 
             <!-- Dashboard Content -->
             <div class="dashboard-content">
                 <!-- Stats Cards -->
                 <!-- Updated Stats Cards with Progress Bars -->
                  <div class="building-card" id="building-card">
-
+ 
                  </div>
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -137,7 +137,7 @@
                             <div class="stat-number">50</div>
                         </div>
                     </div>
-
+ 
                     <div class="stat-card available available">
                         <div class="stat-icon available">
                             <i class="fas fa-car"></i>
@@ -150,12 +150,12 @@
                                     <div class="stat-progress-fill" style="width: 16%"></div>
                                 </div>
                                 <div class="stat-percentage">16%</div>
-
+ 
                             </div>
                             <div class="stat-change positive">+5% from last week</div>
                         </div>
                     </div>
-
+ 
                     <div class="stat-card occupied">
                         <div class="stat-icon occupied">
                             <i class="fas fa-car"></i>
@@ -168,12 +168,12 @@
                                     <div class="stat-progress-fill" style="width: 16%"></div>
                                 </div>
                                 <div class="stat-percentage">16%</div>
-
+ 
                             </div>
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
-
+ 
                     <div class="stat-card reserved">
                         <div class="stat-icon reserved">
                             <i class="fas fa-car"></i>
@@ -186,12 +186,12 @@
                                     <div class="stat-progress-fill" style="width: 16%"></div>
                                 </div>
                                 <div class="stat-percentage">16%</div>
-
+ 
                             </div>
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
-
+ 
                     <div class="stat-card named">
                         <div class="stat-icon named">
                             <i class="fas fa-car"></i>
@@ -204,12 +204,12 @@
                                     <div class="stat-progress-fill" style="width: 16%"></div>
                                 </div>
                                 <div class="stat-percentage">16%</div>
-
+ 
                             </div>
                         </div>
                     </div>
                 </div>
-
+ 
                 <!-- both alerts at once -->
                 <div class="alert-insights-secondary secondary hidden " id="alert-insights">
                     <div class="alert-card secondary attention">
@@ -220,7 +220,7 @@
                         <p>N vehicles are parked without booking.</p>
                         <button class="alert-action attention">View Details</button>
                     </div>
-
+ 
                     <!-- Sensor Issues -->
                     <div class="alert-card secondary sensor">
                         <div class="alert-header">
@@ -230,9 +230,9 @@
                         <p>N slots with sensor or connectivity issues require immediate attention.</p>
                         <button class="alert-action sensor">View Details</button>
                     </div>
-
+ 
                 </div>
-                
+               
                 <!-- Charts and Alerts Row -->
                 <div class="dashboard-row">
                     <!-- Weekly Usage Chart -->
@@ -245,7 +245,7 @@
                             <canvas id="weeklyChart"></canvas>
                         </div>
                     </div>
-
+ 
                     <!-- Alerts and Insights -->
                     <div class="insights">
                         <!-- Attention Required -->
@@ -258,7 +258,7 @@
                                 <p>N vehicles are parked without booking.</p>
                                 <button class="alert-action attention" >View Details</button>
                             </div>
-
+ 
                             <!-- Sensor Issues -->
                             <div class="alert-card sensor hidden ">
                                 <div class="alert-header">
@@ -277,8 +277,8 @@
                                 <p>Your system is working fine.</p>
                             </div>
                         </div>
-
-
+ 
+ 
                         <!-- Usage Insights -->
                         <div class="insights-card">
                             <h4>Usage Insights</h4>
@@ -303,7 +303,7 @@
                         <h3>Parking Lot Overview</h3>
                         <div class="legend-container">
                             <div class="parking-legend">
-                            
+                           
                             <div class="legend-item">
                                 <span class="legend-color corner"></span>
                                 Named Slots
@@ -325,9 +325,9 @@
                                 Unbooked
                             </div>
                         </div>
-
+ 
                         <div class="parking-legend second-row">
-                            
+                           
                             <div class="legend-item">
                                 <img src="../public/assets/icons/pillar.png" class="pillar" alt="">
                                 Pillar
@@ -341,29 +341,29 @@
                                 EV Slot
                             </div>
                         </div>
-
+ 
                         </div>
-                        
+                       
                     </div>
-
+ 
                     <!-- Level Tabs -->
                     <div class="level-tabs">
                         <!-- <button class="level-tab active" data-level="1">Level 1</button>
                         <button class="level-tab" data-level="2">Level 2</button>
                         <button class="level-tab" data-level="3">Level 3</button> -->
                     </div>
-
+ 
                     <!-- Parking Grid -->
                     <div class="parking-grid" id="parking-grid">
                         <div class="grid-loading">Loading....</div>
                       </div>
                 </div>
-                
+               
             </div>
         </main>
     </div>
-
+ 
     <script type="module" src="js/dashboard.js"></script>
 </body>
-
+ 
 </html>
