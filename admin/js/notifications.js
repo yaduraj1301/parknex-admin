@@ -19,7 +19,7 @@ const db = getFirestore(app);
 // --- Mappings for UI display ---
 const notificationTypeMap = {
     unauthorized_parking: { title: 'Unauthorized parking detected', cssClass: 'critical', icon: 'fa-exclamation-triangle', tag: 'Unauthorized parking', tagClass: 'tag-red' },
-    booking_status: { title: 'Slots status', cssClass: 'warning', icon: 'fa-exclamation-circle', tag: 'Booking Status', tagClass: 'tag-orange' },
+    booking_status: { title: 'Slot status', cssClass: 'warning', icon: 'fa-exclamation-circle', tag: 'Booking Status', tagClass: 'tag-orange' },
     pre_book_confirmation: { title: 'Pre-booking Confirmed', cssClass: 'success', icon: 'fa-check-circle', tag: 'Pre-book Confirmation', tagClass: 'tag-green' },
     reports: { title: 'Reports', cssClass: 'info', icon: 'fa-info-circle', tag: 'Reports', tagClass: 'tag-gray' },
     system_malfunction: { title: 'System Malfunction', cssClass: 'critical', icon: 'fa-tools', tag: 'System Alert', tagClass: 'tag-red' }
