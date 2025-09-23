@@ -24,13 +24,7 @@
 }
 
 /* Layout Styles */
-.main-content {
-    margin-left: 280px !important;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    margin: 0;
-}
+
 
 /* Header Styles */
 .header-content {
