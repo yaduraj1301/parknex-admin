@@ -12,13 +12,13 @@ const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
-  authDomain: "parknex-e6cea.firebaseapp.com",
-  projectId: "parknex-e6cea",
-  storageBucket: "parknex-e6cea.firebasestorage.app",
-  messagingSenderId: "830756459271",
-  appId: "1:830756459271:web:f2c5591a282887a10b6ba2",
-  measurementId: "G-VN0P6KKP50"
+  apiKey: "AIzaSyBh0XI8p736BK2Zn-PuC9r2FbDNBSddWRE",
+  authDomain: "parknex-admin.firebaseapp.com",
+  projectId: "parknex-admin",
+  storageBucket: "parknex-admin.firebasestorage.app",
+  messagingSenderId: "1018594733850",
+  appId: "1:1018594733850:web:91a7f78628eb5e089846a3",
+  measurementId: "G-0ETW3XZN2E"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -328,7 +328,7 @@ async function renderUsageChart(buildingName) {
 // Initialize the application
 async function initializeUsageTrendsChart() {
   try {
-    console.log("🚀 Initializing parking usage trends chart...");
+    console.log("Initializing parking usage trends chart...");
     
     // Check if Chart.js is loaded
     if (typeof Chart === "undefined") {
@@ -479,7 +479,7 @@ console.log("Critical notifications for building:", criticalNotifications);
     });
     
 // Unauthorized parking aggregation (per building, isCritical only)
-let unauthorizedFound = false;
+/*let unauthorizedFound = false;
 notifications.forEach(notification => {
     // Debug: log all notifications for this building
     if ((notification.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()) {
@@ -501,7 +501,7 @@ notifications.forEach(notification => {
 });
 if (!unauthorizedFound) {
     console.warn(`⚠️ No unauthorized parking notifications found for building "${buildingName}" in the last 7 days.`);
-}
+}*/
 
     // Most parked slot (weekly)
     let mostParkedSlot = "N/A";
@@ -545,23 +545,32 @@ function getLast7DaysDateRange() {
     return { startDate, endDate: today, dateObjects, dateStrings };
 }
 // Aggregation for PDF: uses graph logic + extra fields
+// Function to get all data for a specific building's weekly report
 async function getPdfReportDataForBuilding(buildingName) {
-    const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
-    // Fetch notifications for unauthorized parking
-    const notificationsSnapshot = await getDocs(collection(db, "notifications"));
+    console.log("⏱️ Starting getPdfReportDataForBuilding function...");
+
+    const [slots, bookings, notificationsSnapshot] = await Promise.all([
+        fetchParkingSlots(),
+        fetchBookings(),
+        getDocs(collection(db, "notifications"))
+    ]);
+
     const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    
+
     // Slot lookup
     const slotMap = {};
     slots.forEach(slot => { slotMap[slot.id] = slot; });
+    console.log(`✅ Loaded ${Object.keys(slotMap).length} parking slots into map.`);
 
     // Filter slots for this building
     const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
     const buildingSlotIds = buildingSlots.map(slot => slot.id);
     const totalSlots = buildingSlots.length;
+    console.log(`🏢 Found ${totalSlots} slots for building "${buildingName}".`);
 
     // Get last 7 days
     const { labels, dateObjects } = getLast7DaysLabels();
+    console.log(`📅 Report date range: ${labels[0]} to ${labels[6]}.`);
 
     // Initialize daily counts
     const dailyBookedCounts = {};
@@ -575,10 +584,18 @@ async function getPdfReportDataForBuilding(buildingName) {
     const slotBookingCounts = {};
     const hourlyBookings = {};
 
+    console.log("Processing bookings...");
+    let processedBookings = 0;
+    let ignoredBookings = 0;
+
     // Bookings aggregation
     bookings.forEach(booking => {
         const slotId = normalizeSlotId(booking.slot_id);
-        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+        if (!slotId || !buildingSlotIds.includes(slotId)) {
+            ignoredBookings++;
+            return;
+        }
+        processedBookings++;
 
         const bookingDate = parseBookingDate(booking.booking_time);
         if (!bookingDate) return;
@@ -599,26 +616,42 @@ async function getPdfReportDataForBuilding(buildingName) {
             hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
         }
     });
+    console.log(`✅ Processed ${processedBookings} bookings for PDF, ignored ${ignoredBookings}.`);
 
-
-    // Unauthorized parking aggregation (per building, isCritical only)
+    console.log("Processing unauthorized parking notifications...");
+    let processedNotifications = 0;
+    let ignoredNotifications = 0;
+    
+    // Unauthorized parking aggregation
     notifications.forEach(notification => {
-        // Check building match (case-insensitive, trimmed)
-        if (
-            (notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()
-        ) return;
-        // Check isCritical
-        if (!notification.isCritical) return;
-        // Parse date
+        // 1. Filter by notification type
+        if (notification.type !== 'unauthorized_parking') {
+            ignoredNotifications++;
+            return;
+        }
+        
+        // 2. Filter by building name ONLY (as requested)
+        if ((notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()) {
+            ignoredNotifications++;
+            return;
+        }
+        
+        processedNotifications++;
+        
+        // 3. Parse the date
         const notifDate = parseBookingDate(notification.timestamp);
         if (!notifDate) return;
-        console.log("Matched notification for unauthorized parking:", notification);
+        
+        // 4. Increment the daily count if the date matches
         labels.forEach((label, idx) => {
             if (isSameDay(notifDate, dateObjects[idx])) {
                 dailyUnauthorizedCounts[label]++;
             }
         });
     });
+    
+    console.log(`✅ Processed ${processedNotifications} unauthorized notifications for PDF, ignored ${ignoredNotifications}.`);
+    console.log("Daily Unauthorized Counts:", dailyUnauthorizedCounts);
 
     // Most parked slot (weekly)
     let mostParkedSlot = "N/A";
@@ -630,17 +663,34 @@ async function getPdfReportDataForBuilding(buildingName) {
         }
     }
 
-    // Hardcoded peak time
-let peakTime = "8:30 AM - 9:30 AM";
+    // Peak time (weekly)
+    let peakTime = "N/A";
+    let maxBookingsInHour = 0;
+    for (const hour in hourlyBookings) {
+        if (hourlyBookings[hour] > maxBookingsInHour) {
+            maxBookingsInHour = hourlyBookings[hour];
+            peakTime = `${hour}:00 - ${parseInt(hour) + 1}:00`;
+        }
+    }
+
+    // Final log of processed data
+    console.log("🚀 Report Data Ready!");
+    console.log("Building:", buildingName);
+    console.log("Daily Booked Counts:", dailyBookedCounts);
+    console.log("Daily Unauthorized Counts:", dailyUnauthorizedCounts);
+    console.log("Total Slots:", totalSlots);
+    console.log("Most Parked Slot:", mostParkedSlot);
+    console.log("Peak Time:", peakTime);
 
     return {
-        labels,
+        building: buildingName,
         dailyBookedCounts,
         dailyUnauthorizedCounts,
         totalSlots,
         mostParkedSlot,
         mostParkedSlotCount,
-        peakTime
+        peakTime,
+        dateStrings: labels
     };
 }
 
@@ -722,15 +772,15 @@ async function generateAndDisplayPdf() {
     doc.setFillColor(54, 162, 235);
     doc.rect(12, y, 184, 10, "F");
     doc.text("Date", 20, y + 7);
-    doc.text("Booked", 70, y + 7, { align: "center" });
-    doc.text("Free", 110, y + 7, { align: "center" });
-    doc.text("Unauthorized", 160, y + 7, { align: "center" });
+    doc.text("Booked Slots", 70, y + 7, { align: "center" });
+    doc.text("Free Slots", 110, y + 7, { align: "center" });
+    doc.text("Unauthorized Parking", 160, y + 7, { align: "center" });
     y += 12;
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(11);
 
-    reportData.labels.forEach((date, idx) => {
+    reportData.dateStrings.forEach((date, idx) => {
         if (y > 270) {
             doc.addPage();
             y = 20;
@@ -766,4 +816,8 @@ async function generateAndDisplayPdf() {
     document.getElementById("downloadPdfBtn").onclick = () => {
         doc.save(`ParkNex_Realtime_Report_${selectedBuilding}.pdf`);
     };
+    const element = document.getElementById("pdfViewerSection");
+    if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 }
