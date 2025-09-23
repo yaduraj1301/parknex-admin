@@ -711,57 +711,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // NEW: Handles user text input during the "add vehicle" conversation.
   async function handleOngoingConversation(userInput) {
-    if (!conversationState || conversationState.action !== "addVehicle") return;
+    // This part handles the "addVehicle" flow (remains unchanged)
+    if (conversationState && conversationState.action === "addVehicle") {
+      const { details } = conversationState;
+      switch (conversationState.step) {
+        case "reg_no":
+          details.registration_no = userInput.toUpperCase();
+          conversationState.step = "model";
+          addMessage(
+            "Great. What is the vehicle <b>model</b>? (e.g., Maruti Baleno)",
+            "bot",
+            true
+          );
+          break;
+        case "model":
+          details.model = userInput;
+          conversationState.step = "color";
+          addMessage(
+            "Got it. What's the <b>color</b> of the vehicle?",
+            "bot",
+            true
+          );
+          break;
+        case "color":
+          details.color = userInput;
+          conversationState.step = "type";
+          addMessage(
+            "And the vehicle <b>type</b>? (e.g., Car, Bike)",
+            "bot",
+            true
+          );
+          break;
+        case "type":
+          details.vehicle_type = userInput;
+          conversationState.step = "is_default";
+          addMessage(
+            "Last step. Do you want to set this as your <b>default vehicle</b>? (Please type 'yes' or 'no')",
+            "bot",
+            true
+          );
+          break;
+        case "is_default":
+          const answer = userInput.toLowerCase();
+          details.is_default = answer === "yes" || answer === "y";
+          conversationState.step = "saving";
+          await saveNewVehicle();
+          break;
+      }
+      // IMPORTANT: return here to stop processing
+      return;
+    }
 
-    const { details } = conversationState;
-
-    switch (conversationState.step) {
-      case "reg_no":
-        details.registration_no = userInput.toUpperCase();
-        conversationState.step = "model";
-        addMessage(
-          "Great. What is the vehicle <b>model</b>? (e.g., Maruti Baleno)",
-          "bot",
-          true
-        );
-        break;
-      case "model":
-        details.model = userInput;
-        conversationState.step = "color";
-        addMessage(
-          "Got it. What's the <b>color</b> of the vehicle?",
-          "bot",
-          true
-        );
-        break;
-      case "color":
-        details.color = userInput;
-        conversationState.step = "type";
-        addMessage(
-          "And the vehicle <b>type</b>? (e.g., Car, Bike)",
-          "bot",
-          true
-        );
-        break;
-      case "type":
-        details.vehicle_type = userInput;
-        conversationState.step = "is_default";
-        addMessage(
-          "Last step. Do you want to set this as your <b>default vehicle</b>? (Please type 'yes' or 'no')",
-          "bot",
-          true
-        );
-        break;
-      case "is_default":
-        const answer = userInput.toLowerCase();
-        if (answer === "yes" || answer === "y") {
-          details.is_default = true;
-        } else {
-          details.is_default = false;
-        }
-        conversationState.step = "saving";
-        await saveNewVehicle(); // Final step, save data
-        break;
+    // --- ADD THIS NEW BLOCK ---
+    // This new part handles the "reportIssue" flow
+    if (conversationState && conversationState.action === "reportIssue") {
+      if (conversationState.step === "getDescription") {
+        // The user has provided the issue description.
+        // Now, save it to Firestore.
+        await saveReportToFirestore(userInput);
+      }
+      return; // Stop processing after handling the conversation
     }
   }
 
@@ -1158,11 +1167,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function reportSlot() {
     if (currentBooking) {
+      // Start a new conversation flow for reporting an issue
+      conversationState = {
+        action: "reportIssue",
+        step: "getDescription",
+        bookingDetails: { ...currentBooking }, // Store a snapshot of the booking
+      };
       addMessage(
-        `✅ Report for your booked slot ${currentBooking.name} has been sent to admin.`,
+        `Okay, you want to report an issue with your booked slot <b>${currentBooking.name}</b>. Please describe the problem.`,
         "bot",
-        false,
-        "success"
+        true
       );
     } else {
       addMessage(
@@ -1181,6 +1195,61 @@ document.addEventListener("DOMContentLoaded", () => {
       "bot",
       true
     );
+  }
+
+  async function saveReportToFirestore(issueMessage) {
+    if (!conversationState || !conversationState.bookingDetails) return;
+
+    const { bookingDetails } = conversationState;
+    addMessage(" Sending your report to the admin...", "bot", false, "loading");
+
+    try {
+      // 1. Fetch the original booking document to get the vehicle_id
+      const bookingDocRef = doc(db, "bookings", bookingDetails.bookingDocId);
+      const bookingDocSnap = await getDoc(bookingDocRef);
+
+      if (!bookingDocSnap.exists()) {
+        throw new Error("Could not find the original booking details.");
+      }
+
+      const vehicleId = bookingDocSnap.data().vehicle_id || "";
+
+      // 2. Prepare the notification data
+      const notificationData = {
+        isCritical: true,
+        isRead: false, // A new report should be unread
+        message: issueMessage,
+        slotId: bookingDetails.id, // The ID of the ParkingSlot document
+        timestamp: Timestamp.now(),
+        type: "booked_slot_issue", // A more specific type
+        vehicleId: vehicleId, // The full vehicle path
+        building: employeeBuilding,
+      };
+
+      // 3. Add the new document to the 'notifications' collection
+      await addDoc(collection(db, "notifications"), notificationData);
+
+      // 4. Give feedback to the user
+      messagesEl.removeChild(messagesEl.lastChild); // Remove loading message
+      addMessage(
+        "✅ Your report has been sent successfully. The admin will be notified.",
+        "bot",
+        false,
+        "success"
+      );
+    } catch (err) {
+      console.error("Error sending report:", err);
+      messagesEl.removeChild(messagesEl.lastChild); // Remove loading message on error
+      addMessage(
+        "❌ Failed to send your report due to an error. Please try again.",
+        "bot",
+        false,
+        "error"
+      );
+    } finally {
+      // 5. Clear the conversation state
+      conversationState = null;
+    }
   }
 
   async function sendMessage() {

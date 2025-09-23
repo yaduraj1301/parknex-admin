@@ -1,6 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
 
-*{
+:root {
+    --primary-black: #000000;
+    --primary-red: #DC143C;
+    --dull-red: #A50B2C;
+    --primary-red-transparent: rgba(220, 20, 60, 0.25);
+    --secondary-gray: #4D4D4D;
+    --secondary-coral: #EA5853;
+    --secondary-orange: #F09951;
+    --dull-orange: #e2904d;
+    --secondary-orange-transparent: rgba(240, 152, 81, 0.25);
+    --secondary-green: #43BF73;
+    --secondary-green-transparent: hsla(143, 49%, 51%, 0.25);
+    --secondary-purple: #8061C3;
+    --secondary-light-blue: #64A2F5;
+    --secondary-blue: #3E68B9;
+    --neutral-gray: #A0A0A0;
+    --neutral-gray-transparent: hsla(0, 0%, 63%, 0.25);
+    --neutral-white: #FFFFFF;
+    --bg-color: #f8f9fa;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --border-color: #e0e0e0;
+    --hover-color: #f0f0f0;
+}
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -11,7 +36,7 @@ body {
     background-color: #f8f9fa;
     color: #333;
     line-height: 1.6;
-} 
+}
 
 
 
@@ -22,6 +47,7 @@ body {
     gap: 18px;
     overflow-x: hidden;
 }
+
 .main-container {
     display: flex;
     min-height: 100vh;
@@ -87,7 +113,7 @@ body {
 .sidebar .nav-link:hover {
     background-color: rgba(100, 162, 245, 0.1);
     color: #64A2F5;
-        transform: scale(1.05);
+    transform: scale(1.05);
 
 }
 
@@ -142,6 +168,7 @@ body {
     color: #666;
     margin: 0;
 }
+
 .sidebar .logout-button {
     /* margin-top: 10px; */
     cursor: pointer;
@@ -156,7 +183,7 @@ body {
    HEADER STYLES
    ================================= */
 
-   .main-header {
+.main-header {
     background: var(--neutral-white);
     border-bottom: 1px solid var(--border-color);
     padding: 10px;
@@ -170,15 +197,18 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+
 .header-left {
     display: flex;
     justify-content: space-between;
     gap: 20px;
 }
-.logout-button-container{
+
+.logout-button-container {
     display: none;
 }
-.logout-button-container .logout-button{
+
+.logout-button-container .logout-button {
     padding: 10px 16px;
     border-radius: 4px;
     color: var(--neutral-white);
@@ -261,28 +291,32 @@ body {
         justify-content: space-between;
     }
 
-    .header-left{
+    .header-left {
         width: 100%;
     }
-    .header-left .logout-button-container{
+
+    .header-left .logout-button-container {
         display: block;
     }
+
     .datetime {
-        display: none;    
+        display: none;
     }
+
     .sidebar {
         width: 100%;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
     }
-    
+
     .sidebar.open {
         transform: translateX(0);
     }
+
     .main-content {
         margin-left: 0;
     }
 
-    
+
 
 }

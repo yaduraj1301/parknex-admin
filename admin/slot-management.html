@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ParkNex - Slot Overview</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="css/slot-management.css" />
+    <link rel="stylesheet" href="../public/css/common-styles.css" />
+  </head>
+
+  <body>
+    <div class="main-container" id="main-container">
+      <!--------- Sidebar -------->
+
+      <div class="sidebar" id="sidebar">
+        <nav class="sidebar">
+          <div class="sidebar-header">
+            <h2 class="logo">ParkNex</h2>
+            <p class="logo-subtitle">Parking Management</p>
+          </div>
+
+          <ul class="nav-menu">
+            <li class="nav-item">
+              <a
+                href="dashboard.html"
+                class="nav-link"
+                data-section="dashboard"
+              >
+                <i class="nav-icon fas fa-th-large"></i>
+                Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="bookings.html" class="nav-link" data-section="bookings">
+                <i class="nav-icon fas fa-calendar-alt"></i>
+                Bookings
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                href="report-index.html"
+                class="nav-link"
+                data-section="reports"
+              >
+                <i class="nav-icon fas fa-file-alt"></i>
+                Reports
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
+                <i class="nav-icon fas fa-car"></i>
+                Vehicle Management
+              </a>
+            </li>
+            <li class="nav-item active">
+              <a
+                href="slot-management.html"
+                class="nav-link"
+                data-section="slot-management"
+              >
+                <i class="nav-icon fas fa-plus"></i>
+                Slot Management
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                href="notifications.html"
+                class="nav-link"
+                data-section="notifications"
+              >
+                <i class="nav-icon fas fa-bell"></i>
+                Notifications
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="settings.html" class="nav-link" data-section="settings">
+                <i class="nav-icon fas fa-cog"></i>
+                Settings
+              </a>
+            </li>
+          </ul>
+
+          <div class="sidebar-footer">
+            <div class="admin-profile">
+              <div class="admin-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <div class="admin-info">
+                <p class="admin-name">Admin User</p>
+                <p class="admin-email">admin@park.com</p>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!--------- Header -------->
+      <div class="main-content" id="main-content">
+        <header class="main-header">
+          <div class="header-content">
+            <div class="header-left">
+              <div class="header-left-text">
+                <h1>Slot Management</h1>
+                <p>Manage parking slots, monitor occupancy, and track utilization</p>
+              </div>
+              <div class="logout-button-container">
+                <button class="logout-button" id="logout-button">
+                  <i class="fa fa-sign-out-alt"></i> Logout
+                </button>
+              </div>
+            </div>
+            <div class="header-right">
+              
+              <div class="datetime">
+                <span class="date" id="current-date">15/09/2025</span>
+                <span class="time" id="current-time">11:14:25</span>
+              </div>
+              <div class="user-menu">
+                <button class="user-avatar">
+                  <i class="fas fa-bell"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Add Slot and Refresh  Buttons -->
+        <div class="content-container" id="content-container">
+          <div class="action-buttons">
+            <button class="action-btn add-slot-btn" id="add-slot-btn">
+              <i class="fa-solid fa-plus"></i>
+              Add new slot
+            </button>
+            <button class="action-btn refresh-btn" id="refresh-btn" style="display: none;">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Quick Actions & Search Filters -->
+          <div class="action-bar">
+            <h3>Quick Actions & Search Filters</h3>
+
+            <div class="quick-filters">
+              <button class="btn btn-secondary" id="btn-unbooked">
+                View Unbooked Slots
+              </button>
+              <button class="btn btn-secondary" id="btn-ev">
+                View EV Slots
+              </button>
+              <button class="btn btn-secondary" id="btn-handicapped">
+                View Handicapped Slots
+              </button>
+              <button class="btn btn-secondary" id="clear-filters">
+                Clear Filters
+              </button>
+            </div>
+
+            <div class="filter-group">
+              <input
+                type="text"
+                class="search-input"
+                placeholder="Search..."
+                onkeyup="searchSlots(this.value)"
+              />
+              <select class="filter-select" id="filter-select">
+                <option value="building1">
+                  <i class="fas fa-map-marker-alt"></i> building1
+                </option>
+                <option value="building2">
+                  <i class="fas fa-map-marker-alt"></i> buildin2
+                </option>
+                <option value="building3">
+                  <i class="fas fa-map-marker-alt"></i> building3
+                </option>
+              </select>
+              <select
+                class="filter-select"
+                id="filter-select"
+                onchange="filterByStatus(this.value)"
+              >
+                <option value="">All Status</option>
+                <option value="available">Available</option>
+                <option value="occupied">Occupied</option>
+                <option value="reserved">Reserved</option>
+                <option value="unauthorized">Unbooked</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Parking Lot Overview -->
+          <div class="parking-overview">
+            <div class="parking-header">
+              <h3>Parking Lot Overview</h3>
+              <div class="legend-container">
+                <div class="parking-legend">
+                  <div class="legend-item">
+                    <span class="legend-color corner"></span>
+                    Named
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color available"></span>
+                    Available
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color occupied"></span>
+                    Booked
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color reserved"></span>
+                    Reserved
+                  </div>
+                  <div class="legend-item">
+                    <span class="legend-color unbooked"></span>
+                    Unbooked
+                  </div>
+                </div>
+
+                <div class="parking-legend second-row">
+                  <div class="legend-item">
+                    <img
+                      src="../public/assets/icons/pillar.png"
+                      class="pillar"
+                      alt=""
+                    />
+                    Pillar
+                  </div>
+                  <div class="legend-item">
+                    <i class="fa fa-turn-down"></i>
+                    Corner
+                  </div>
+                  <div class="legend-item">
+                    <i class="fa fa-bolt available"></i>
+                    EV Slot
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Level Tabs -->
+            <div class="level-tabs">
+              <button class="level-tab active" data-level="1">Level 1</button>
+              <button class="level-tab" data-level="2">Level 2</button>
+              <button class="level-tab" data-level="3">Level 3</button>
+            </div>
+
+            <!-- Parking Grid -->
+            <div class="parking-grid" id="parking-grid">
+              <div>Loading Slots...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal for Add New Slot -->
+      <div class="modal" id="addSlotModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">
+              <i class="fa-solid fa-plus"></i>
+              Add New Slot
+            </h3>
+            <button class="modal-close" id="closeAddSlotModal">&times;</button>
+          </div>
+          <form id="addSlotForm">
+            <!-- Slot Number -->
+            <div class="form-group">
+              <label class="form-label">
+                Slot Number <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-input"
+                id="slotNumber"
+                placeholder="e.g. G-123"
+                required
+              />
+            </div>
+
+            <!-- Location -->
+            <div class="form-group">
+              <label class="form-label">
+                Building <span class="required">*</span>
+              </label>
+              <select class="filter-select" id="slotBuilding">
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+
+            <!-- Building + Group -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Level Number</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="slotLevel"
+                  placeholder="e.g. 0, 1, 2..."
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  Building <span class="required">*</span>
+                </label>
+                <select class="form-select" id="slotBlock" required>
+                  <option value="A">Block A</option>
+                  <option value="B">Block B</option>
+                  <option value="C">Block C</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Slot Type + Initial Status -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  Initial Status <span class="required">*</span>
+                </label>
+                <select class="filter-select" id="slotInitialStatus" required>
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="reserved">Reserved</option>
+                  <option value="unauthorized">Unauthorized</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Is Special</label>
+                <select class="form-select" id="slotIsSpecial">
+                  <option value="no" selected>No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Updated Notes section with ONLY radio buttons -->
+            <div class="form-group" id="notesSection" style="display: none">
+              <label class="form-label"
+                >Special Slot Type <span class="required">*</span></label
+              >
+
+              <!-- Only radio buttons, no textarea -->
+              <div id="notesRadio">
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="pillar"
+                      name="slotNotesRadio"
+                      value="Has a pillar in it"
+                    />
+                    <label for="pillar">Has a pillar in it</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="evSlot"
+                      name="slotNotesRadio"
+                      value="EV slot"
+                    />
+                    <label for="evSlot">EV slot</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="corner"
+                      name="slotNotesRadio"
+                      value="Is in a corner"
+                    />
+                    <label for="corner">Is in a corner</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="handicapped"
+                      name="slotNotesRadio"
+                      value="Handicapped slot"
+                    />
+                    <label for="handicapped">Handicapped Slot</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="popup-btns btn-cancel"
+                id="cancelAddSlot"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="popup-btns btn-primary">
+                <i class="nav-icon fas fa-plus"></i>
+                Add Slot
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Modal for Configure Slot -->
+      <div class="modal" id="configureSlotModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">✏️ Configure Slots</h3>
+            <button
+              class="modal-close"
+              onclick="closeModal('configureSlotModal')"
+            >
+              &times;
+            </button>
+          </div>
+          <form id="configureSlotForm">
+            <div class="form-group">
+              <label class="form-label">Slot Number</label>
+              <input type="text" class="form-input" id="configSlotNumber" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Building</label>
+              <select class="filter-select" id="configSlotBuilding">
+                <!-- Options will be populated dynamically -->
+              </select>
+            </div>
+
+            <div class="form-row">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Level Number</label>
+                  <input
+                    type="text"
+                    class="form-input"
+                    id="configSlotLevel"
+                    placeholder="e.g. 0, 1, 2..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Initial Status</label>
+                <select class="filter-select" id="configSlotStatus">
+                  <option value="available">Available</option>
+                  <option value="occupied">Occupied</option>
+                  <option value="reserved">Reserved</option>
+                  <option value="unauthorized">Unauthorized</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  Block <span class="required">*</span>
+                </label>
+                <select class="form-select" id="configSlotBlock" required>
+                  <option value="A">Block A</option>
+                  <option value="B">Block B</option>
+                  <option value="C">Block C</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Is Special</label>
+              <select class="form-select" id="configSlotIsSpecial">
+                <option value="no">No</option>
+                <option value="yes">Yes</option>
+              </select>
+            </div>
+
+            <div
+              class="form-group"
+              id="configNotesSection"
+              style="display: none"
+            >
+              <label class="form-label"
+                >Special Slot Type <span class="required">*</span></label
+              >
+
+              <!-- Only radio buttons for configure modal -->
+              <div id="configNotesRadio">
+                <div class="radio-group">
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configPillar"
+                      name="configSlotNotesRadio"
+                      value="Has a pillar in it"
+                    />
+                    <label for="configPillar">Has a pillar in it</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configEvSlot"
+                      name="configSlotNotesRadio"
+                      value="EV slot"
+                    />
+                    <label for="configEvSlot">EV slot</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configCorner"
+                      name="configSlotNotesRadio"
+                      value="Is in a corner"
+                    />
+                    <label for="configCorner">Is in a corner</label>
+                  </div>
+                  <div class="radio-option">
+                    <input
+                      type="radio"
+                      id="configHandicapped"
+                      name="configSlotNotesRadio"
+                      value="Handicapped slot"
+                    />
+                    <label for="configHandicapped">Handicapped slot</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-cancel"
+                onclick="closeModal('configureSlotModal')"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" id="configSubmit">
+                Confirm
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./js/slot-management.js"></script>
+    <script src="../public/js/headerScript.js"></script>
+  </body>
+</html>

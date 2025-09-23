@@ -13,12 +13,12 @@ const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
-  authDomain: "parknex-e6cea.firebasestorage.app",
-  projectId: "parknex-e6cea",
-  storageBucket: "parknex-e6cea.firebasestorage.app",
-  messagingSenderId: "830756459271",
-  appId: "1:830756459271:web:f2c5591a282887a10b6ba2",
-  measurementId: "G-VN0P6KKP50"
+  authDomain: "parknex-e6cea.firebaseapp.com",
+  projectId: "parknex-e6cea",
+  storageBucket: "parknex-e6cea.firebasestorage.app",
+  messagingSenderId: "830756459271",
+  appId: "1:830756459271:web:f2c5591a282887a10b6ba2",
+  measurementId: "G-VN0P6KKP50"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -392,113 +392,6 @@ if (document.readyState === "loading") {
   initializeUsageTrendsChart();
 }
 
-// Function to generate and display the PDF
-// ... (rest of your code and function definitions)
-
-// Function to generate and display the PDF with dynamic data
-async function generateAndDisplayPdf() {
-    const selectedBuilding = document.getElementById("buildingSelect").value;
-    if (!selectedBuilding) {
-        alert("Please select a building.");
-        return;
-    }
-
-    const weeklyReports = await getWeeklyReportData(selectedBuilding);
-
-    if (!weeklyReports || weeklyReports.length === 0) {
-        alert("No report data available for the selected building.");
-        return;
-    }
-
-    const doc = new jsPDF();
-    let yOffset = 20;
-
-    // --- Header Section ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(26);
-    doc.setTextColor("#0A2351"); // ParkNex Blue
-    doc.text("ParkNex", 10, yOffset);
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor("#6B7280");
-    doc.text("Parking Management System", 10, yOffset + 8);
-    yOffset += 20;
-
-    // --- Main Title Section ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor("#374151");
-    doc.text(`Weekly Report for ${selectedBuilding}`, 10, yOffset);
-    yOffset += 15;
-
-    // --- Report Period Section ---
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(14);
-    doc.setTextColor("#6B7280");
-    const startDate = new Date(weeklyReports[weeklyReports.length - 1].date.toDate()).toLocaleDateString();
-    const endDate = new Date(weeklyReports[0].date.toDate()).toLocaleDateString();
-    doc.text(`Period: ${startDate} - ${endDate}`, 10, yOffset);
-    yOffset += 15;
-
-    // --- Daily Metrics Section ---
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor("#1F2937");
-    doc.text("Daily Metrics", 10, yOffset);
-    yOffset += 10;
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.setTextColor("#374151");
-
-    // Loop through each document in the fetched array
-    weeklyReports.forEach((report, index) => {
-        // Add a new page if content exceeds the current page
-        if (yOffset > 250) {
-            doc.addPage();
-            yOffset = 20;
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(18);
-            doc.setTextColor("#1F2937");
-            doc.text("Daily Metrics (continued)", 10, yOffset);
-            yOffset += 10;
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(12);
-            doc.setTextColor("#374151");
-        }
-        
-        // Add the date and a horizontal line
-        doc.setFont("helvetica", "bold");
-        doc.text(new Date(report.date.toDate()).toLocaleDateString(), 15, yOffset);
-        doc.setLineWidth(0.5);
-        doc.setDrawColor("#D1D5DB");
-        doc.line(15, yOffset + 2, 190, yOffset + 2); // x1, y1, x2, y2
-        yOffset += 7;
-
-        // Display the metrics for that specific day
-        doc.setFont("helvetica", "normal");
-        doc.text(`Booked Slots: ${report.booked_slots}`, 20, yOffset);
-        yOffset += 7;
-        doc.text(`Free Slots: ${report.free_slots}`, 20, yOffset);
-        yOffset += 7;
-        doc.text(`Escalations: ${report.escalations}`, 20, yOffset);
-        yOffset += 10; // Space between daily reports
-    });
-
-    // --- Footer ---
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(10);
-    doc.setTextColor("#9CA3AF");
-    doc.text(`Generated on ${new Date().toLocaleDateString()}`, doc.internal.pageSize.width - 60, doc.internal.pageSize.height - 10);
-    
-    // --- Display the PDF ---
-    const pdfDataUri = doc.output('datauristring');
-    document.getElementById("pdfViewer").src = pdfDataUri;
-    document.getElementById("pdfViewerSection").style.display = 'block';
-    document.getElementById("downloadPdfBtn").onclick = () => {
-        doc.save(`ParkNex_Weekly_Report_${selectedBuilding}.pdf`);
-    };
-}
 
 // Add a click event listener to the generate PDF button
 const generatePdfBtn = document.getElementById("generatePdfBtn");
@@ -509,27 +402,368 @@ generatePdfBtn.addEventListener("click", () => {
 
 // Function to get all data for a specific building's weekly report
 // Function to get the latest report data for a specific building
-async function getWeeklyReportData(buildingName) {
-    const reportsCollection = collection(db, "reports");
-    console.log(`📋 Fetching last 7 reports for building: ${buildingName}`);
+async function getRealtimeReportData(buildingName) {
+    const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
+    // Fetch notifications for unauthorized parking
+    const notificationsSnapshot = await getDocs(collection(db, "notifications"));
+    const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Query for the last 7 report documents for the given building
-    const querySnapshot = await getDocs(
-        query(
-            reportsCollection,
-            where("building", "==", buildingName),
-            orderBy("date", "desc"), // Order by date descending
-            limit(7) // Get only the last 7 documents
-        )
-    );
+    // Slot lookup
+    const slotMap = {};
+    slots.forEach(slot => { slotMap[slot.id] = slot; });
 
-    if (querySnapshot.empty) {
-        console.warn("⚠️ No report found for this building.");
-        return null;
+    // Filter slots for this building
+    const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
+    const buildingSlotIds = buildingSlots.map(slot => slot.id);
+    const totalSlots = buildingSlots.length;
+
+    // Get last 7 days
+    const { labels, dateObjects } = getLast7DaysLabels();
+
+    // Initialize daily counts
+    const dailyBookedCounts = {};
+    const dailyUnauthorizedCounts = {};
+    labels.forEach(label => {
+        dailyBookedCounts[label] = 0;
+        dailyUnauthorizedCounts[label] = 0;
+    });
+
+    // For weekly stats
+    const slotBookingCounts = {};
+    const hourlyBookings = {};
+
+    // Bookings aggregation
+    bookings.forEach(booking => {
+        const slotId = normalizeSlotId(booking.slot_id);
+        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+
+        const bookingDate = parseBookingDate(booking.booking_time);
+        if (!bookingDate) return;
+
+        // Daily booked
+        labels.forEach((label, idx) => {
+            if (isSameDay(bookingDate, dateObjects[idx])) {
+                dailyBookedCounts[label]++;
+            }
+        });
+
+        // Weekly: slot count
+        slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
+
+        // Weekly: hour count
+        if (bookingDate) {
+            const hour = bookingDate.getHours();
+            hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
+        }
+    });
+    console.log("All notifications:", notifications);
+const buildingNotifications = notifications.filter(n =>
+    (n.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()
+);
+console.log("Notifications for building:", buildingNotifications);
+
+const criticalNotifications = buildingNotifications.filter(n => n.isCritical);
+console.log("Critical notifications for building:", criticalNotifications);
+    // Unauthorized parking aggregation
+    notifications.forEach(notification => {
+        if (notification.type !== 'unauthorized_parking') return;
+        const slotId = normalizeSlotId(notification.slotId);
+        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+        const notifDate = parseBookingDate(notification.timestamp);
+        if (!notifDate) return;
+        labels.forEach((label, idx) => {
+            if (isSameDay(notifDate, dateObjects[idx])) {
+                dailyUnauthorizedCounts[label]++;
+            }
+        });
+    });
+    
+// Unauthorized parking aggregation (per building, isCritical only)
+let unauthorizedFound = false;
+notifications.forEach(notification => {
+    // Debug: log all notifications for this building
+    if ((notification.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()) {
+        console.log("🔎 Notification for building:", notification);
+    }
+    if (
+        (notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()
+    ) return;
+    if (!notification.isCritical) return;
+    const notifDate = parseBookingDate(notification.timestamp);
+    if (!notifDate) return;
+    labels.forEach((label, idx) => {
+        if (isSameDay(notifDate, dateObjects[idx])) {
+            dailyUnauthorizedCounts[label]++;
+            unauthorizedFound = true;
+            console.log(`✅ Unauthorized parking for ${buildingName} on ${label}:`, notification);
+        }
+    });
+});
+if (!unauthorizedFound) {
+    console.warn(`⚠️ No unauthorized parking notifications found for building "${buildingName}" in the last 7 days.`);
+}
+
+    // Most parked slot (weekly)
+    let mostParkedSlot = "N/A";
+    let mostParkedSlotCount = 0;
+    for (const slotId in slotBookingCounts) {
+        if (slotBookingCounts[slotId] > mostParkedSlotCount) {
+            mostParkedSlotCount = slotBookingCounts[slotId];
+            mostParkedSlot = slotMap[slotId]?.slot_name || slotId;
+        }
     }
 
-    // Return the array of documents
-    const weeklyReports = querySnapshot.docs.map(doc => doc.data());
-    console.log("✅ Reports fetched successfully:", weeklyReports);
-    return weeklyReports;
+    // Hardcoded peak time
+    let peakTime = "8:30 AM - 9:30 AM";
+
+    return {
+        building: buildingName,
+        dailyBookedCounts,
+        dailyUnauthorizedCounts,
+        totalSlots,
+        peakTime,
+        mostParkedSlot,
+        mostParkedSlotCount,
+        dateStrings: labels
+    };
+}
+function getLast7DaysDateRange() {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 6);
+    startDate.setHours(0, 0, 0, 0);
+
+    const dateStrings = [];
+    const dateObjects = [];
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + i);
+        dateObjects.push(date);
+        dateStrings.push(date.toLocaleDateString("en-GB"));
+    }
+    return { startDate, endDate: today, dateObjects, dateStrings };
+}
+// Aggregation for PDF: uses graph logic + extra fields
+async function getPdfReportDataForBuilding(buildingName) {
+    const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
+    // Fetch notifications for unauthorized parking
+    const notificationsSnapshot = await getDocs(collection(db, "notifications"));
+    const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    
+    // Slot lookup
+    const slotMap = {};
+    slots.forEach(slot => { slotMap[slot.id] = slot; });
+
+    // Filter slots for this building
+    const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
+    const buildingSlotIds = buildingSlots.map(slot => slot.id);
+    const totalSlots = buildingSlots.length;
+
+    // Get last 7 days
+    const { labels, dateObjects } = getLast7DaysLabels();
+
+    // Initialize daily counts
+    const dailyBookedCounts = {};
+    const dailyUnauthorizedCounts = {};
+    labels.forEach(label => {
+        dailyBookedCounts[label] = 0;
+        dailyUnauthorizedCounts[label] = 0;
+    });
+
+    // For weekly stats
+    const slotBookingCounts = {};
+    const hourlyBookings = {};
+
+    // Bookings aggregation
+    bookings.forEach(booking => {
+        const slotId = normalizeSlotId(booking.slot_id);
+        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+
+        const bookingDate = parseBookingDate(booking.booking_time);
+        if (!bookingDate) return;
+
+        // Daily booked
+        labels.forEach((label, idx) => {
+            if (isSameDay(bookingDate, dateObjects[idx])) {
+                dailyBookedCounts[label]++;
+            }
+        });
+
+        // Weekly: slot count
+        slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
+
+        // Weekly: hour count
+        if (bookingDate) {
+            const hour = bookingDate.getHours();
+            hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
+        }
+    });
+
+
+    // Unauthorized parking aggregation (per building, isCritical only)
+    notifications.forEach(notification => {
+        // Check building match (case-insensitive, trimmed)
+        if (
+            (notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()
+        ) return;
+        // Check isCritical
+        if (!notification.isCritical) return;
+        // Parse date
+        const notifDate = parseBookingDate(notification.timestamp);
+        if (!notifDate) return;
+        console.log("Matched notification for unauthorized parking:", notification);
+        labels.forEach((label, idx) => {
+            if (isSameDay(notifDate, dateObjects[idx])) {
+                dailyUnauthorizedCounts[label]++;
+            }
+        });
+    });
+
+    // Most parked slot (weekly)
+    let mostParkedSlot = "N/A";
+    let mostParkedSlotCount = 0;
+    for (const slotId in slotBookingCounts) {
+        if (slotBookingCounts[slotId] > mostParkedSlotCount) {
+            mostParkedSlotCount = slotBookingCounts[slotId];
+            mostParkedSlot = slotMap[slotId]?.slot_name || slotId;
+        }
+    }
+
+    // Hardcoded peak time
+let peakTime = "8:30 AM - 9:30 AM";
+
+    return {
+        labels,
+        dailyBookedCounts,
+        dailyUnauthorizedCounts,
+        totalSlots,
+        mostParkedSlot,
+        mostParkedSlotCount,
+        peakTime
+    };
+}
+
+// --- PDF Generation ---
+async function generateAndDisplayPdf() {
+    const buildingSelect = document.getElementById("buildingSelect");
+    const selectedBuilding = buildingSelect.value;
+
+    if (!selectedBuilding) {
+        alert("Please select a building.");
+        return;
+    }
+
+    const reportData = await getPdfReportDataForBuilding(selectedBuilding);
+
+    if (!reportData) {
+        alert("No report data available for the selected building.");
+        return;
+    }
+
+    const doc = new jsPDF();
+    let y = 20;
+
+    // --- Header ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(34, 40, 49);
+    doc.text("ParkNex Parking Management", 12, y);
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text("Weekly Parking Report", 12, y + 8);
+    y += 18;
+
+    // --- Building & Date ---
+    doc.setFontSize(12);
+    doc.setTextColor(34, 40, 49);
+    doc.text(`Building: ${selectedBuilding}`, 12, y);
+    doc.text(`Report Generated: ${new Date().toLocaleString()}`, 120, y);
+    y += 8;
+
+    // --- Section Divider ---
+    doc.setDrawColor(54, 162, 235);
+    doc.setLineWidth(0.8);
+    doc.line(12, y, 198, y);
+    y += 6;
+
+    // --- Weekly Overview ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.setTextColor(54, 162, 235);
+    doc.text("Weekly Overview", 12, y);
+    y += 8;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(34, 40, 49);
+    doc.text(`Total Slots: ${reportData.totalSlots}`, 14, y);
+    doc.text(`Most Parked Slot: ${reportData.mostParkedSlot} (${reportData.mostParkedSlotCount})`, 60, y);
+    doc.text(`Peak Time: ${reportData.peakTime}`, 150, y);
+    y += 10;
+
+    // --- Section Divider ---
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
+    doc.line(12, y, 198, y);
+    y += 7;
+
+    // --- Daily Metrics Table ---
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(54, 162, 235);
+    doc.text("Daily Metrics", 12, y);
+    y += 8;
+
+    // Table Header
+    doc.setFontSize(12);
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(54, 162, 235);
+    doc.rect(12, y, 184, 10, "F");
+    doc.text("Date", 20, y + 7);
+    doc.text("Booked", 70, y + 7, { align: "center" });
+    doc.text("Free", 110, y + 7, { align: "center" });
+    doc.text("Unauthorized", 160, y + 7, { align: "center" });
+    y += 12;
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+
+    reportData.labels.forEach((date, idx) => {
+        if (y > 270) {
+            doc.addPage();
+            y = 20;
+        }
+        // Alternate row color for readability
+        if (idx % 2 === 0) {
+            doc.setFillColor(245, 247, 250);
+            doc.rect(12, y - 2, 184, 10, "F");
+        }
+        const booked = reportData.dailyBookedCounts[date] || 0;
+        const free = reportData.totalSlots - booked;
+        const unauthorized = reportData.dailyUnauthorizedCounts[date] || 0;
+
+        doc.setTextColor(34, 40, 49);
+        doc.text(date, 20, y + 6);
+        doc.text(String(booked), 70, y + 6, { align: "center" });
+        doc.text(String(free), 110, y + 6, { align: "center" });
+        doc.text(String(unauthorized), 160, y + 6, { align: "center" });
+
+        y += 11;
+    });
+
+    // --- Footer ---
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(10);
+    doc.setTextColor(120, 120, 120);
+    doc.text("ParkNex | Smart Parking Solutions", 12, 290);
+
+    // --- Display PDF ---
+    const pdfDataUri = doc.output('datauristring');
+    document.getElementById("pdfViewer").src = pdfDataUri;
+    document.getElementById("pdfViewerSection").style.display = 'block';
+    document.getElementById("downloadPdfBtn").onclick = () => {
+        doc.save(`ParkNex_Realtime_Report_${selectedBuilding}.pdf`);
+    };
 }
