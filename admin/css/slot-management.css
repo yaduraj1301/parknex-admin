@@ -674,6 +674,12 @@
     gap: 6px;
 }
 
+.grid-loading{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .parking-slot {
     /* aspect-ratio: 1; */
     border-radius: 12px 0px 12px 12px;

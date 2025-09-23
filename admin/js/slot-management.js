@@ -545,7 +545,7 @@ window.closeModal = closeModal;
 
 async function populateBuildingDropdown() {
     try {
-        console.log('Fetching buildings from Firebase...');
+        showLoadingOverlay();
 
         const parkingSlotsRef = collection(db, 'ParkingSlots');
         const snapshot = await getDocs(parkingSlotsRef);
@@ -759,7 +759,7 @@ function handleBuildingChange(building) {
         window.statsUnsubscribe();
     }
 
-    console.log("In handleBuildingChange");
+    showLoadingOverlay();
 
     populateLevelTabs(building).then(() => {
         console.log("In handleBuildingChange - then statement");
@@ -1040,6 +1040,38 @@ function renderParkingSlots() {
     console.log(`Rendered ${currentLevelSlots.length} slots for Level ${currentLevel}`);
 }
 
+function showLoadingOverlay() {
+    hideLoadingOverlay();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.className = 'loading-overlay';
+
+    overlay.innerHTML = `
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Loading data...</div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    setTimeout(() => {
+        overlay.classList.add('visible');
+    }, 10);
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('visible');
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 300);
+    }
+}
 
 
 
@@ -1094,6 +1126,7 @@ function addSpecialIcons(iconContainer, slot) {
 }
 
 async function init() {
+    showLoadingOverlay();
     await testFirebaseConnection();
 
     const buildingList = await populateBuildingDropdown();
