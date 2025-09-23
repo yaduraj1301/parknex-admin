@@ -5,7 +5,17 @@
   font-size: 12px;
 }
 
+.usage-header-flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
 
+.usage-header-flex h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
 
 .usage-trends {
   margin-top: 20px;

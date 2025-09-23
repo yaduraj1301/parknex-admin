@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ParkNex - Reports & Analysis</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../parknex-admin/public/css/common-styles.css">
   <link rel="stylesheet" href="css/report-style.css">
+  <link rel="stylesheet" href="../public/css/common-styles.css">
+
 </head>
 <body>
   <div class="dashboard">
@@ -42,21 +43,23 @@
     <main class="main-content">
   <header class="dashboard-header">
     <h1>Reports & Analysis</h1>
-    <button id="generatePdfBtn" class="pdf-btn">
-      <i class="fas fa-file-pdf"></i> Generate PDF
-    </button>
   </header>
 
   <section class="usage-trends">
+  <div class="usage-header-flex">
     <h2>Usage Trends Analytics</h2>
-    <label for="buildingSelect">Select Building:</label>
-    <select id="buildingSelect">
-      <option value="Thejaswini">Thejaswini</option>
-      <option value="Gayathri">Gayathri</option>
-      <option value="Athulya">Athulya</option>
-    </select>
-    <canvas id="usageTrendsChart"></canvas>
-  </section>
+    <button id="generatePdfBtn" class="pdf-btn">
+      <i class="fas fa-file-pdf"></i> Generate PDF
+    </button>
+  </div>
+  <label for="buildingSelect">Select Building:</label>
+  <select id="buildingSelect">
+    <option value="Thejaswini">Thejaswini</option>
+    <option value="Gayathri">Gayathri</option>
+    <option value="Athulya">Athulya</option>
+  </select>
+  <canvas id="usageTrendsChart"></canvas>
+</section>
 
 <section id="pdfViewerSection" class="pdf-viewer-card" style="display:none;">
   <div class="pdf-viewer-header">
