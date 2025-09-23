@@ -1,0 +1,73 @@
+/* =================================
+   REAL-TIME NOTIFICATION POP-UP
+   ================================= */
+.notification-popup {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    width: 350px;
+    background-color: #FFFFFF; /* $neutral-white */
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border-left: 5px solid #64A2F5; /* $secondary-sky-blue */
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    z-index: 9999;
+    
+    /* Animation */
+    transform: translateX(120%);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.215, 0.610, 0.355, 1);
+}
+
+.notification-popup.show {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Styles for different notification types */
+.notification-popup.critical {
+    border-left-color: #DC143C; /* $primary-red */
+}
+.notification-popup.warning {
+    border-left-color: #F09951; /* $secondary-orange */
+}
+
+.popup-icon {
+    font-size: 24px;
+    margin-right: 16px;
+    color: #4D4D4D; /* $secondary-charcoal */
+}
+.notification-popup.critical .popup-icon { color: #DC143C; /* $primary-red */ }
+.notification-popup.warning .popup-icon { color: #F09951; /* $secondary-orange */ }
+
+.popup-content h4 {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000000; /* $primary-black */
+}
+
+.popup-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #4D4D4D; /* $secondary-charcoal */
+    line-height: 1.4;
+}
+
+.popup-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    font-size: 20px;
+    color: #A0A0A0; /* $neutral-grey */
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.popup-close:hover {
+    color: #4D4D4D; /* $secondary-charcoal */
+}
