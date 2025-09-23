@@ -26,7 +26,6 @@ const newNotificationsQuery = query(
 onSnapshot(newNotificationsQuery, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-            console.log("New notification pop-up triggered.");
             showNotificationPopup(change.doc.data());
         }
     });
@@ -93,12 +92,13 @@ function showNotificationPopup(notificationData) {
 }
 
 // ===================================================
-// NEW: LISTENER 2: For the Sidebar Badge Count
+// LISTENER 2: For Dynamically Creating/Removing the Sidebar Badge
 // ===================================================
 document.addEventListener('DOMContentLoaded', () => {
-    const badgeElement = document.querySelector('.nav-link[data-section="notifications"] .notification-badge');
+    // Get the parent link where the badge will be added
+    const notificationLink = document.querySelector('.nav-link[data-section="notifications"]');
 
-    if (badgeElement) {
+    if (notificationLink) {
         const unreadQuery = query(
             collection(db, "notifications"),
             where("isRead", "==", false)
@@ -106,13 +106,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
         onSnapshot(unreadQuery, (snapshot) => {
             const unreadCount = snapshot.size;
-            console.log(`Unread notifications count: ${unreadCount}`);
+            // Try to find the badge in case it already exists
+            let badgeElement = notificationLink.querySelector('.notification-badge');
 
             if (unreadCount > 0) {
+                // If the badge doesn't exist, create it
+                if (!badgeElement) {
+                    badgeElement = document.createElement('span');
+                    badgeElement.className = 'notification-badge';
+                    notificationLink.appendChild(badgeElement);
+                }
+                
+                // Update the count and make it visible
                 badgeElement.textContent = unreadCount;
-                badgeElement.classList.add('show');
+                // Use a tiny timeout to ensure the CSS transition fires correctly on creation
+                setTimeout(() => {
+                    badgeElement.classList.add('show');
+                }, 10);
+
             } else {
-                badgeElement.classList.remove('show');
+                // If the badge exists and the count is zero, remove it
+                if (badgeElement) {
+                    badgeElement.classList.remove('show');
+                    // Wait for the fade-out animation to finish before removing from the DOM
+                    setTimeout(() => {
+                        badgeElement.remove();
+                    }, 300); // This duration should match your CSS transition time
+                }
             }
         });
     }
