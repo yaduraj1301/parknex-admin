@@ -37,7 +37,7 @@
                 Dashboard
               </a>
             </li>
-            <li class="nav-item active">
+            <li class="nav-item">
               <a href="bookings.html" class="nav-link" data-section="bookings">
                 <i class="nav-icon fas fa-calendar-alt"></i>
                 Bookings
@@ -54,12 +54,12 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="#" class="nav-link" data-section="vehicle-management">
+              <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
                 <i class="nav-icon fas fa-car"></i>
                 Vehicle Management
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item active">
               <a
                 href="slot-management.html"
                 class="nav-link"
@@ -103,18 +103,28 @@
 
       <!--------- Header -------->
       <div class="main-content" id="main-content">
-        <header class="slot-overview-header">
+        <header class="main-header">
           <div class="header-content">
             <div class="header-left">
-              <h1>Slot Management</h1>
-              <p>
-                Manage parking slots, monitor occupancy, and track utilization
-              </p>
+              <div class="header-left-text">
+                <h1>Slot Management</h1>
+                <p>Manage parking slots, monitor occupancy, and track utilization</p>
+              </div>
+              <div class="logout-button-container">
+                <button class="logout-button" id="logout-button">
+                  <i class="fa fa-sign-out-alt"></i> Logout
+                </button>
+              </div>
             </div>
             <div class="header-right">
-              <div class="notification-icon">
-                <button class="">
-                  <i class="fa-regular fa-bell"></i>
+              
+              <div class="datetime">
+                <span class="date" id="current-date">15/09/2025</span>
+                <span class="time" id="current-time">11:14:25</span>
+              </div>
+              <div class="user-menu">
+                <button class="user-avatar">
+                  <i class="fas fa-bell"></i>
                 </button>
               </div>
             </div>
@@ -128,7 +138,7 @@
               <i class="fa-solid fa-plus"></i>
               Add new slot
             </button>
-            <button class="action-btn refresh-btn" id="refresh-btn">
+            <button class="action-btn refresh-btn" id="refresh-btn" style="display: none;">
               <i class="fa-solid fa-arrows-rotate"></i>
               Refresh
             </button>
@@ -171,7 +181,11 @@
                   <i class="fas fa-map-marker-alt"></i> building3
                 </option>
               </select>
-              <select class="filter-select" id="filter-select" onchange="filterByStatus(this.value)">
+              <select
+                class="filter-select"
+                id="filter-select"
+                onchange="filterByStatus(this.value)"
+              >
                 <option value="">All Status</option>
                 <option value="available">Available</option>
                 <option value="occupied">Occupied</option>
@@ -239,9 +253,7 @@
 
             <!-- Parking Grid -->
             <div class="parking-grid" id="parking-grid">
-              
               <div>Loading Slots...</div>
-              
             </div>
           </div>
         </div>
@@ -523,12 +535,15 @@
               >
                 Cancel
               </button>
-              <button type="submit" class="btn btn-primary" id="configSubmit">Confirm</button>
+              <button type="submit" class="btn btn-primary" id="configSubmit">
+                Confirm
+              </button>
             </div>
           </form>
         </div>
       </div>
     </div>
     <script type="module" src="./js/slot-management.js"></script>
+    <script src="../public/js/headerScript.js"></script>
   </body>
 </html>
