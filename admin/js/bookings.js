@@ -138,12 +138,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${relatedData.level}\n${relatedData.slotName}</td>
                     <td>${bookingData.status || 'N/A'}</td>
                     <td>${bookingDate}</td>
-                    <td><button class="btn-action">View</button></td>
+                    <td><button class="btn-action view-btn" data-booking-id="${bookingDoc.id}">View</button></td>
                 `;
+
+                // Store booking data for later retrieval
+                row.dataset.bookingData = JSON.stringify({
+                    id: bookingDoc.id,
+                    ...bookingData,
+                    relatedData: relatedData
+                });
 
                 // Append row immediately
                 bookingsTableBody.appendChild(row);
             }
+
+            // Add event listeners to view buttons after all rows are created
+            addViewButtonListeners();
 
             console.log('Bookings table populated successfully');
 
@@ -239,6 +249,180 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return relatedData;
+    };
+
+    // Function to add event listeners to view buttons
+    const addViewButtonListeners = () => {
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const row = e.target.closest('tr');
+                const bookingData = JSON.parse(row.dataset.bookingData);
+                showBookingDetailsOverlay(bookingData);
+            });
+        });
+    };
+
+    // Function to show booking details overlay
+    const showBookingDetailsOverlay = (bookingData) => {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'booking-details-overlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        overlay.style.display = 'flex';
+        overlay.style.justifyContent = 'center';
+        overlay.style.alignItems = 'center';
+        overlay.style.zIndex = '1000';
+
+        // Create card
+        const card = document.createElement('div');
+        card.style.width = '500px';
+        card.style.maxHeight = '80vh';
+        card.style.backgroundColor = '#fff';
+        card.style.borderRadius = '12px';
+        card.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3)';
+        card.style.padding = '30px';
+        card.style.position = 'relative';
+        card.style.overflowY = 'auto';
+
+        // Format dates for display
+        const bookingDate = bookingData.booking_time
+            ? new Date(bookingData.booking_time.seconds * 1000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })
+            : 'N/A';
+
+        const bookingTime = bookingData.booking_time
+            ? new Date(bookingData.booking_time.seconds * 1000).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+            : 'N/A';
+
+        const expiryDate = bookingData.expiry_time
+            ? new Date(bookingData.expiry_time.seconds * 1000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            })
+            : 'N/A';
+
+        const expiryTime = bookingData.expiry_time
+            ? new Date(bookingData.expiry_time.seconds * 1000).toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+            : 'N/A';
+
+        const createdAt = bookingData.created_at
+            ? new Date(bookingData.created_at.seconds * 1000).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+            : 'N/A';
+
+        // Create card content
+        card.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;">
+                <h2 style="margin: 0; color: #333; font-size: 24px;">Booking Details</h2>
+                <button class="close-details-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666; padding: 5px;">&times;</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: #007bff; font-size: 16px;">Booking Information</h3>
+                    <p style="margin: 5px 0;"><strong>Booking ID:</strong> ${bookingData.id}</p>
+                    <p style="margin: 5px 0;"><strong>Status:</strong> <span style="color: ${getStatusColor(bookingData.status)}; font-weight: bold;">${bookingData.status || 'N/A'}</span></p>
+                    <p style="margin: 5px 0;"><strong>Booking Date:</strong> ${bookingDate}</p>
+                    <p style="margin: 5px 0;"><strong>Booking Time:</strong> ${bookingTime}</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: #28a745; font-size: 16px;">Vehicle Information</h3>
+                    <p style="margin: 5px 0;"><strong>Vehicle Number:</strong> ${bookingData.relatedData.vehicleNumber}</p>
+                    <p style="margin: 5px 0;"><strong>Employee:</strong> ${bookingData.relatedData.employeeName}</p>
+                    <p style="margin: 5px 0;"><strong>Contact:</strong> ${bookingData.contact_number || 'N/A'}</p>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: #dc3545; font-size: 16px;">Parking Details</h3>
+                    <p style="margin: 5px 0;"><strong>Building:</strong> ${bookingData.relatedData.buildingName}</p>
+                    <p style="margin: 5px 0;"><strong>Floor/Level:</strong> ${bookingData.relatedData.level}</p>
+                    <p style="margin: 5px 0;"><strong>Slot Number:</strong> ${bookingData.relatedData.slotName}</p>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <h3 style="margin: 0 0 10px 0; color: #ffc107; font-size: 16px;">Timing Information</h3>
+                    <p style="margin: 5px 0;"><strong>Expiry Date:</strong> ${expiryDate}</p>
+                    <p style="margin: 5px 0;"><strong>Expiry Time:</strong> ${expiryTime}</p>
+                    <p style="margin: 5px 0;"><strong>Created:</strong> ${createdAt}</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <button class="edit-booking-btn" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">Edit Booking</button>
+                <button class="cancel-booking-btn" style="padding: 10px 20px; background: #dc3545; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">Cancel Booking</button>
+                <button class="close-details-btn-bottom" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;">Close</button>
+            </div>
+        `;
+
+        // Append card to overlay
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+
+        // Add close functionality
+        const closeButtons = overlay.querySelectorAll('.close-details-btn, .close-details-btn-bottom');
+        closeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.body.removeChild(overlay);
+            });
+        });
+
+        // Close overlay when clicking outside
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
+        });
+
+        // Add functionality for action buttons (placeholder for now)
+        const editBtn = overlay.querySelector('.edit-booking-btn');
+        const cancelBtn = overlay.querySelector('.cancel-booking-btn');
+
+        editBtn.addEventListener('click', () => {
+            alert('Edit functionality will be implemented here');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                alert('Cancel booking functionality will be implemented here');
+            }
+        });
+    };
+
+    // Helper function to get status color
+    const getStatusColor = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'confirmed':
+                return '#28a745';
+            case 'cancelled':
+                return '#dc3545';
+            case 'completed':
+                return '#007bff';
+            default:
+                return '#6c757d';
+        }
     };
 
     // Initialize table filters
