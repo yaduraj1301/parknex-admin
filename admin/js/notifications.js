@@ -1,7 +1,7 @@
 // Import onSnapshot for real-time updates
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, query, orderBy, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
+// import {app,db} from "../../public/js/firebase-config.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
   authDomain: "parknex-e6cea.firebaseapp.com",
@@ -79,12 +79,30 @@ document.addEventListener('DOMContentLoaded', () => {
         notifications.forEach(notif => {
             const config = notificationTypeMap[notif.type] || { title: 'Notification', cssClass: 'info', icon: 'fa-bell', tag: 'General', tagClass: 'tag-gray' };
             
+            // ===================================================
+            // NEW LOGIC: Generate action buttons based on notification type
+            // ===================================================
+            let actionsHTML = '';
+            switch (notif.type) {
+                case 'unauthorized_parking':
+                    actionsHTML = `
+                        <a href="#" class="action-btn btn-blue"><i class="fas fa-search"></i> Inspect slot</a>
+                        <a href="#" class="action-btn btn-purple"><i class="fas fa-shield-alt"></i> Escalate to Security</a>
+                    `;
+                    break;
+                case 'booking_status':
+                case 'pre_book_confirmation':
+                    actionsHTML = `
+                        <a href="#" class="action-btn btn-dark"><i class="fas fa-eye"></i> View Bookings</a>
+                    `;
+                    break;
+                // Add other cases here for future button types
+            }
+
             // Prepare the timestamp part of the HTML
             let timeMetaHTML = 'No date';
             if (notif.timestamp) {
                 const date = notif.timestamp.toDate();
-                // We store the full timestamp in a data attribute for our real-time updater
-                // and add a class to easily find this element later.
                 timeMetaHTML = `<span class="time-ago" data-timestamp="${date.toISOString()}">${formatTimeAgo(date)}</span>`;
             }
 
@@ -101,6 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <i class="fas fa-clock"></i> ${timeMetaHTML}
                             ${!notif.isRead ? '<span class="badge-new">New</span>' : ''}
                         </div>
+                        
+                        <!-- Conditionally render the actions container -->
+                        ${actionsHTML ? `<div class="notification-actions">${actionsHTML}</div>` : ''}
+
                     </div>
                     ${!notif.isRead ? `<a href="#" class="notification-mark-read" data-id="${notif.id}"><i class="fas fa-check"></i> Mark as Read</a>` : ''}
                 </div>
