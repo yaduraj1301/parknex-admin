@@ -608,23 +608,48 @@ function handleAlertAction(button) {
 
 // Update your handleBuildingChange function to include slot layout update
 // Updated handleBuildingChange to populate levels and update layout
+async function updateDashboardData(building) {
+    try {
+        showLoadingOverlay();
+
+        // Store selected building globally
+        window.selectedBuilding = building;
+
+        // Create a promise for each data fetching operation
+        const updatePromises = [
+            getWeeklyBookingData(building),  // For the weekly chart
+            fetchAndUpdateStats(building),    // For the stat cards
+            populateLevelTabs(building)       // For the level tabs
+        ];
+
+        // Wait for all data to be fetched
+        const [weeklyData] = await Promise.all(updatePromises);
+
+        // Update the UI with all the data
+        if (window.bookingChart) {
+            window.bookingChart.destroy();
+        }
+        await renderChart(building, weeklyData); // Pass the already fetched data
+
+        hideLoadingOverlay();
+    } catch (error) {
+        console.error('Error updating dashboard:', error);
+        hideLoadingOverlay();
+    }
+}
+
 function handleBuildingChange(building) {
     if (!building) return;
 
     console.log(`Building selected: ${building}`);
-
-    // Store selected building globally
-    window.selectedBuilding = building;
-
-    // Update the weekly usage chart for the selected building
-    renderChart(building);
 
     // Clean up previous listener
     if (window.statsUnsubscribe) {
         window.statsUnsubscribe();
     }
 
-    // Fetch and update stats for selected building
+    // Update all dashboard data synchronously
+    updateDashboardData(building);
     fetchAndUpdateStats(building).then(() => {
         // After data is loaded, populate level tabs and render slots
         populateLevelTabs(building).then(() => {
@@ -885,13 +910,13 @@ async function getWeeklyBookingData(building) {
         console.error('Error fetching booking data:', error);
         return [0, 0, 0, 0, 0, 0]; // Return zeros if there's an error
     }
-} 
-async function renderChart(building) {
+}
+async function renderChart(building, preloadedData = null) {
     const canvas = document.getElementById('weeklyChart');
     if (!canvas) return;
 
-    // Fetch the weekly booking data for the specified building
-    const weeklyData = await getWeeklyBookingData(building);
+    // Use preloaded data if available, otherwise fetch it
+    const weeklyData = preloadedData || await getWeeklyBookingData(building);
 
     // Destroy existing chart if it exists
     if (window.bookingChart) {
@@ -1041,10 +1066,10 @@ async function init() {
     updateDateTime();
     setupEventListeners();
 
-    // Get the initial selected building and render the chart
+    // Initialize dashboard with the selected building
     const buildingSelector = document.querySelector('.building-selector');
     if (buildingSelector && buildingSelector.value) {
-        renderChart(buildingSelector.value);
+        updateDashboardData(buildingSelector.value);
     }
 
     setInterval(updateDateTime, 1000);
