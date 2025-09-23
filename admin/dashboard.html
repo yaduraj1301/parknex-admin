@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="../public/css/common-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 
@@ -40,7 +41,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
+                    <a href="vehicle-management.html" class="nav-link" data-section="vehicle-management">
+
                         <i class="nav-icon fas fa-car"></i>
                         Vehicle Management
                     </a>
@@ -74,6 +76,9 @@
                         <p class="admin-name">Admin User</p>
                         <p class="admin-email">admin@park.com</p>
                     </div>
+                    <div class="logout-button" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -84,8 +89,19 @@
             <header class="dashboard-header">
                 <div class="header-content">
                     <div class="header-left">
-                        <h1>Dashboard</h1>
-                        <p>Real time parking lot management and monitoring</p>
+                        <div class="header-left-text">
+                            <div class="header-left-text">
+                            <h1>Dashboard</h1>
+                                <p>Real time parking lot management and monitoring</p>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i>
+                                Logout</button>
+                        </div>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i> Logout</button>
+                        </div>
                     </div>
                     <div class="header-right">
                         <select class="building-selector" id="building-selector">
@@ -122,7 +138,7 @@
                         </div>
                     </div>
 
-                    <div class="stat-card available">
+                    <div class="stat-card available available">
                         <div class="stat-icon available">
                             <i class="fas fa-car"></i>
                         </div>
@@ -145,7 +161,7 @@
                             <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Occupied</h3>
+                            <h3>In Use</h3>
                             <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
                             <div class="stat-progress-container">
                                 <div class="stat-progress-bar">
@@ -181,7 +197,7 @@
                             <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Named</h3>
+                            <h3>DU Heads</h3>
                             <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
                             <div class="stat-progress-container">
                                 <div class="stat-progress-bar">
@@ -214,18 +230,20 @@
                         <p>N slots with sensor or connectivity issues require immediate attention.</p>
                         <button class="alert-action sensor">View Details</button>
                     </div>
-                   
+
                 </div>
 
                 <!-- Charts and Alerts Row -->
                 <div class="dashboard-row">
                     <!-- Weekly Usage Chart -->
-                    <div class="chart-container">
-                        <div class="chart-header">
+                    <div class="weekly-overview-card">
+                        <div class="card-header">
                             <h3><i class="fas fa-chart-bar"></i> Weekly Usage Overview</h3>
                             <p>Average slots occupied by day - Friday shows highest demand</p>
                         </div>
-                        <canvas id="weeklyChart" width="300" height="50"></canvas>
+                        <div class="chart-container">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
                     </div>
 
                     <!-- Alerts and Insights -->
@@ -238,7 +256,7 @@
                                     <h4>Attention Required</h4>
                                 </div>
                                 <p>N vehicles are parked without booking.</p>
-                                <button class="alert-action attention">View Details</button>
+                                <button class="alert-action attention" >View Details</button>
                             </div>
 
                             <!-- Sensor Issues -->
@@ -280,7 +298,7 @@
                     </div>
                 </div>
                 <!-- Parking Lot Overview -->
-                <div class="parking-overview">
+                <div class="parking-overview" id="parking-overview">
                     <div class="parking-header">
                         <h3>Parking Lot Overview</h3>
                         <div class="legend-container">
@@ -288,7 +306,7 @@
                             
                             <div class="legend-item">
                                 <span class="legend-color corner"></span>
-                                Named
+                                DU Heads
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color available"></span>

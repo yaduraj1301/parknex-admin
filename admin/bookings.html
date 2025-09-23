@@ -81,16 +81,36 @@
             </div>
         </nav>
         <div class="main-content">
-            <header class="dashboard-header">
+            <header class="main-header">
                 <div class="header-content">
-
                     <div class="header-left">
-                        <h2>Bookings</h2>
+                        <div class="header-left-text">
+                            <div class="header-left-text">
+                                <h1>Bookings</h1>
+                                <p>Manage your bookings efficiently</p>
+                            </div>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i>
+                                Logout</button>
+                        </div>
                     </div>
                     <div class="header-right">
-                        <img src="../public/assets/images/notification.png" alt="Notifications"
-                            class="notification-icon">
-
+                        <select class="building-selector" id="building-selector">
+                            <option value="building1"><i class="fas fa-map-marker-alt"></i> Athulya, Kochi
+                            </option>
+                            <option value="building2"><i class="fas fa-map-marker-alt"></i> Gayathri, Trivandrum</option>
+                            <option value="building3"><i class="fas fa-map-marker-alt"></i> Thejaswini, Trivandrum</option>
+                        </select>
+                        <div class="datetime">
+                            <span class="date" id="current-date">15/09/2025</span>
+                            <span class="time" id="current-time">11:14:25</span>
+                        </div>
+                        <div class="user-menu">
+                            <button class="user-avatar">
+                                <i class="fas fa-bell"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -101,20 +121,25 @@
                         <h4>All Booking(9)</h4>
                     </div>
                     <div class="filters-container">
-                        <input class="search-bar" type="search"
-                            placeholder="Search" aria-label="Search">
-                        <div class="btn-dropdown">
-                            <span>Status</span>
-                            <i class="fas fa-chevron-down"></i>
+                        <input class="search-bar" type="search" placeholder="Search" aria-label="Search">
+                        <div>
+                            <label for="statusFilter">Status:</label>
+                            <select id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Completed">Completed</option>
+                            </select>
                         </div>
-                        <div class="btn-dropdown">
-                            <span>Date</span>
-                            <i class="fas fa-chevron-down"></i>
+                        <div>
+                            <label for="dateFilter">Date:</label>
+                            <input type="date" id="dateFilter" class="date-filter">
                         </div>
+                        <button id="clearFilters" class="btn-clear">Clear Filters</button>
 
                         <div class="button-container">
                             <button class="btn-primary">
-                                <i class="fas fa-plus"></i>Book Slot
+                                <i class="fas fa-plus"></i>Reserve Slot
                             </button>
                         </div>
                     </div>
@@ -126,6 +151,7 @@
                                 <th>Booking ID</th>
                                 <th>Vehicle Number</th>
                                 <th>Employee</th>
+                                <th>Building</th>
                                 <th>Slot Number</th>
                                 <th>Status</th>
                                 <th>Date and Time</th>
@@ -133,40 +159,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>#BK001</td>
-                                <td>ABC123</td>
-                                <td>John Doe</td>
-                                <td>A-101</td>
-                                <td>Booked</td>
-                                <td>2025-09-17 10:00 AM</td>
-                                <td><button class="btn-action">View</button></td>
-                            </tr>
-                            <tr>
-                                <td>#BK002</td>
-                                <td>XYZ456</td>
-                                <td>Jane Smith</td>
-                                <td>B-202</td>
-                                <td>Cancelled</td>
-                                <td>2025-09-16 02:00 PM</td>
-                                <td><button class="btn-action">View</button></td>
-                            </tr>
-                            <tr>
-                                <td>#BK003</td>
-                                <td>LMN789</td>
-                                <td>Robert Brown</td>
-                                <td>C-303</td>
-                                <td>Pending</td>
-                                <td>2025-09-15 09:00 AM</td>
-                                <td><button class="btn-action">View</button></td>
-                            </tr>
+                            <!-- Bookings will be dynamically populated here -->
                         </tbody>
                     </table>
                 </div>
             </main>
         </div>
     </div>
-    <script src="../admin/js/bookings.js"></script>
+    <script type="module" src="../admin/js/bookings.js"></script>
+    <script src="../public/js/headerScript.js"></script>
 </body>
 
 </html>
