@@ -92,9 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Add loading state to prevent multiple simultaneous fetches
+    let isLoading = false;
+
     // Function to fetch and display bookings data
     const fetchAndDisplayBookings = async () => {
+        if (isLoading) return;
+        
         try {
+            isLoading = true;
             let counter = 1;
             console.log('Fetching bookings data...');
             const bookingsTableBody = document.querySelector('.table tbody');
@@ -167,6 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bookingsTableBody) {
                 bookingsTableBody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px;">Error loading bookings</td></tr>';
             }
+        } finally {
+            isLoading = false;
         }
     };
 
@@ -430,14 +438,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load bookings data when page loads
     fetchAndDisplayBookings();
-    //
-    // ... (keep all the existing code at the top of your file) ...
-    //
 
-    // Load bookings data when page loads
-    fetchAndDisplayBookings();
-
-    // --- REPLACE THE EXISTING bookSlotButton EVENT LISTENER WITH THIS ENTIRE BLOCK ---
+    // --- HANDLE BOOKING SLOT BUTTON ---
 
     const bookSlotButton = document.querySelector('.btn-primary');
 
