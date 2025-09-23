@@ -239,7 +239,7 @@
                     <div class="weekly-overview-card">
                         <div class="card-header">
                             <h3><i class="fas fa-chart-bar"></i> Weekly Usage Overview</h3>
-                            <p>Average slots occupied by day - Friday shows highest demand</p>
+                            <p>Average slots occupied by day</p>
                         </div>
                         <div class="chart-container">
                             <canvas id="weeklyChart"></canvas>
@@ -284,15 +284,15 @@
                             <h4>Usage Insights</h4>
                             <div class="insight-row">
                                 <span>Peak Day</span>
-                                <span class="insight-value">Friday</span>
+                                <span class="insight-value" id="peak-day-value">--</span>
                             </div>
                             <div class="insight-row">
                                 <span>Low Day</span>
-                                <span class="insight-value">Sunday</span>
+                                <span class="insight-value" id="low-day-value">--</span>
                             </div>
                             <div class="insight-row">
                                 <span>Weekly Avg</span>
-                                <span class="insight-value">36</span>
+                                <span class="insight-value" id="weekly-avg-value">--</span>
                             </div>
                         </div>
                     </div>

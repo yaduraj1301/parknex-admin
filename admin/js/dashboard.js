@@ -997,6 +997,50 @@ async function renderChart(building, preloadedData = null) {
             }
         }
     });
+
+    // Update usage insights based on weeklyData
+    updateUsageInsights(weeklyData);
+}
+
+function updateUsageInsights(weeklyData) {
+    try {
+        if (!Array.isArray(weeklyData) || weeklyData.length === 0) {
+            return;
+        }
+
+        const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+        let peakIndex = 0;
+        let lowIndex = 0;
+        let peakValue = weeklyData[0] || 0;
+        let lowValue = weeklyData[0] || 0;
+
+        for (let i = 1; i < weeklyData.length; i++) {
+            const value = weeklyData[i] || 0;
+            if (value > peakValue) {
+                peakValue = value;
+                peakIndex = i;
+            }
+            if (value < lowValue) {
+                lowValue = value;
+                lowIndex = i;
+            }
+        }
+
+        const sum = weeklyData.reduce((acc, v) => acc + (v || 0), 0);
+        const avg = weeklyData.length > 0 ? sum / weeklyData.length : 0;
+
+        const peakEl = document.getElementById('peak-day-value');
+        const lowEl = document.getElementById('low-day-value');
+        const avgEl = document.getElementById('weekly-avg-value');
+
+        if (peakEl) peakEl.textContent = `${dayLabels[peakIndex]}`;
+        if (lowEl) lowEl.textContent = `${dayLabels[lowIndex]}`;
+        if (avgEl) avgEl.textContent = `${Math.round(avg)}`;
+
+    } catch (e) {
+        console.error('Failed to update usage insights', e);
+    }
 }
 
 // Update init function to populate levels for default building
