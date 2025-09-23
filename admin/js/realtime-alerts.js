@@ -12,26 +12,26 @@ const firebaseConfig = {
   measurementId: "G-VN0P6KKP50"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- Real-time listener for NEW notifications ---
-const q = query(
+// ===================================================
+// LISTENER 1: For the Real-time Pop-up Alert
+// ===================================================
+const newNotificationsQuery = query(
     collection(db, "notifications"), 
     where("timestamp", ">", Timestamp.now())
 );
 
-onSnapshot(q, (snapshot) => {
+onSnapshot(newNotificationsQuery, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-            console.log("New notification received: ", change.doc.data());
+            console.log("New notification pop-up triggered.");
             showNotificationPopup(change.doc.data());
         }
     });
 });
 
-// --- MODIFIED Function to create and show the pop-up ---
 function showNotificationPopup(notificationData) {
     // 1. Create the pop-up element
     const popup = document.createElement('div');
@@ -91,3 +91,29 @@ function showNotificationPopup(notificationData) {
         dismissPopup();
     });
 }
+
+// ===================================================
+// NEW: LISTENER 2: For the Sidebar Badge Count
+// ===================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const badgeElement = document.querySelector('.nav-link[data-section="notifications"] .notification-badge');
+
+    if (badgeElement) {
+        const unreadQuery = query(
+            collection(db, "notifications"),
+            where("isRead", "==", false)
+        );
+
+        onSnapshot(unreadQuery, (snapshot) => {
+            const unreadCount = snapshot.size;
+            console.log(`Unread notifications count: ${unreadCount}`);
+
+            if (unreadCount > 0) {
+                badgeElement.textContent = unreadCount;
+                badgeElement.classList.add('show');
+            } else {
+                badgeElement.classList.remove('show');
+            }
+        });
+    }
+});

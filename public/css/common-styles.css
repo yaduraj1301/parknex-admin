@@ -175,3 +175,47 @@ body {
 /* =================================
    END SIDEBAR COMPONENT
    ================================= */
+
+/* =================================
+   SIDEBAR NOTIFICATION BADGE
+   ================================= */
+
+/* Make the nav link a positioning container for the badge */
+.sidebar .nav-link[data-section="notifications"] {
+    position: relative;
+}
+
+.notification-badge {
+    position: absolute;
+    top: 4px;       
+    left: 22px;     
+
+    min-width: 15px; 
+    height: 15px;    
+    padding: 0 4px;  
+
+    background-color: #DC143C; /* $primary-red */
+    color: #FFFFFF; 
+    
+    border-radius: 50%;
+    border: 1.5px solid #f5f5f5; 
+
+    font-size: 9px;  
+    font-weight: 700;
+    line-height: 13px; 
+    text-align: center;
+    display: flex; /* Helps with centering */
+    align-items: center;
+    justify-content: center;
+
+    /* Hide the badge by default */
+    /* transform: scale(0);
+    opacity: 0;
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out; */
+}
+
+/* Class to show the badge when there are unread notifications */
+.notification-badge.show {
+    transform: scale(1);
+    opacity: 1;
+}

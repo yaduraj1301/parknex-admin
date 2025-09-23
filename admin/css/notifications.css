@@ -10,6 +10,9 @@
 
 /* REDUCED height and padding to match dashboard scale */
 .main-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     height: 75px; 
     padding: 0 15px;
     display: flex;
