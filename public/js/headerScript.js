@@ -13,13 +13,8 @@ function updateDateTime() {
 }
 
 
-async function init() {
-    
-
-
-    
+async function init() {   
     updateDateTime();
-
     // Get the initial selected building and render the char
     setInterval(updateDateTime, 1000);
 }
