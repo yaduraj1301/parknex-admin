@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ParkNex - Bookings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../public/css/common-styles.css">
+    <link rel="stylesheet" href="css/bookings.css">
+
+</head>
+
+<body>
+    <div class="main-container">
+
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="logo">ParkNex</h2>
+                <p class="logo-subtitle">Parking Management</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+
+                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
+
+                        <i class="nav-icon fas fa-th-large"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="#" class="nav-link" data-section="bookings">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        Bookings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="reports">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="vehicle-management">
+                        <i class="nav-icon fas fa-car"></i>
+                        Vehicle Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="slot-management">
+                        <i class="nav-icon fas fa-plus"></i>
+                        Slot Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="notifications">
+                        <i class="nav-icon fas fa-bell"></i>
+                        Notifications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="settings">
+                        <i class="nav-icon fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="admin-info">
+                        <p class="admin-name">Admin User</p>
+                        <p class="admin-email">admin@park.com</p>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="main-content">
+            <header class="dashboard-header">
+                <div class="header-content">
+
+                    <div class="header-left">
+                        <h2>Bookings</h2>
+                    </div>
+                    <div class="header-right">
+                        <img src="../public/assets/images/notification.png" alt="Notifications"
+                            class="notification-icon">
+
+                    </div>
+                </div>
+            </header>
+            <main>
+
+                <div class="sub-heading-container">
+                    <div class="sub-heading-top">
+                        <h4>All Booking(9)</h4>
+                    </div>
+                    <div class="filters-container">
+                        <input class="search-bar" type="search"
+                            placeholder="Search" aria-label="Search">
+                        <div class="btn-dropdown">
+                            <span>Status</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="btn-dropdown">
+                            <span>Date</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+
+                        <div class="button-container">
+                            <button class="btn-primary">
+                                <i class="fas fa-plus"></i>Book Slot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Vehicle Number</th>
+                                <th>Employee</th>
+                                <th>Slot Number</th>
+                                <th>Status</th>
+                                <th>Date and Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#BK001</td>
+                                <td>ABC123</td>
+                                <td>John Doe</td>
+                                <td>A-101</td>
+                                <td>Booked</td>
+                                <td>2025-09-17 10:00 AM</td>
+                                <td><button class="btn-action">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#BK002</td>
+                                <td>XYZ456</td>
+                                <td>Jane Smith</td>
+                                <td>B-202</td>
+                                <td>Cancelled</td>
+                                <td>2025-09-16 02:00 PM</td>
+                                <td><button class="btn-action">View</button></td>
+                            </tr>
+                            <tr>
+                                <td>#BK003</td>
+                                <td>LMN789</td>
+                                <td>Robert Brown</td>
+                                <td>C-303</td>
+                                <td>Pending</td>
+                                <td>2025-09-15 09:00 AM</td>
+                                <td><button class="btn-action">View</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="../admin/js/bookings.js"></script>
+</body>
+
+</html>

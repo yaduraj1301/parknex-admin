@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - ParkNeX</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/login.css">
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="left-panel">
+            <img src="..\public\assets\images\experion.png" alt="Experion Technologies" class="logo">
+
+            <div class="brand-text">
+                <h1>Park<span>NeX</span></h1>
+                <p>Next Gen Parking Solution</p>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="login-form">
+                <h2>Sign In</h2>
+                <p class="subtitle">Please login to continue to your account</p>
+
+                <form action="#">
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" value="admin@experionglobal.com" required>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="password" name="password" required>
+                            <i class="fa-regular fa-eye-slash" id="togglePassword"></i>
+                        </div>
+                    </div>
+
+                    <div class="options">
+                        <input type="checkbox" id="keep-logged-in" name="keep-logged-in">
+                        <label for="keep-logged-in">Keep me logged in</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/login.js"></script>
+
+</body>
+
+</html>
