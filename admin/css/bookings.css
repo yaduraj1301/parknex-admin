@@ -27,13 +27,13 @@
 
 
 /* Header Styles */
-.header-content {
+/* .header-content {
     padding: 16px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-}
+} */
 
 .header-left h2 {
     font-size: 18px;
