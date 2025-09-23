@@ -386,52 +386,7 @@ async function handleConfigureSlotSubmit(e) {
 
 // ===== Debug Function to Print All Slots =====
 
-async function printAllSlotsWithIds() {
-    try {
-        console.log('Fetching all slots from ParkingSlots collection...');
-
-        const parkingSlotsRef = collection(db, 'ParkingSlots');
-        const snapshot = await getDocs(parkingSlotsRef);
-
-        if (snapshot.empty) {
-            console.log('No slots found in the collection');
-            return;
-        }
-
-        console.log(`Found ${snapshot.size} slots in total:`);
-        console.log('==========================================');
-
-        const slotsData = [];
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const slotInfo = {
-                docId: doc.id,
-                slot_name: data.slot_name || 'N/A',
-                building: data.building || 'N/A',
-                floor: data.floor || 'N/A',
-                status: data.status || 'N/A'
-            };
-
-            slotsData.push(slotInfo);
-
-            // Print each slot
-            console.log(`Slot: ${slotInfo.slot_name} | Doc ID: ${slotInfo.docId} | Building: ${slotInfo.building} | Floor: ${slotInfo.floor} | Status: ${slotInfo.status}`);
-        });
-
-        console.log('==========================================');
-        console.log('All slots printed above');
-
-        // Also return the data for programmatic use
-        return slotsData;
-
-    } catch (error) {
-        console.error('Error fetching all slots:', error);
-        return [];
-    }
-}
-
 // Make function available globally for console access
-window.printAllSlotsWithIds = printAllSlotsWithIds;
 
 function showNotification(message, type = 'info') {
     // Remove existing notifications

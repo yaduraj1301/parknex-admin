@@ -694,7 +694,7 @@
 }
 .parking-slot.available {
     background: var(--secondary-green-transparent);
-    border: 1.5px solid var(--secondary-green);
+    border: 1.2px solid var(--secondary-green);
     color: var(--secondary-green);
 }
 
