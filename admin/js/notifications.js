@@ -1,7 +1,7 @@
 // Import onSnapshot for real-time updates
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, query, orderBy, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
+// import {app,db} from "../../public/js/firebase-config.js";
 const firebaseConfig = {
   apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
   authDomain: "parknex-e6cea.firebaseapp.com",
