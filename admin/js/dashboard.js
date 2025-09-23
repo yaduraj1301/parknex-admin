@@ -605,7 +605,7 @@ function handleAlertAction(button) {
 // Updated handleBuildingChange to populate levels and update layout
 async function updateDashboardData(building) {
     try {
-        showLoadingOverlay();
+        // showLoadingOverlay();
 
         // Store selected building globally
         window.selectedBuilding = building;
@@ -645,6 +645,7 @@ function handleBuildingChange(building) {
     }
 
     // Update all dashboard data synchronously
+    showLoadingOverlay();
     updateDashboardData(building);
     fetchAndUpdateStats(building).then(() => {
         // After data is loaded, populate level tabs and render slots

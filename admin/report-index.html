@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ParkNex - Reports & Analysis</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../parknex-admin/public/css/common-styles.css">
   <link rel="stylesheet" href="css/report-style.css">
+  <link rel="stylesheet" href="../public/css/common-styles.css">
+
 </head>
+
 <body>
   <div class="dashboard">
     <!-- Sidebar -->
@@ -18,21 +22,61 @@
       </div>
 
       <ul class="nav-menu">
-        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-th-large"></i> Dashboard</a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-calendar-alt"></i> Bookings</a></li>
-        <li class="nav-item active"><a href="report-index.html" class="nav-link"><i class="nav-icon fas fa-file-alt"></i> Reports</a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-car"></i> Vehicle Management</a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-plus"></i> Slot Management</a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-bell"></i> Notifications</a></li>
-        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-cog"></i> Settings</a></li>
+        <li class="nav-item ">
+          <a href="dashboard.html" class="nav-link" data-section="dashboard">
+            <i class="nav-icon fas fa-th-large"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item ">
+          <a href="bookings.html" class="nav-link" data-section="bookings">
+            <i class="nav-icon fas fa-calendar-alt"></i>
+            Bookings
+          </a>
+        </li>
+        <li class="nav-item active">
+          <a href="report-index.html" class="nav-link" data-section="reports">
+            <i class="nav-icon fas fa-file-alt"></i>
+            Reports
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
+            <i class="nav-icon fas fa-car"></i>
+            Vehicle Management
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="slot-management.html" class="nav-link" data-section="slot-management">
+            <i class="nav-icon fas fa-plus"></i>
+            Slot Management
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="notifications.html" class="nav-link" data-section="notifications">
+            <i class="nav-icon fas fa-bell"></i>
+            Notifications
+          </a>
+        </li>
+        <li class="nav-item">
+          <a href="settings.html" class="nav-link" data-section="settings">
+            <i class="nav-icon fas fa-cog"></i>
+            Settings
+          </a>
+        </li>
       </ul>
 
       <div class="sidebar-footer">
         <div class="admin-profile">
-          <div class="admin-avatar"><i class="fas fa-user"></i></div>
+          <div class="admin-avatar">
+            <i class="fas fa-user"></i>
+          </div>
           <div class="admin-info">
             <p class="admin-name">Admin User</p>
             <p class="admin-email">admin@park.com</p>
+          </div>
+          <div class="logout-button" id="logout-button">
+            <i class="fas fa-sign-out-alt"></i>
           </div>
         </div>
       </div>
@@ -40,37 +84,64 @@
 
     <!-- Main Content -->
     <main class="main-content">
-  <header class="dashboard-header">
-    <h1>Reports & Analysis</h1>
-    <button id="generatePdfBtn" class="pdf-btn">
-      <i class="fas fa-file-pdf"></i> Generate PDF
-    </button>
-  </header>
+      <header class="main-header">
+        <div class="header-content">
+          <div class="header-left">
 
-  <section class="usage-trends">
-    <h2>Usage Trends Analytics</h2>
-    <label for="buildingSelect">Select Building:</label>
-    <select id="buildingSelect">
-      <option value="Thejaswini">Thejaswini</option>
-      <option value="Gayathri">Gayathri</option>
-      <option value="Athulya">Athulya</option>
-    </select>
-    <canvas id="usageTrendsChart"></canvas>
-  </section>
+            <div class="header-left-text">
+              <h1>Reports</h1>
+              <p>Optional tagline</p>
+            </div>
+            <div class="logout-button-container ">
+              <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i> Logout</button>
+            </div>
+          </div>
+          <div class="header-right">
 
-  <section id="pdfViewerSection" class="pdf-viewer-container" style="display:none;">
-    <h2>PDF Preview</h2>
-    <iframe id="pdfViewer" class="pdf-viewer" width="100%" height="600px" frameborder="0"></iframe>
-    <div class="pdf-actions">
-        <button id="downloadPdfBtn" class="pdf-btn">
+            <div class="datetime">
+              <span class="date" id="current-date">15/09/2025</span>
+              <span class="time" id="current-time">11:14:25</span>
+            </div>
+            <div class="user-menu">
+              <button class="user-avatar">
+                <i class="fas fa-bell"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section class="usage-trends">
+        <div class="usage-header-flex">
+          <h2>Usage Trends Analytics</h2>
+          <button id="generatePdfBtn" class="pdf-btn">
+            <i class="fas fa-file-pdf"></i> Generate PDF
+          </button>
+        </div>
+        <label for="buildingSelect">Select Building:</label>
+        <select id="buildingSelect">
+          <option value="Thejaswini">Thejaswini</option>
+          <option value="Gayathri">Gayathri</option>
+          <option value="Athulya">Athulya</option>
+        </select>
+        <canvas id="usageTrendsChart"></canvas>
+      </section>
+
+      <section id="pdfViewerSection" class="pdf-viewer-card" style="display:none;">
+        <div class="pdf-viewer-header">
+          <h2><i class="fas fa-file-pdf"></i> PDF Preview</h2>
+          <button id="downloadPdfBtn" class="pdf-btn">
             <i class="fas fa-download"></i> Download PDF
-        </button>
-    </div>
-  </section>
-</main>
+          </button>
+        </div>
+        <iframe id="pdfViewer" class="pdf-viewer" width="100%" height="600px" frameborder="0"></iframe>
+      </section>
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script type="module" src="js/report-script.js"></script>
+  <script type="module" src="js/report-script.js"></script>
+  <script src="../public/js/headerScript.js"></script>
 </body>
+
 </html>
