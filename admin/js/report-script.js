@@ -816,4 +816,8 @@ async function generateAndDisplayPdf() {
     document.getElementById("downloadPdfBtn").onclick = () => {
         doc.save(`ParkNex_Realtime_Report_${selectedBuilding}.pdf`);
     };
+    const element = document.getElementById("pdfViewerSection");
+    if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
 }
