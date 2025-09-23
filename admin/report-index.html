@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ParkNex - Reports & Analysis</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/report-style.css">
+  <link rel="stylesheet" href="../public/css/common-styles.css">
+
+</head>
+<body>
+  <div class="dashboard">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h2 class="logo">ParkNex</h2>
+        <p class="logo-subtitle">Parking Management</p>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="dashboard.html" class="nav-link"><i class="nav-icon fas fa-th-large"></i> Dashboard</a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-calendar-alt"></i> Bookings</a></li>
+        <li class="nav-item active"><a href="report-index.html" class="nav-link"><i class="nav-icon fas fa-file-alt"></i> Reports</a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-car"></i> Vehicle Management</a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-plus"></i> Slot Management</a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-bell"></i> Notifications</a></li>
+        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-cog"></i> Settings</a></li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <div class="admin-profile">
+          <div class="admin-avatar"><i class="fas fa-user"></i></div>
+          <div class="admin-info">
+            <p class="admin-name">Admin User</p>
+            <p class="admin-email">admin@park.com</p>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+  <header class="dashboard-header">
+    <h1>Reports & Analysis</h1>
+  </header>
+
+  <section class="usage-trends">
+  <div class="usage-header-flex">
+    <h2>Usage Trends Analytics</h2>
+    <button id="generatePdfBtn" class="pdf-btn">
+      <i class="fas fa-file-pdf"></i> Generate PDF
+    </button>
+  </div>
+  <label for="buildingSelect">Select Building:</label>
+  <select id="buildingSelect">
+    <option value="Thejaswini">Thejaswini</option>
+    <option value="Gayathri">Gayathri</option>
+    <option value="Athulya">Athulya</option>
+  </select>
+  <canvas id="usageTrendsChart"></canvas>
+</section>
+
+<section id="pdfViewerSection" class="pdf-viewer-card" style="display:none;">
+  <div class="pdf-viewer-header">
+    <h2><i class="fas fa-file-pdf"></i> PDF Preview</h2>
+    <button id="downloadPdfBtn" class="pdf-btn">
+      <i class="fas fa-download"></i> Download PDF
+    </button>
+  </div>
+  <iframe id="pdfViewer" class="pdf-viewer" width="100%" height="600px" frameborder="0"></iframe>
+</section>
+</main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module" src="js/report-script.js"></script>
+</body>
+</html>

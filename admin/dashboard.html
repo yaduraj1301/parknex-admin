@@ -1,67 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ParkNex - Dashboard</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../public/css/common-styles.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="../public/css/common-styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
+
 <body>
-    <div class="dashboard-container">
+    <div class="main-container">
         <!-- Sidebar -->
         <nav class="sidebar">
             <div class="sidebar-header">
                 <h2 class="logo">ParkNex</h2>
                 <p class="logo-subtitle">Parking Management</p>
             </div>
-            
+
             <ul class="nav-menu">
                 <li class="nav-item active">
-                    <a href="#" class="nav-link" data-section="dashboard">
+                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
                         <i class="nav-icon fas fa-th-large"></i>
                         Dashboard
                     </a>
                 </li>
                 <li class="nav-item ">
-                    <a href="#" class="nav-link" data-section="bookings">
+                    <a href="bookings.html" class="nav-link" data-section="bookings">
                         <i class="nav-icon fas fa-calendar-alt"></i>
                         Bookings
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-section="reports">
+                    <a href="report-index.html" class="nav-link" data-section="reports">
                         <i class="nav-icon fas fa-file-alt"></i>
                         Reports
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-section="vehicle-management">
+                    <a href="vehicle-management.html" class="nav-link" data-section="vehicle-management">
+
                         <i class="nav-icon fas fa-car"></i>
                         Vehicle Management
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-section="slot-management">
+                    <a href="slot-management.html" class="nav-link" data-section="slot-management">
                         <i class="nav-icon fas fa-plus"></i>
                         Slot Management
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-section="notifications">
+                    <a href="notifications.html" class="nav-link" data-section="notifications">
                         <i class="nav-icon fas fa-bell"></i>
                         Notifications
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link" data-section="settings">
+                    <a href="settings.html" class="nav-link" data-section="settings">
                         <i class="nav-icon fas fa-cog"></i>
                         Settings
                     </a>
                 </li>
             </ul>
-            
+
             <div class="sidebar-footer">
                 <div class="admin-profile">
                     <div class="admin-avatar">
@@ -70,6 +75,9 @@
                     <div class="admin-info">
                         <p class="admin-name">Admin User</p>
                         <p class="admin-email">admin@park.com</p>
+                    </div>
+                    <div class="logout-button" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i>
                     </div>
                 </div>
             </div>
@@ -81,13 +89,26 @@
             <header class="dashboard-header">
                 <div class="header-content">
                     <div class="header-left">
-                        <h1>Dashboard</h1>
-                        <p>Real time parking lot management and monitoring</p>
+                        <div class="header-left-text">
+                            <div class="header-left-text">
+                            <h1>Dashboard</h1>
+                                <p>Real time parking lot management and monitoring</p>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i>
+                                Logout</button>
+                        </div>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i> Logout</button>
+                        </div>
                     </div>
                     <div class="header-right">
-                        <select class="building-selector">
-                            <option value="thejaswini"><i class="fas fa-map-marker-alt"></i> Thejaswini Building</option>
-                            <option value="building2"><i class="fas fa-map-marker-alt"></i> Building 2</option>
+                        <select class="building-selector" id="building-selector">
+                            <option value="building1"><i class="fas fa-map-marker-alt"></i> building1
+                            </option>
+                            <option value="building2"><i class="fas fa-map-marker-alt"></i> buildin2</option>
+                            <option value="building3"><i class="fas fa-map-marker-alt"></i> building3</option>
                         </select>
                         <div class="datetime">
                             <span class="date" id="current-date">15/09/2025</span>
@@ -95,7 +116,7 @@
                         </div>
                         <div class="user-menu">
                             <button class="user-avatar">
-                                <i class="fas fa-user"></i>
+                                <i class="fas fa-bell"></i>
                             </button>
                         </div>
                     </div>
@@ -105,6 +126,7 @@
             <!-- Dashboard Content -->
             <div class="dashboard-content">
                 <!-- Stats Cards -->
+                <!-- Updated Stats Cards with Progress Bars -->
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
@@ -116,75 +138,146 @@
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card available available">
                         <div class="stat-icon available">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Available</h3>
                             <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                             <div class="stat-change positive">+5% from last week</div>
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card occupied">
                         <div class="stat-icon occupied">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Occupied</h3>
+                            <h3>In Use</h3>
                             <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card reserved">
                         <div class="stat-icon reserved">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
                             <h3>Reserved</h3>
                             <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
-                            <div class="stat-percentage">16%</div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
                             <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
+
+                    <div class="stat-card named">
+                        <div class="stat-icon named">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>DU Heads</h3>
+                            <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
+                            <div class="stat-progress-container">
+                                <div class="stat-progress-bar">
+                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                </div>
+                                <div class="stat-percentage">16%</div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- both alerts at once -->
+                <div class="alert-insights-secondary secondary hidden " id="alert-insights">
+                    <div class="alert-card secondary attention">
+                        <div class="alert-header">
+                            <i class="alert-icon fas fa-exclamation-triangle"></i>
+                            <h4>Attention Required</h4>
+                        </div>
+                        <p>N vehicles are parked without booking.</p>
+                        <button class="alert-action attention">View Details</button>
+                    </div>
+
+                    <!-- Sensor Issues -->
+                    <div class="alert-card secondary sensor">
+                        <div class="alert-header">
+                            <i class="alert-icon fas fa-tools"></i>
+                            <h4>Sensor Issues</h4>
+                        </div>
+                        <p>N slots with sensor or connectivity issues require immediate attention.</p>
+                        <button class="alert-action sensor">View Details</button>
+                    </div>
+
                 </div>
 
                 <!-- Charts and Alerts Row -->
                 <div class="dashboard-row">
                     <!-- Weekly Usage Chart -->
-                    <div class="chart-container">
-                        <div class="chart-header">
+                    <div class="weekly-overview-card">
+                        <div class="card-header">
                             <h3><i class="fas fa-chart-bar"></i> Weekly Usage Overview</h3>
                             <p>Average slots occupied by day - Friday shows highest demand</p>
                         </div>
-                        <canvas id="weeklyChart" width="600" height="300"></canvas>
+                        <div class="chart-container">
+                            <canvas id="weeklyChart"></canvas>
+                        </div>
                     </div>
 
                     <!-- Alerts and Insights -->
-                    <div class="alerts-insights">
+                    <div class="insights">
                         <!-- Attention Required -->
-                        <div class="alert-card attention">
-                            <div class="alert-header">
-                                <i class="alert-icon fas fa-exclamation-triangle"></i>
-                                <h4>Attention Required</h4>
+                        <div class="alert-insights" id="alert-insights">
+                            <div class="alert-card attention hidden ">
+                                <div class="alert-header">
+                                    <i class="alert-icon fas fa-exclamation-triangle"></i>
+                                    <h4>Attention Required</h4>
+                                </div>
+                                <p>N vehicles are parked without booking.</p>
+                                <button class="alert-action attention" >View Details</button>
                             </div>
-                            <p>9 vehicles are parked without booking.</p>
-                            <button class="alert-action attention">View Details</button>
+
+                            <!-- Sensor Issues -->
+                            <div class="alert-card sensor hidden ">
+                                <div class="alert-header">
+                                    <i class="alert-icon fas fa-tools"></i>
+                                    <h4>Sensor Issues</h4>
+                                </div>
+                                <p>N slots with sensor or connectivity issues require immediate attention.</p>
+                                <button class="alert-action sensor">View Details</button>
+                            </div>
+                            <!-- No Issues -->
+                            <div class="alert-card no-alerts hidden">
+                                <div class="alert-header">
+                                    <img src="../public/assets/icons/party-horn.svg" class="alert-icon" alt="">
+                                    <h4>Hooray !!</h4>
+                                </div>
+                                <p>Your system is working fine.</p>
+                            </div>
                         </div>
 
-                        <!-- Sensor Issues -->
-                        <div class="alert-card sensor">
-                            <div class="alert-header">
-                                <i class="alert-icon fas fa-tools"></i>
-                                <h4>Sensor Issues</h4>
-                            </div>
-                            <p>12 slots with sensor or connectivity issues require immediate attention.</p>
-                            <button class="alert-action sensor">View Details</button>
-                        </div>
 
                         <!-- Usage Insights -->
                         <div class="insights-card">
@@ -204,19 +297,16 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- Parking Lot Overview -->
-                <div class="parking-overview">
+                <div class="parking-overview" id="parking-overview">
                     <div class="parking-header">
                         <h3>Parking Lot Overview</h3>
-                        <div class="parking-legend">
-                            <div class="legend-item">
-                                <span class="legend-color pillar"></span>
-                                Pillar
-                            </div>
+                        <div class="legend-container">
+                            <div class="parking-legend">
+                            
                             <div class="legend-item">
                                 <span class="legend-color corner"></span>
-                                Corner
+                                DU Heads
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color available"></span>
@@ -224,7 +314,7 @@
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color occupied"></span>
-                                Occupied
+                                Booked
                             </div>
                             <div class="legend-item">
                                 <span class="legend-color reserved"></span>
@@ -235,6 +325,25 @@
                                 Unbooked
                             </div>
                         </div>
+
+                        <div class="parking-legend second-row">
+                            
+                            <div class="legend-item">
+                                <img src="../public/assets/icons/pillar.png" class="pillar" alt="">
+                                Pillar
+                            </div>
+                            <div class="legend-item">
+                                <i class="fa fa-turn-down"></i>
+                                Corner
+                            </div>
+                            <div class="legend-item">
+                                <i class="fa fa-bolt available"></i>
+                                EV Slot
+                            </div>
+                        </div>
+
+                        </div>
+                        
                     </div>
 
                     <!-- Level Tabs -->
@@ -252,15 +361,23 @@
                             <div class="slots-grid">
                                 <div class="parking-slot available" data-slot="A01">
                                     <span class="slot-id">A01</span>
+
                                     <i class="slot-icon fas fa-car"></i>
+
+
                                 </div>
                                 <div class="parking-slot occupied" data-slot="A02">
                                     <span class="slot-id">A02</span>
+
                                     <i class="slot-icon fas fa-car"></i>
+
                                 </div>
                                 <div class="parking-slot available" data-slot="A03">
                                     <span class="slot-id">A03</span>
+
                                     <i class="slot-icon fas fa-car"></i>
+
+
                                 </div>
                                 <div class="parking-slot occupied" data-slot="A04">
                                     <span class="slot-id">A04</span>
@@ -282,7 +399,7 @@
                                     <span class="slot-id">A08</span>
                                     <i class="slot-icon fas fa-car"></i>
                                 </div>
-                                <div class="parking-slot reserved" data-slot="A09">
+                                <div class="parking-slot named" data-slot="A09">
                                     <span class="slot-id">A09</span>
                                     <i class="slot-icon fas fa-car"></i>
                                 </div>
@@ -452,6 +569,7 @@
         </main>
     </div>
 
-    <script src="js/dashboard.js"></script>
+    <script type="module" src="js/dashboard.js"></script>
 </body>
+
 </html>
