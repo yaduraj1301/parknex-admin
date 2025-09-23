@@ -3,14 +3,13 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBh0XI8p736BK2Zn-PuC9r2FbDNBSddWRE",
-  authDomain: "parknex-admin.firebaseapp.com",
-  projectId: "parknex-admin",
-  storageBucket: "parknex-admin.firebasestorage.app",
-  messagingSenderId: "1018594733850",
-  appId: "1:1018594733850:web:91a7f78628eb5e089846a3",
-  measurementId: "G-0ETW3XZN2E"
-
+  apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
+  authDomain: "parknex-e6cea.firebaseapp.com",
+  projectId: "parknex-e6cea",
+  storageBucket: "parknex-e6cea.firebasestorage.app",
+  messagingSenderId: "830756459271",
+  appId: "1:830756459271:web:f2c5591a282887a10b6ba2",
+  measurementId: "G-VN0P6KKP50"
 };
 
 // Initialize Firebase
