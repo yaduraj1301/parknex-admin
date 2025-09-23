@@ -152,14 +152,14 @@
 }
 .action-btn i { font-size: 12px; }
 
-.btn-blue { background-color: rgba(100, 162, 245, 0.15); color: #64A2F5; }
-.btn-blue:hover { background-color: rgba(100, 162, 245, 0.25); }
+.btn-blue { background-color: #64A2F5; color: white; }
+/* .btn-blue:hover { background-color: rgba(100, 162, 245, 0.25); } */
 
-.btn-purple { background-color: rgba(128, 97, 195, 0.15); color: #8061C3; }
-.btn-purple:hover { background-color: rgba(128, 97, 195, 0.25); }
+.btn-purple { background-color: #8061C3; color: #F09951; }
+/* .btn-purple:hover { background-color: rgba(128, 97, 195, 0.25); } */
 
 .btn-dark { background-color: rgba(77, 77, 77, 0.1); color: #4D4D4D; }
-.btn-dark:hover { background-color: rgba(77, 77, 77, 0.2); }
+/* .btn-dark:hover { background-color: rgba(77, 77, 77, 0.2); } */
 
 /* Mark as Read link */
 .notification-mark-read { 
