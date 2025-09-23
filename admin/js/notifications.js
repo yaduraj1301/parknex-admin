@@ -86,14 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (notif.type) {
                 case 'unauthorized_parking':
                     actionsHTML = `
-                        <a href="#" class="action-btn btn-blue"><i class="fas fa-search"></i> Inspect slot</a>
+                        <a href="bookings.html" class="action-btn btn-blue"><i class="fas fa-search"></i> Inspect slot</a>
                         <a href="#" class="action-btn btn-purple"><i class="fas fa-shield-alt"></i> Escalate to Security</a>
                     `;
                     break;
                 case 'booking_status':
                 case 'pre_book_confirmation':
                     actionsHTML = `
-                        <a href="#" class="action-btn btn-dark"><i class="fas fa-eye"></i> View Bookings</a>
+                        <a href="bookings.html" class="action-btn btn-dark"><i class="fas fa-eye"></i> View Bookings</a>
                     `;
                     break;
                 // Add other cases here for future button types
