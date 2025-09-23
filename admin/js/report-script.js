@@ -12,13 +12,13 @@ const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyBh0XI8p736BK2Zn-PuC9r2FbDNBSddWRE",
-  authDomain: "parknex-admin.firebaseapp.com",
-  projectId: "parknex-admin",
-  storageBucket: "parknex-admin.firebasestorage.app",
-  messagingSenderId: "1018594733850",
-  appId: "1:1018594733850:web:91a7f78628eb5e089846a3",
-  measurementId: "G-0ETW3XZN2E"
+  apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
+  authDomain: "parknex-e6cea.firebaseapp.com",
+  projectId: "parknex-e6cea",
+  storageBucket: "parknex-e6cea.firebasestorage.app",
+  messagingSenderId: "830756459271",
+  appId: "1:830756459271:web:f2c5591a282887a10b6ba2",
+  measurementId: "G-VN0P6KKP50"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -456,7 +456,14 @@ async function getRealtimeReportData(buildingName) {
             hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
         }
     });
+    console.log("All notifications:", notifications);
+const buildingNotifications = notifications.filter(n =>
+    (n.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()
+);
+console.log("Notifications for building:", buildingNotifications);
 
+const criticalNotifications = buildingNotifications.filter(n => n.isCritical);
+console.log("Critical notifications for building:", criticalNotifications);
     // Unauthorized parking aggregation
     notifications.forEach(notification => {
         if (notification.type !== 'unauthorized_parking') return;
@@ -471,19 +478,30 @@ async function getRealtimeReportData(buildingName) {
         });
     });
     
-// Unauthorized parking aggregation (same for all buildings)
+// Unauthorized parking aggregation (per building, isCritical only)
+let unauthorizedFound = false;
 notifications.forEach(notification => {
-    console.log("Notifications:", notifications);
-    
-    if (notification.type !== 'unauthorized_parking') return;
+    // Debug: log all notifications for this building
+    if ((notification.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()) {
+        console.log("🔎 Notification for building:", notification);
+    }
+    if (
+        (notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()
+    ) return;
+    if (!notification.isCritical) return;
     const notifDate = parseBookingDate(notification.timestamp);
     if (!notifDate) return;
     labels.forEach((label, idx) => {
         if (isSameDay(notifDate, dateObjects[idx])) {
             dailyUnauthorizedCounts[label]++;
+            unauthorizedFound = true;
+            console.log(`✅ Unauthorized parking for ${buildingName} on ${label}:`, notification);
         }
     });
 });
+if (!unauthorizedFound) {
+    console.warn(`⚠️ No unauthorized parking notifications found for building "${buildingName}" in the last 7 days.`);
+}
 
     // Most parked slot (weekly)
     let mostParkedSlot = "N/A";
@@ -582,13 +600,19 @@ async function getPdfReportDataForBuilding(buildingName) {
         }
     });
 
-    // Unauthorized parking aggregation
+
+    // Unauthorized parking aggregation (per building, isCritical only)
     notifications.forEach(notification => {
-        if (notification.type !== 'unauthorized_parking') return;
-        const slotId = normalizeSlotId(notification.slotId);
-        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+        // Check building match (case-insensitive, trimmed)
+        if (
+            (notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()
+        ) return;
+        // Check isCritical
+        if (!notification.isCritical) return;
+        // Parse date
         const notifDate = parseBookingDate(notification.timestamp);
         if (!notifDate) return;
+        console.log("Matched notification for unauthorized parking:", notification);
         labels.forEach((label, idx) => {
             if (isSameDay(notifDate, dateObjects[idx])) {
                 dailyUnauthorizedCounts[label]++;
