@@ -150,8 +150,7 @@ function applyFilters() {
         switch (activeFilters.quickFilter) {
             case 'unbooked':
                 slotsToFilter = slotsToFilter.filter(slot =>
-                    mapFirebaseStatusToCss(slot.status) === 'unbooked' ||
-                    mapFirebaseStatusToCss(slot.status) === 'available'
+                    mapFirebaseStatusToCss(slot.status) === 'unbooked' 
                 );
                 break;
             case 'ev':
