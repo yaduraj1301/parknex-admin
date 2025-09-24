@@ -609,7 +609,8 @@ async function updateDashboardData(building) {
 
         // Store selected building globally
         window.selectedBuilding = building;
-    localStorage.setItem('selectedBuilding', selectedBuilding);
+        localStorage.setItem('selectedBuilding', selectedBuilding);
+        document.getElementById('building-card').innerHTML = `<h3>${selectedBuilding || 'N/A'}</h3>`;
 
         // Create a promise for each data fetching operation
         const updatePromises = [
@@ -646,6 +647,7 @@ function handleBuildingChange(building) {
 
     // Update all dashboard data synchronously
     showLoadingOverlay();
+
     updateDashboardData(building);
     fetchAndUpdateStats(building).then(() => {
         // After data is loaded, populate level tabs and render slots
