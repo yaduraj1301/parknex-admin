@@ -9,7 +9,7 @@ const firebaseConfig = {
   storageBucket: "parknex-admin.firebasestorage.app",
   messagingSenderId: "1018594733850",
   appId: "1:1018594733850:web:91a7f78628eb5e089846a3",
-  measurementId: "G-0ETW3XZN2E",
+  measurementId: "G-0ETW3XZN2E"
 };
 
 // Initialize Firebase
