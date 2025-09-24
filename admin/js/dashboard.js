@@ -74,7 +74,7 @@ async function populateBuildingDropdown() {
         });
 
         const buildingList = Array.from(buildings).sort();
-        console.log('Found buildings:', buildingList);
+        // console.log('Found buildings:', buildingList);
 
         const buildingSelector = document.querySelector('.building-selector');
 
@@ -87,7 +87,7 @@ async function populateBuildingDropdown() {
                 buildingSelector.appendChild(option);
             });
 
-            console.log(`Building dropdown populated with ${buildingList.length} buildings`);
+            // console.log(`Building dropdown populated with ${buildingList.length} buildings`);
         } else {
             console.error('Building selector not found in DOM');
         }
@@ -97,7 +97,7 @@ async function populateBuildingDropdown() {
 
     } catch (error) {
         hideLoadingOverlay();
-        console.error('Error fetching buildings:', error);
+        // console.error('Error fetching buildings:', error);
 
         const buildingSelector = document.querySelector('.building-selector');
         if (buildingSelector) {
@@ -110,7 +110,7 @@ async function populateBuildingDropdown() {
 
 async function populateLevelTabs(selectedBuilding = null) {
     try {
-        console.log('Fetching levels for building:', selectedBuilding);
+        // console.log('Fetching levels for building:', selectedBuilding);
 
         let slotsToCheck = currentBuildingSlots;
 
@@ -136,7 +136,7 @@ async function populateLevelTabs(selectedBuilding = null) {
         });
 
         availableLevels = Array.from(levels).sort((a, b) => a - b);
-        console.log('Available levels:', availableLevels);
+        // console.log('Available levels:', availableLevels);
 
         const levelTabsContainer = document.querySelector('.level-tabs');
         if (levelTabsContainer && availableLevels.length > 0) {
@@ -170,7 +170,7 @@ async function populateLevelTabs(selectedBuilding = null) {
 
 async function fetchAndUpdateStats(selectedBuilding = null) {
     try {
-        console.log('Fetching slots for stats update...');
+        // console.log('Fetching slots for stats update...');
 
         const parkingSlotsRef = collection(db, 'ParkingSlots');
         let q;
@@ -191,7 +191,7 @@ async function fetchAndUpdateStats(selectedBuilding = null) {
             });
         });
 
-        console.log(`Loaded ${currentBuildingSlots.length} slots for stats`);
+        // console.log(`Loaded ${currentBuildingSlots.length} slots for stats`);
         updateStatsCards();
 
     } catch (error) {
@@ -201,26 +201,26 @@ async function fetchAndUpdateStats(selectedBuilding = null) {
 
 function updateStatsCards() {
     if (currentBuildingSlots.length === 0) {
-        console.log('No slots data available for stats');
+        // console.log('No slots data available for stats');
         return;
     }
 
-    console.log('=== ALL SLOTS IN CURRENT BUILDING ===');
-    console.log(`Total slots found: ${currentBuildingSlots.length}`);
-    console.log('Detailed slot information:');
+    // console.log('=== ALL SLOTS IN CURRENT BUILDING ===');
+    // console.log(`Total slots found: ${currentBuildingSlots.length}`);
+    // console.log('Detailed slot information:');
 
-    currentBuildingSlots.forEach((slot, index) => {
-        console.log(`Slot ${index + 1}:`, {
-            slot_name: slot.slot_name,
-            status: slot.status,
-            building: slot.building,
-            floor: slot.floor,
-            block: slot.block,
-            is_special: slot.is_special,
-            notes: slot.notes,
-            docId: slot.docId
-        });
-    });
+    // currentBuildingSlots.forEach((slot, index) => {
+    //     console.log(`Slot ${index + 1}:`, {
+    //         slot_name: slot.slot_name,
+    //         status: slot.status,
+    //         building: slot.building,
+    //         floor: slot.floor,
+    //         block: slot.block,
+    //         is_special: slot.is_special,
+    //         notes: slot.notes,
+    //         docId: slot.docId
+    //     });
+    // });
 
     const statusGroups = currentBuildingSlots.reduce((groups, slot) => {
         const status = slot.status || 'undefined';
@@ -231,10 +231,10 @@ function updateStatsCards() {
         return groups;
     }, {});
 
-    console.log('=== SLOTS GROUPED BY STATUS ===');
-    Object.keys(statusGroups).forEach(status => {
-        console.log(`${status.toUpperCase()}: [${statusGroups[status].join(', ')}] (${statusGroups[status].length} slots)`);
-    });
+    // console.log('=== SLOTS GROUPED BY STATUS ===');
+    // Object.keys(statusGroups).forEach(status => {
+    //     console.log(`${status.toUpperCase()}: [${statusGroups[status].join(', ')}] (${statusGroups[status].length} slots)`);
+    // });
 
     const stats = {
         total: currentBuildingSlots.length,
@@ -255,7 +255,7 @@ function updateStatsCards() {
         ).length
     };
 
-    console.log('Calculated stats:', stats);
+    // console.log('Calculated stats:', stats);
 
     const statCards = document.querySelectorAll('.stat-card');
 
@@ -380,7 +380,7 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
         }
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            console.log('Real-time update received for stats and slots');
+            // console.log('Real-time update received for stats and slots');
 
             currentBuildingSlots = [];
             snapshot.forEach(doc => {
@@ -467,9 +467,9 @@ function switchLevel(level) {
     renderParkingSlots();
 }
 
-function updateSlotLayoutForBuilding() {
-    renderParkingSlots();
-}
+// function updateSlotLayoutForBuilding() {
+//     renderParkingSlots();
+// }
 
 function handleSlotClick(slotElement) {
     const slotId = slotElement.dataset.slot;
@@ -653,7 +653,7 @@ function renderParkingSlots() {
         parkingGrid.appendChild(blockDiv);
     });
 
-    console.log(`Rendered ${currentLevelSlots.length} slots for Level ${currentLevel}`);
+    // console.log(`Rendered ${currentLevelSlots.length} slots for Level ${currentLevel}`);
 }
 
 function mapFirebaseStatusToCss(firebaseStatus) {
@@ -697,15 +697,6 @@ function addSpecialIcons(iconContainer, slot) {
     }
 }
 
-function addSlotTooltip(slotElement, slot) {
-    let tooltipText = `Slot: ${slot.slot_name}\nStatus: ${slot.status}\nBuilding: ${slot.building}\nFloor: ${slot.floor}`;
-    if (slot.notes) {
-        tooltipText += `\nNotes: ${slot.notes}`;
-    }
-
-    slotElement.setAttribute('data-tooltip', tooltipText);
-    slotElement.classList.add('tooltip');
-}
 
 async function getWeeklyBookingData(building) {
     try {
@@ -720,7 +711,7 @@ async function getWeeklyBookingData(building) {
         lastSaturday.setDate(lastMonday.getDate() + 5);
         lastSaturday.setHours(23, 59, 59, 999);
 
-        console.log('Fetching bookings from:', lastMonday, 'to:', lastSaturday);
+        // console.log('Fetching bookings from:', lastMonday, 'to:', lastSaturday);
 
         const parkingSlotsRef = collection(db, 'ParkingSlots');
         const slotsQuery = query(parkingSlotsRef, where('building', '==', building));
@@ -945,7 +936,6 @@ window.ParkingAPI = {
     setupRealTimeStats: setupRealTimeStatsUpdates,
     populateLevels: populateLevelTabs,
     getAvailableLevels: () => availableLevels,
-    setupRealTimeStats: setupRealTimeStatsUpdates,
     populateLevels: populateLevelTabs,
     getAvailableLevels: () => availableLevels
 };

@@ -375,6 +375,7 @@ async function handleConfigureSlotSubmit(e) {
 
         // Show success message
         alert('Slot updated successfully!', 'success');
+        renderParkingSlots();
 
         // The real-time listener will automatically update the grid
 
