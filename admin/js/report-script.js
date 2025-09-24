@@ -2,9 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getFirestore, collection, getDocs, query, orderBy, where, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import jsPDF from "https://cdn.skypack.dev/jspdf@2.5.1";
 
-const pdfViewerSection = document.getElementById("pdfViewerSection");
-const pdfViewer = document.getElementById("pdfViewer");
-const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+// const pdfViewerSection = document.getElementById("pdfViewerSection");
+// const pdfViewer = document.getElementById("pdfViewer");
+// const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
 const firebaseConfig = {
   apiKey: "AIzaSyBh0XI8p736BK2Zn-PuC9r2FbDNBSddWRE",
@@ -370,108 +370,108 @@ generatePdfBtn.addEventListener("click", () => {
     generateAndDisplayPdf();
 });
 
-async function getRealtimeReportData(buildingName) {
-    const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
-    const notificationsSnapshot = await getDocs(collection(db, "notifications"));
-    const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+// async function getRealtimeReportData(buildingName) {
+//     const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
+//     const notificationsSnapshot = await getDocs(collection(db, "notifications"));
+//     const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    const slotMap = {};
-    slots.forEach(slot => { slotMap[slot.id] = slot; });
+//     const slotMap = {};
+//     slots.forEach(slot => { slotMap[slot.id] = slot; });
 
-    const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
-    const buildingSlotIds = buildingSlots.map(slot => slot.id);
-    const totalSlots = buildingSlots.length;
+//     const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
+//     const buildingSlotIds = buildingSlots.map(slot => slot.id);
+//     const totalSlots = buildingSlots.length;
 
-    const { labels, dateObjects } = getLast7DaysLabels();
+//     const { labels, dateObjects } = getLast7DaysLabels();
 
-    const dailyBookedCounts = {};
-    const dailyUnauthorizedCounts = {};
-    labels.forEach(label => {
-        dailyBookedCounts[label] = 0;
-        dailyUnauthorizedCounts[label] = 0;
-    });
+//     const dailyBookedCounts = {};
+//     const dailyUnauthorizedCounts = {};
+//     labels.forEach(label => {
+//         dailyBookedCounts[label] = 0;
+//         dailyUnauthorizedCounts[label] = 0;
+//     });
 
-    const slotBookingCounts = {};
-    const hourlyBookings = {};
+//     const slotBookingCounts = {};
+//     const hourlyBookings = {};
 
-    bookings.forEach(booking => {
-        const slotId = normalizeSlotId(booking.slot_id);
-        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+//     bookings.forEach(booking => {
+//         const slotId = normalizeSlotId(booking.slot_id);
+//         if (!slotId || !buildingSlotIds.includes(slotId)) return;
 
-        const bookingDate = parseBookingDate(booking.booking_time);
-        if (!bookingDate) return;
+//         const bookingDate = parseBookingDate(booking.booking_time);
+//         if (!bookingDate) return;
 
-        labels.forEach((label, idx) => {
-            if (isSameDay(bookingDate, dateObjects[idx])) {
-                dailyBookedCounts[label]++;
-            }
-        });
+//         labels.forEach((label, idx) => {
+//             if (isSameDay(bookingDate, dateObjects[idx])) {
+//                 dailyBookedCounts[label]++;
+//             }
+//         });
 
-        slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
+//         slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
 
-        if (bookingDate) {
-            const hour = bookingDate.getHours();
-            hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
-        }
-    });
-    console.log("All notifications:", notifications);
-const buildingNotifications = notifications.filter(n =>
-    (n.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()
-);
-console.log("Notifications for building:", buildingNotifications);
+//         if (bookingDate) {
+//             const hour = bookingDate.getHours();
+//             hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
+//         }
+//     });
+//     console.log("All notifications:", notifications);
+// const buildingNotifications = notifications.filter(n =>
+//     (n.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()
+// );
+// console.log("Notifications for building:", buildingNotifications);
 
-const criticalNotifications = buildingNotifications.filter(n => n.isCritical);
-console.log("Critical notifications for building:", criticalNotifications);
-    notifications.forEach(notification => {
-        if (notification.type !== 'unauthorized_parking') return;
-        const slotId = normalizeSlotId(notification.slotId);
-        if (!slotId || !buildingSlotIds.includes(slotId)) return;
-        const notifDate = parseBookingDate(notification.timestamp);
-        if (!notifDate) return;
-        labels.forEach((label, idx) => {
-            if (isSameDay(notifDate, dateObjects[idx])) {
-                dailyUnauthorizedCounts[label]++;
-            }
-        });
-    });
+// const criticalNotifications = buildingNotifications.filter(n => n.isCritical);
+// console.log("Critical notifications for building:", criticalNotifications);
+//     notifications.forEach(notification => {
+//         if (notification.type !== 'unauthorized_parking') return;
+//         const slotId = normalizeSlotId(notification.slotId);
+//         if (!slotId || !buildingSlotIds.includes(slotId)) return;
+//         const notifDate = parseBookingDate(notification.timestamp);
+//         if (!notifDate) return;
+//         labels.forEach((label, idx) => {
+//             if (isSameDay(notifDate, dateObjects[idx])) {
+//                 dailyUnauthorizedCounts[label]++;
+//             }
+//         });
+//     });
   
-    let mostParkedSlot = "N/A";
-    let mostParkedSlotCount = 0;
-    for (const slotId in slotBookingCounts) {
-        if (slotBookingCounts[slotId] > mostParkedSlotCount) {
-            mostParkedSlotCount = slotBookingCounts[slotId];
-            mostParkedSlot = slotMap[slotId]?.slot_name || slotId;
-        }
-    }
+//     let mostParkedSlot = "N/A";
+//     let mostParkedSlotCount = 0;
+//     for (const slotId in slotBookingCounts) {
+//         if (slotBookingCounts[slotId] > mostParkedSlotCount) {
+//             mostParkedSlotCount = slotBookingCounts[slotId];
+//             mostParkedSlot = slotMap[slotId]?.slot_name || slotId;
+//         }
+//     }
 
-    return {
-        building: buildingName,
-        dailyBookedCounts,
-        dailyUnauthorizedCounts,
-        totalSlots,
-        peakTime,
-        mostParkedSlot,
-        mostParkedSlotCount,
-        dateStrings: labels
-    };
-}
-function getLast7DaysDateRange() {
-    const today = new Date();
-    today.setHours(23, 59, 59, 999);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 6);
-    startDate.setHours(0, 0, 0, 0);
+//     return {
+//         building: buildingName,
+//         dailyBookedCounts,
+//         dailyUnauthorizedCounts,
+//         totalSlots,
+//         peakTime,
+//         mostParkedSlot,
+//         mostParkedSlotCount,
+//         dateStrings: labels
+//     };
+// }
+// function getLast7DaysDateRange() {
+//     const today = new Date();
+//     today.setHours(23, 59, 59, 999);
+//     const startDate = new Date();
+//     startDate.setDate(startDate.getDate() - 6);
+//     startDate.setHours(0, 0, 0, 0);
 
-    const dateStrings = [];
-    const dateObjects = [];
-    for (let i = 0; i < 7; i++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + i);
-        dateObjects.push(date);
-        dateStrings.push(date.toLocaleDateString("en-GB"));
-    }
-    return { startDate, endDate: today, dateObjects, dateStrings };
-}
+//     const dateStrings = [];
+//     const dateObjects = [];
+//     for (let i = 0; i < 7; i++) {
+//         const date = new Date(startDate);
+//         date.setDate(startDate.getDate() + i);
+//         dateObjects.push(date);
+//         dateStrings.push(date.toLocaleDateString("en-GB"));
+//     }
+//     return { startDate, endDate: today, dateObjects, dateStrings };
+// }
 
 async function getPdfReportDataForBuilding(buildingName) {
     console.log("Starting getPdfReportDataForBuilding function...");
