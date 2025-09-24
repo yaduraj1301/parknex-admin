@@ -1,4 +1,3 @@
-// Add this to your dashboard.js file or wherever you handle the logout button
 import { auth } from '../../public/js/firebase-config.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 

@@ -762,6 +762,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="legend-item">
                         <span class="legend-color named"></span> Named
                     </div>
+                    <div class="legend-item">
+                        <span class="legend-color unbooked"></span> Unbooked
+                    </div>
                 `;
                 parkingOverview.appendChild(legend);
 

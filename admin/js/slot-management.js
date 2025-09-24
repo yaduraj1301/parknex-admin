@@ -351,8 +351,11 @@ async function handleConfigureSlotSubmit(e) {
 
         window.currentEditingSlot = null;
 
-        console.log('Slot updated successfully!', 'success');
+        // Show success message
+        alert('Slot updated successfully!', 'success');
         renderParkingSlots();
+
+        // The real-time listener will automatically update the grid
 
     } catch (error) {
         console.error('Error updating slot:', error);
