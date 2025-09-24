@@ -12,24 +12,21 @@ import {
     updateDoc
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-let currentLevel = 1;
+let currentLevel = 0;
 let currentBuildingSlots = [];
 let availableLevels = [];
-let filteredSlots = []; // Store filtered slots
+let filteredSlots = [];
 let activeFilters = {
     search: '',
     status: '',
     quickFilter: ''
 };
 
-// ===== Modal Utility Functions =====
-
 function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = "flex";
         modal.style.flexDirection = "column";
-        // Add scrollable class to modal content
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
             modalContent.classList.add('scrollable-modal');
@@ -41,26 +38,25 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = "none";
-        // Remove scrollable class
         const modalContent = modal.querySelector('.modal-content');
         if (modalContent) {
             modalContent.classList.remove('scrollable-modal');
         }
 
-        // Reset form if it's the add slot modal
         if (modalId === "addSlotModal") {
             document.getElementById("addSlotForm").reset();
             document.getElementById("notesSection").style.display = "none";
         }
 
-        // Reset configure modal form
         if (modalId === "configureSlotModal") {
             document.getElementById("configureSlotForm").reset();
         }
     }
 }
 
+
 // ===== Search and Filter Functions =====
+
 
 function searchSlots(searchTerm) {
     activeFilters.search = searchTerm.toLowerCase();
@@ -75,7 +71,6 @@ function filterByStatus(status) {
 function setQuickFilter(filterType) {
     activeFilters.quickFilter = filterType;
 
-    // Update button states
     document.querySelectorAll('.quick-filters .btn').forEach(btn => {
         btn.classList.remove('active');
     });
@@ -91,26 +86,22 @@ function setQuickFilter(filterType) {
 }
 
 function clearFilters() {
-    // Reset all filters
     activeFilters = {
         search: '',
         status: '',
         quickFilter: ''
     };
 
-    // Reset UI elements
     const searchInput = document.querySelector('.search-input');
     if (searchInput) searchInput.value = '';
 
     const statusSelect = document.querySelector('.filter-select[onchange*="filterByStatus"]');
     if (statusSelect) statusSelect.value = '';
 
-    // Remove active states from quick filter buttons
     document.querySelectorAll('.quick-filters .btn').forEach(btn => {
         btn.classList.remove('active');
     });
 
-    // Re-render slots
     applyFilters();
 }
 
@@ -150,7 +141,7 @@ function applyFilters() {
         switch (activeFilters.quickFilter) {
             case 'unbooked':
                 slotsToFilter = slotsToFilter.filter(slot =>
-                    mapFirebaseStatusToCss(slot.status) === 'unbooked' 
+                    mapFirebaseStatusToCss(slot.status) === 'unbooked'
                 );
                 break;
             case 'ev':
@@ -161,9 +152,8 @@ function applyFilters() {
                 break;
             case 'handicapped':
                 slotsToFilter = slotsToFilter.filter(slot =>
-                    slot.type?.toLowerCase() === 'handicap' ||
-                    slot.type?.toLowerCase() === 'handicapped' ||
-                    slot.notes?.toLowerCase().includes('handicapped slot')
+                    slot.notes?.toLowerCase().includes('has a piller in it')  ||
+                    slot.notes?.toLowerCase().includes('is in a corner') 
                 );
                 break;
         }
@@ -173,21 +163,23 @@ function applyFilters() {
     renderFilteredParkingSlots();
 }
 
+
 // ===== Slot Configuration Functions =====
 
+
 function handleSlotEdit(slotId) {
-    populateBuildingDropdown(); // Refresh building list
+    populateBuildingDropdown();
     const slot = currentBuildingSlots.find(s => s.docId === slotId);
     if (!slot) return;
-    console.log("slot: ", slot);
-    // Populate configure modal with slot data
+    // console.log("slot: ", slot);
+
     document.getElementById('configSlotNumber').value = slot.slot_name || '';
     document.getElementById('configSlotBuilding').value = slot.building || '';
     const floorNumber = slot.floor ? slot.floor.replace(/[^0-9]/g, '') : '';
 
     document.getElementById('configSlotLevel').value = floorNumber;
     document.getElementById('configSlotBlock').value = slot.block || '';
-    document.getElementById('configSlotStatus').value = slot.status || 'Available';
+    document.getElementById('configSlotStatus').value = slot.status || 'Free';
 
     // Handle is_special field
     const isSpecialValue = slot.is_special ? 'yes' : 'no';
@@ -274,7 +266,6 @@ async function handleAddSlotSubmit(e) {
             throw new Error('A slot with this number already exists');
         }
 
-        // Prepare data for Firebase
         const slotData = {
             slot_name: slotNumber,
             building: `${building}` || window.selectedBuilding || 'building1',
@@ -285,22 +276,19 @@ async function handleAddSlotSubmit(e) {
             notes: notes,
         };
 
-        console.log('Adding new slot to Firebase:', slotData);
+        // console.log('Adding new slot to Firebase:', slotData);
 
-        // Add to Firebase
         const docRef = await addDoc(collection(db, 'ParkingSlots'), slotData);
-        console.log('Slot added successfully with ID:', docRef.id);
+        // console.log('Slot added successfully with ID:', docRef.id);
 
-        // Close modal and reset form
         closeModal('addSlotModal');
 
-        // Show success message
-        alert('Slot added successfully!', 'success');
+        // console.log('Slot added successfully!', 'success');
         renderParkingSlots();
 
     } catch (error) {
         console.error('Error adding slot:', error);
-        alert(`Failed to add slot: ${error.message}`, 'error');
+        // alert(`Failed to add slot: ${error.message}`, 'error');
     } finally {
         // Reset button state
         submitBtn.innerHTML = originalText;
@@ -315,23 +303,20 @@ async function handleConfigureSlotSubmit(e) {
     e.preventDefault();
 
     if (!window.currentEditingSlot) {
-        alert('No slot selected for editing', 'error');
+        // console.log('No slot selected for editing', 'error');
         return;
     }
 
-    // Show loading state
     const submitBtn = e.target.querySelector('#configSubmit');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
     submitBtn.disabled = true;
 
     try {
-        // Get form data
         const building = document.getElementById('configSlotBuilding').value.trim();
         const status = document.getElementById('configSlotStatus').value;
         const isSpecial = document.getElementById('configSlotIsSpecial').value === 'yes';
 
-        // Get notes from radio buttons if special
         let notes = '';
         if (isSpecial) {
             const checkedRadio = document.querySelector('input[name="configSlotNotesRadio"]:checked');
@@ -341,46 +326,36 @@ async function handleConfigureSlotSubmit(e) {
             notes = checkedRadio.value;
         }
 
-        // Extract block from current slot name
         const currentSlotName = window.currentEditingSlot.slot_name;
         const block = currentSlotName ? currentSlotName.charAt(0).toUpperCase() : 'A';
 
-        // Prepare updated data with exact Firestore structure
         const updatedData = {
             block: block,
             building: building || window.selectedBuilding || 'building1',
             floor: `Level ${currentLevel}`,
             is_special: isSpecial,
             notes: notes,
-            slot_name: currentSlotName, // Keep original slot name
+            slot_name: currentSlotName,
             status: status
         };
 
-        console.log('Updating slot in Firestore:', {
-            docId: window.currentEditingSlot.docId,
-            updates: updatedData
-        });
+        // console.log('Updating slot in Firestore:', {
+        //     docId: window.currentEditingSlot.docId,
+        //     updates: updatedData
+        // });
 
-        // Update in Firestore
         const slotRef = doc(db, 'ParkingSlots', window.currentEditingSlot.docId);
         await updateDoc(slotRef, updatedData);
 
-        console.log('Slot updated successfully');
-
-        // Close modal
         closeModal('configureSlotModal');
 
-        // Clear editing reference
         window.currentEditingSlot = null;
 
-        // Show success message
-        alert('Slot updated successfully!', 'success');
-
-        // The real-time listener will automatically update the grid
+        console.log('Slot updated successfully!', 'success');
+        renderParkingSlots();
 
     } catch (error) {
         console.error('Error updating slot:', error);
-        alert(`Failed to update slot: ${error.message}`, 'error');
     } finally {
         // Reset button state
         submitBtn.innerHTML = originalText;
@@ -388,10 +363,13 @@ async function handleConfigureSlotSubmit(e) {
     }
 }
 
+
 // ===== Delete Slot Function =====
+
+
 async function handleDeleteSlot() {
     if (!window.currentEditingSlot) {
-        alert('No slot selected for deletion', 'error');
+        // console.log('No slot selected for deletion', 'error');
         return;
     }
 
@@ -402,40 +380,25 @@ async function handleDeleteSlot() {
     try {
         console.log('Deleting slot from Firestore:', window.currentEditingSlot.docId);
 
-        // Delete from Firestore
         const slotRef = doc(db, 'ParkingSlots', window.currentEditingSlot.docId);
         await deleteDoc(slotRef);
 
         console.log('Slot deleted successfully');
-
-        // Close modal
         closeModal('configureSlotModal');
-
-        // Clear editing reference
-        window.currentEditingSlot = null;
-
-        // Show success message
-        alert('Slot deleted successfully!', 'success');
-
-        // Re-render slots
         renderParkingSlots();
+        window.currentEditingSlot = null;
 
     } catch (error) {
         console.error('Error deleting slot:', error);
-        alert(`Failed to delete slot: ${error.message}`, 'error');
+        // alert(`Failed to delete slot: ${error.message}`, 'error');
     }
 }
 
 
-
-// ===== Debug Function to Print All Slots =====
-
-// Make function available globally for console access
-
-
 // ===== Event Listeners Setup =====
+
+
 document.addEventListener("DOMContentLoaded", () => {
-    // Modal event listeners
     const addSlotBtn = document.getElementById("add-slot-btn");
     if (addSlotBtn) {
         addSlotBtn.addEventListener("click", (e) => {
@@ -567,7 +530,7 @@ window.closeModal = closeModal;
 
 async function populateBuildingDropdown() {
     try {
-        showLoadingOverlay();
+        // showLoadingOverlay();
 
         const parkingSlotsRef = collection(db, 'ParkingSlots');
         const snapshot = await getDocs(parkingSlotsRef);
@@ -581,7 +544,8 @@ async function populateBuildingDropdown() {
         });
 
         const buildingList = Array.from(buildings).sort();
-        console.log('Found buildings:', buildingList);
+        // console.log('Found buildings:', buildingList);
+
 
         // Populate ALL building dropdowns
         const buildingDropdownIds = ['slotBuilding', 'configSlotBuilding', 'filter-select'];
@@ -614,7 +578,7 @@ async function populateBuildingDropdown() {
 
 async function populateLevelTabs(selectedBuilding = null) {
     try {
-        console.log('Fetching levels for building:', selectedBuilding);
+        // console.log('Fetching levels for building:', selectedBuilding);
 
         let slotsToCheck = currentBuildingSlots;
 
@@ -640,7 +604,7 @@ async function populateLevelTabs(selectedBuilding = null) {
         });
 
         availableLevels = Array.from(levels).sort((a, b) => a - b);
-        console.log('Available levels:', availableLevels);
+        // console.log('Available levels:', availableLevels);
 
         const levelTabsContainer = document.querySelector('.level-tabs');
         if (levelTabsContainer && availableLevels.length > 0) {
@@ -684,7 +648,7 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
         }
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            console.log('Real-time update received for stats and slots');
+            // console.log('Real-time update received for stats and slots');
 
             currentBuildingSlots = [];
             snapshot.forEach(doc => {
@@ -696,7 +660,7 @@ function setupRealTimeStatsUpdates(selectedBuilding = null) {
             });
 
             populateLevelTabs(selectedBuilding).then(() => {
-                applyFilters(); // Use filtered rendering instead
+                applyFilters();
             });
         });
 
@@ -718,37 +682,36 @@ async function testFirebaseConnection() {
         console.log('Firebase Project ID:', app.options.projectId);
 
         if (db) {
-            console.log('✅ Firebase Firestore connection successful');
+            console.log(' Firebase Firestore connection successful');
             console.log('Firestore instance:', db.app.name);
         } else {
-            console.error('❌ Firebase Firestore not initialized');
+            console.error(' Firebase Firestore not initialized');
         }
 
         if (auth) {
-            console.log('✅ Firebase Auth connection successful');
+            console.log(' Firebase Auth connection successful');
             console.log('Auth instance:', auth.app.name);
         } else {
-            console.error('❌ Firebase Auth not initialized');
+            console.error(' Firebase Auth not initialized');
         }
 
     } catch (error) {
-        console.error('❌ Firebase connection failed:', error);
+        console.error(' Firebase connection failed:', error);
     }
 }
 
 function setupEventListeners() {
-    // Level tabs
+
     document.querySelectorAll('.level-tab').forEach(tab => {
         tab.addEventListener('click', (e) => {
             switchLevel(parseInt(e.target.dataset.level));
         });
     });
 
-    // Building selector
     const buildingSelector = document.querySelector('.filter-select');
     if (buildingSelector) {
         buildingSelector.addEventListener('change', (e) => {
-            console.log("Event listener for the buildingSelector");
+            // console.log("Event listener for the buildingSelector");
             handleBuildingChange(e.target.value);
         });
     }
@@ -757,7 +720,6 @@ function setupEventListeners() {
 function switchLevel(level) {
     currentLevel = level;
 
-    // Update active tab
     document.querySelectorAll('.level-tab').forEach(tab => {
         tab.classList.remove('active');
     });
@@ -766,14 +728,13 @@ function switchLevel(level) {
         activeTab.classList.add('active');
     }
 
-    // Re-render with current filters
     applyFilters();
 }
 
 function handleBuildingChange(building) {
     if (!building) return;
 
-    console.log(`Building selected: ${building}`);
+    // console.log(`Building selected: ${building}`);
 
     window.selectedBuilding = building;
 
@@ -781,11 +742,10 @@ function handleBuildingChange(building) {
         window.statsUnsubscribe();
     }
 
-    showLoadingOverlay();
+    // showLoadingOverlay();
 
     populateLevelTabs(building).then(() => {
-        console.log("In handleBuildingChange - then statement");
-        applyFilters(); // Use filtered rendering
+        applyFilters();
     });
 
     setupRealTimeStatsUpdates(building);
@@ -1022,36 +982,7 @@ function renderParkingSlots() {
 
         // Render each slot
         blockSlots.forEach(slot => {
-            const slotDiv = document.createElement('div');
-
-            // Map Firebase status to CSS classes
-            const status = mapFirebaseStatusToCss(slot.status);
-            slotDiv.className = `parking-slot ${status}`;
-            slotDiv.dataset.slot = slot.slot_name;
-            slotDiv.dataset.docId = slot.docId; // Store document ID for potential updates
-
-            // Add slot ID
-            const slotId = document.createElement('span');
-            slotId.className = 'slot-id';
-            slotId.textContent = slot.slot_name;
-            slotDiv.appendChild(slotId);
-
-            // Create icon container
-            const iconList = document.createElement('div');
-            iconList.className = 'icon-list';
-
-            // Add special indicators based on is_special and notes
-            if (slot.is_special) {
-                addSpecialIcons(iconList, slot);
-            }
-
-            // Add car icon
-            const carIcon = document.createElement('i');
-            carIcon.className = 'slot-icon fas fa-car';
-            iconList.appendChild(carIcon);
-
-            slotDiv.appendChild(iconList);
-
+            const slotDiv = createSlotElement(slot); // ✅ Reuse helper
             slotsGrid.appendChild(slotDiv);
         });
 
@@ -1176,6 +1107,7 @@ async function init() {
     }
 
     setupEventListeners();
+    hideLoadingOverlay();
 }
 
 document.addEventListener('DOMContentLoaded', init);
