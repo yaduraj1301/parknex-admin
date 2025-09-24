@@ -109,3 +109,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+const notifButtonElement = document.querySelector('.user-menu');
+if (notifButtonElement){
+  notifButtonElement.addEventListener("click",() =>{
+    window.location.href="notifications.html";
+  })
+}

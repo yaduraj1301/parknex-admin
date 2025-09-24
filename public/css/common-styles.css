@@ -207,6 +207,9 @@ body {
 .logout-button-container {
     display: none;
 }
+.sidebar-footer .admin-profile .logout-button{
+    padding: 10px;
+}
  
 .logout-button-container .logout-button {
     padding: 10px 16px;
@@ -319,7 +322,7 @@ body {
         margin-left: 0;
     }
  
- 
+    
  
 }
 
