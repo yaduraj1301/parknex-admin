@@ -1,16 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, getDocs, query, orderBy, where, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-//import jsPDF from "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
 import jsPDF from "https://cdn.skypack.dev/jspdf@2.5.1";
 
-// Get the generate PDF button and the new elements
-//const generatePdfBtn = document.getElementById("generatePdfBtn");
 const pdfViewerSection = document.getElementById("pdfViewerSection");
 const pdfViewer = document.getElementById("pdfViewer");
 const downloadPdfBtn = document.getElementById("downloadPdfBtn");
 
-
-// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyBh0XI8p736BK2Zn-PuC9r2FbDNBSddWRE",
   authDomain: "parknex-admin.firebaseapp.com",
@@ -24,11 +19,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Data caching
 let cachedSlots = null;
 let cachedBookings = null;
 
-// Fetch ParkingSlots (cached)
 async function fetchParkingSlots() {
   if (cachedSlots) return cachedSlots;
   
@@ -39,7 +32,6 @@ async function fetchParkingSlots() {
   return cachedSlots;
 }
 
-// Fetch bookings (cached)
 async function fetchBookings() {
   if (cachedBookings) return cachedBookings;
   
@@ -50,14 +42,12 @@ async function fetchBookings() {
   return cachedBookings;
 }
 
-// FIXED: Parse Firestore Timestamp objects
 function parseBookingDate(timestamp) {
   if (!timestamp) return null;
   
   try {
     let date;
     
-    // Handle Firestore Timestamp object
     if (typeof timestamp === "object" && typeof timestamp.toDate === "function") {
       date = timestamp.toDate();
     } else if (timestamp instanceof Date) {
@@ -68,7 +58,6 @@ function parseBookingDate(timestamp) {
     
     if (isNaN(date)) return null;
     
-    // Normalize to start of day for consistent comparison
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   } catch (error) {
     console.warn("Failed to parse date:", timestamp, error);
@@ -76,18 +65,30 @@ function parseBookingDate(timestamp) {
   }
 }
 
-// FIXED: Extract ID from Firestore DocumentReference objects
+function parseFullTimestamp(timestamp) {
+    if (!timestamp) return null;
+    try {
+        if (typeof timestamp.toDate === "function") {
+            return timestamp.toDate(); 
+        }
+        const date = new Date(timestamp);
+        return isNaN(date) ? null : date;
+    } catch (error) {
+        console.warn("Failed to parse full timestamp:", timestamp, error);
+        return null;
+    }
+}
+
 function normalizeSlotId(slotRef) {
   if (!slotRef) return null;
   
   try {
-    // Handle Firestore DocumentReference object
+ 
     if (typeof slotRef === "object" && slotRef.id) {
       console.log(`📎 Found DocumentReference with id: ${slotRef.id}`);
       return slotRef.id;
     }
     
-    // Handle Firestore DocumentReference with path property
     if (typeof slotRef === "object" && slotRef.path) {
       const parts = slotRef.path.split("/");
       const id = parts[parts.length - 1];
@@ -95,7 +96,6 @@ function normalizeSlotId(slotRef) {
       return id;
     }
     
-    // Handle string paths like "/ParkingSlots/abc123"
     if (typeof slotRef === "string") {
       const parts = slotRef.split("/");
       return parts[parts.length - 1];
@@ -108,7 +108,6 @@ function normalizeSlotId(slotRef) {
   }
 }
 
-// Generate past 7 days labels (dd/mm/yyyy format)
 function getLast7DaysLabels() {
   const today = new Date();
   const labels = [];
@@ -118,7 +117,6 @@ function getLast7DaysLabels() {
     const date = new Date(today);
     date.setDate(today.getDate() - i);
     
-    // Normalize to start of day
     const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
     labels.push(normalizedDate.toLocaleDateString("en-GB")); // dd/mm/yyyy
@@ -128,120 +126,106 @@ function getLast7DaysLabels() {
   return { labels, dateObjects };
 }
 
-// Check if two dates are the same day
 function isSameDay(date1, date2) {
   if (!date1 || !date2) return false;
   return date1.getTime() === date2.getTime();
 }
 
-// Main aggregation function with FIXED DocumentReference handling
 async function getUsageDataForBuilding(buildingName) {
   const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
   
-  // Create slot lookup map
   const slotMap = {};
   slots.forEach(slot => {
     slotMap[slot.id] = slot;
   });
   
-  // Count total slots for this building
   const buildingSlotsCount = slots.filter(slot => {
     const slotBuilding = (slot.building || "").toLowerCase().trim();
     const targetBuilding = buildingName.toLowerCase().trim();
     return slotBuilding === targetBuilding;
   }).length;
   
-  console.log(`🏢 Building "${buildingName}" has ${buildingSlotsCount} total slots`);
+  console.log(`Building "${buildingName}" has ${buildingSlotsCount} total slots`);
   
-  // Get past 7 days
   const { labels, dateObjects } = getLast7DaysLabels();
-  console.log(`📅 Date range: ${dateObjects[0].toLocaleDateString()} to ${dateObjects[dateObjects.length-1].toLocaleDateString()}`);
+  console.log(`Date range: ${dateObjects[0].toLocaleDateString()} to ${dateObjects[dateObjects.length-1].toLocaleDateString()}`);
   
-  // Initialize daily counts
   const dailyBookedCounts = {};
   labels.forEach(label => dailyBookedCounts[label] = 0);
   
-  // Process bookings with FIXED DocumentReference handling
   let processedBookings = 0;
   let matchedBookings = 0;
   let slotMatchFailures = 0;
   let dateParseFailures = 0;
   let buildingMismatches = 0;
   
-  console.log(`\n🔄 Processing ${bookings.length} bookings...`);
+  console.log(`\nProcessing ${bookings.length} bookings...`);
   
   bookings.forEach((booking, index) => {
     console.log(`\n--- Booking ${index + 1} (${booking.id}) ---`);
     
-    // FIXED: Extract slot ID from DocumentReference
-    const normalizedSlotId = normalizeSlotId(booking.slot_id);
+const normalizedSlotId = normalizeSlotId(booking.slot_id);
     
     if (!normalizedSlotId) {
-      console.log(`❌ Could not extract slot ID from:`, booking.slot_id);
+      console.log(`Could not extract slot ID from:`, booking.slot_id);
       slotMatchFailures++;
       return;
     }
     
-    // Find matching slot
     const slot = slotMap[normalizedSlotId];
     if (!slot) {
-      console.log(`❌ No slot found for ID: ${normalizedSlotId}`);
+      console.log(`No slot found for ID: ${normalizedSlotId}`);
       slotMatchFailures++;
       return;
     }
     
-    console.log(`✅ Found slot: ${slot.id} in building "${slot.building}"`);
+    console.log(`Found slot: ${slot.id} in building "${slot.building}"`);
     
-    // Check if slot belongs to target building
     const slotBuilding = (slot.building || "").toLowerCase().trim();
     const targetBuilding = buildingName.toLowerCase().trim();
     
     if (slotBuilding !== targetBuilding) {
-      console.log(`⏭️ Wrong building: "${slotBuilding}" ≠ "${targetBuilding}"`);
+      console.log(`Wrong building: "${slotBuilding}" ≠ "${targetBuilding}"`);
       buildingMismatches++;
       return;
     }
     
     processedBookings++;
-    console.log(`✅ Building match! Processing booking...`);
+    console.log(`Building match! Processing booking...`);
     
-    // FIXED: Parse Firestore Timestamp
     const bookingDate = parseBookingDate(booking.booking_time);
     
     if (!bookingDate) {
-      console.log(`❌ Invalid date:`, booking.booking_time);
+      console.log(`Invalid date:`, booking.booking_time);
       dateParseFailures++;
       return;
     }
     
-    console.log(`✅ Parsed date: ${bookingDate.toLocaleDateString()}`);
+    console.log(`Parsed date: ${bookingDate.toLocaleDateString()}`);
     
-    // Find which day this booking belongs to
     let dayMatched = false;
     dateObjects.forEach((dayDate, dayIndex) => {
       if (isSameDay(bookingDate, dayDate)) {
         const dayLabel = labels[dayIndex];
         dailyBookedCounts[dayLabel]++;
-        console.log(`✅ Matched to day: ${dayLabel} (count now: ${dailyBookedCounts[dayLabel]})`);
+        console.log(`Matched to day: ${dayLabel} (count now: ${dailyBookedCounts[dayLabel]})`);
         dayMatched = true;
         matchedBookings++;
       }
     });
     
     if (!dayMatched) {
-      console.log(`⏭️ Date outside 7-day range: ${bookingDate.toLocaleDateString()}`);
+      console.log(`Date outside 7-day range: ${bookingDate.toLocaleDateString()}`);
     }
   });
   
-  // Convert to arrays for Chart.js
   const bookedData = labels.map(label => dailyBookedCounts[label]);
   const freeData = labels.map(label => {
     const booked = dailyBookedCounts[label];
     return Math.max(0, buildingSlotsCount - booked);
   });
   
-  // Final summary
-  console.log(`\n📊 PROCESSING SUMMARY for "${buildingName}":`);
+  console.log(`\nPROCESSING SUMMARY for "${buildingName}":`);
   console.log(`   Total bookings in Firestore: ${bookings.length}`);
   console.log(`   Slot match failures: ${slotMatchFailures}`);
   console.log(`   Building mismatches: ${buildingMismatches}`);
@@ -259,15 +243,14 @@ async function getUsageDataForBuilding(buildingName) {
     totalSlots: buildingSlotsCount
   };
 }
-let myChart = null; // Variable to hold the chart instance
+let myChart = null;
 
 async function renderUsageChart(buildingName) {
-    console.log(`📊 Rendering chart for building: ${buildingName}`);
+    console.log(`Rendering chart for building: ${buildingName}`);
     try {
         const data = await getUsageDataForBuilding(buildingName);
         const ctx = document.getElementById('usageTrendsChart').getContext('2d');
 
-        // Destroy existing chart if it exists
         if (myChart) {
             myChart.destroy();
         }
@@ -318,109 +301,89 @@ async function renderUsageChart(buildingName) {
                 }
             }
         });
-        console.log("✅ Chart rendered successfully.");
+        console.log("Chart rendered successfully.");
     } catch (error) {
-        console.error("❌ Failed to render chart:", error);
+        console.error("Failed to render chart:", error);
     }
 }
 
 
-// Initialize the application
 async function initializeUsageTrendsChart() {
   try {
     console.log("Initializing parking usage trends chart...");
     
-    // Check if Chart.js is loaded
     if (typeof Chart === "undefined") {
-      console.error("❌ Chart.js is not loaded. Include: <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
+      console.error("Chart.js is not loaded. Include: <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
       return;
     }
     
-    // Get building selector element
     const buildingSelect = document.getElementById("buildingSelect");
     if (!buildingSelect) {
-      console.error("❌ Element with id 'buildingSelect' not found. Add: <select id='buildingSelect'></select>");
+      console.error("Element with id 'buildingSelect' not found. Add: <select id='buildingSelect'></select>");
       return;
     }
     
-    // Fetch all parking slots to populate building options
     const slots = await fetchParkingSlots();
     const uniqueBuildings = [...new Set(slots.map(slot => slot.building).filter(Boolean))].sort();
     
     if (uniqueBuildings.length === 0) {
-      console.warn("⚠️ No buildings found in parking slots data");
+      console.warn("No buildings found in parking slots data");
       buildingSelect.innerHTML = '<option value="">No buildings available</option>';
       return;
     }
     
-    // Populate building dropdown
     buildingSelect.innerHTML = "";
     uniqueBuildings.forEach((building, index) => {
       const option = document.createElement("option");
       option.value = building;
       option.textContent = building;
-      if (index === 0) option.selected = true; // Select first building by default
+      if (index === 0) option.selected = true; 
       buildingSelect.appendChild(option);
     });
     
-    console.log(`🏢 Found ${uniqueBuildings.length} buildings: ${uniqueBuildings.join(", ")}`);
+    console.log(`Found ${uniqueBuildings.length} buildings: ${uniqueBuildings.join(", ")}`);
     
-    // Render initial chart for first building
     const initialBuilding = uniqueBuildings[0];
     await renderUsageChart(initialBuilding);
     
-    // Add change listener for building selection
     buildingSelect.addEventListener("change", async (event) => {
       const selectedBuilding = event.target.value;
       if (selectedBuilding) {
-        console.log(`🔄 Switching to building: ${selectedBuilding}`);
+        console.log(`Switching to building: ${selectedBuilding}`);
         await renderUsageChart(selectedBuilding);
       }
     });
     
-    console.log("✅ Parking usage trends chart initialized successfully");
+    console.log("Parking usage trends chart initialized successfully");
     
   } catch (error) {
-    console.error("❌ Failed to initialize chart:", error);
+    console.error("Failed to initialize chart:", error);
   }
 }
-
-// Auto-initialize when DOM is ready
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeUsageTrendsChart);
 } else {
   initializeUsageTrendsChart();
 }
-
-
-// Add a click event listener to the generate PDF button
 const generatePdfBtn = document.getElementById("generatePdfBtn");
 generatePdfBtn.addEventListener("click", () => {
     generateAndDisplayPdf();
 });
 
-
-// Function to get all data for a specific building's weekly report
-// Function to get the latest report data for a specific building
 async function getRealtimeReportData(buildingName) {
     const [slots, bookings] = await Promise.all([fetchParkingSlots(), fetchBookings()]);
-    // Fetch notifications for unauthorized parking
     const notificationsSnapshot = await getDocs(collection(db, "notifications"));
     const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Slot lookup
     const slotMap = {};
     slots.forEach(slot => { slotMap[slot.id] = slot; });
 
-    // Filter slots for this building
     const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
     const buildingSlotIds = buildingSlots.map(slot => slot.id);
     const totalSlots = buildingSlots.length;
 
-    // Get last 7 days
     const { labels, dateObjects } = getLast7DaysLabels();
 
-    // Initialize daily counts
     const dailyBookedCounts = {};
     const dailyUnauthorizedCounts = {};
     labels.forEach(label => {
@@ -428,11 +391,9 @@ async function getRealtimeReportData(buildingName) {
         dailyUnauthorizedCounts[label] = 0;
     });
 
-    // For weekly stats
     const slotBookingCounts = {};
     const hourlyBookings = {};
 
-    // Bookings aggregation
     bookings.forEach(booking => {
         const slotId = normalizeSlotId(booking.slot_id);
         if (!slotId || !buildingSlotIds.includes(slotId)) return;
@@ -440,17 +401,14 @@ async function getRealtimeReportData(buildingName) {
         const bookingDate = parseBookingDate(booking.booking_time);
         if (!bookingDate) return;
 
-        // Daily booked
         labels.forEach((label, idx) => {
             if (isSameDay(bookingDate, dateObjects[idx])) {
                 dailyBookedCounts[label]++;
             }
         });
 
-        // Weekly: slot count
         slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
 
-        // Weekly: hour count
         if (bookingDate) {
             const hour = bookingDate.getHours();
             hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
@@ -464,7 +422,6 @@ console.log("Notifications for building:", buildingNotifications);
 
 const criticalNotifications = buildingNotifications.filter(n => n.isCritical);
 console.log("Critical notifications for building:", criticalNotifications);
-    // Unauthorized parking aggregation
     notifications.forEach(notification => {
         if (notification.type !== 'unauthorized_parking') return;
         const slotId = normalizeSlotId(notification.slotId);
@@ -477,33 +434,7 @@ console.log("Critical notifications for building:", criticalNotifications);
             }
         });
     });
-    
-// Unauthorized parking aggregation (per building, isCritical only)
-/*let unauthorizedFound = false;
-notifications.forEach(notification => {
-    // Debug: log all notifications for this building
-    if ((notification.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim()) {
-        console.log("🔎 Notification for building:", notification);
-    }
-    if (
-        (notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()
-    ) return;
-    if (!notification.isCritical) return;
-    const notifDate = parseBookingDate(notification.timestamp);
-    if (!notifDate) return;
-    labels.forEach((label, idx) => {
-        if (isSameDay(notifDate, dateObjects[idx])) {
-            dailyUnauthorizedCounts[label]++;
-            unauthorizedFound = true;
-            console.log(`✅ Unauthorized parking for ${buildingName} on ${label}:`, notification);
-        }
-    });
-});
-if (!unauthorizedFound) {
-    console.warn(`⚠️ No unauthorized parking notifications found for building "${buildingName}" in the last 7 days.`);
-}*/
-
-    // Most parked slot (weekly)
+  
     let mostParkedSlot = "N/A";
     let mostParkedSlotCount = 0;
     for (const slotId in slotBookingCounts) {
@@ -512,9 +443,6 @@ if (!unauthorizedFound) {
             mostParkedSlot = slotMap[slotId]?.slot_name || slotId;
         }
     }
-
-    // Hardcoded peak time
-    let peakTime = "8:30 AM - 9:30 AM";
 
     return {
         building: buildingName,
@@ -544,10 +472,9 @@ function getLast7DaysDateRange() {
     }
     return { startDate, endDate: today, dateObjects, dateStrings };
 }
-// Aggregation for PDF: uses graph logic + extra fields
-// Function to get all data for a specific building's weekly report
+
 async function getPdfReportDataForBuilding(buildingName) {
-    console.log("⏱️ Starting getPdfReportDataForBuilding function...");
+    console.log("Starting getPdfReportDataForBuilding function...");
 
     const [slots, bookings, notificationsSnapshot] = await Promise.all([
         fetchParkingSlots(),
@@ -557,22 +484,16 @@ async function getPdfReportDataForBuilding(buildingName) {
 
     const notifications = notificationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // Slot lookup
     const slotMap = {};
     slots.forEach(slot => { slotMap[slot.id] = slot; });
-    console.log(`✅ Loaded ${Object.keys(slotMap).length} parking slots into map.`);
+    console.log(`Loaded ${Object.keys(slotMap).length} parking slots into map.`);
 
-    // Filter slots for this building
     const buildingSlots = slots.filter(slot => (slot.building || "").toLowerCase().trim() === buildingName.toLowerCase().trim());
     const buildingSlotIds = buildingSlots.map(slot => slot.id);
     const totalSlots = buildingSlots.length;
-    console.log(`🏢 Found ${totalSlots} slots for building "${buildingName}".`);
+    console.log(`Found ${totalSlots} slots for building "${buildingName}".`);
 
-    // Get last 7 days
     const { labels, dateObjects } = getLast7DaysLabels();
-    console.log(`📅 Report date range: ${labels[0]} to ${labels[6]}.`);
-
-    // Initialize daily counts
     const dailyBookedCounts = {};
     const dailyUnauthorizedCounts = {};
     labels.forEach(label => {
@@ -580,80 +501,51 @@ async function getPdfReportDataForBuilding(buildingName) {
         dailyUnauthorizedCounts[label] = 0;
     });
 
-    // For weekly stats
     const slotBookingCounts = {};
     const hourlyBookings = {};
 
-    console.log("Processing bookings...");
-    let processedBookings = 0;
-    let ignoredBookings = 0;
-
-    // Bookings aggregation
     bookings.forEach(booking => {
         const slotId = normalizeSlotId(booking.slot_id);
-        if (!slotId || !buildingSlotIds.includes(slotId)) {
-            ignoredBookings++;
-            return;
+        if (!slotId || !buildingSlotIds.includes(slotId)) return;
+
+        const bookingDay = parseBookingDate(booking.booking_time);
+        if (bookingDay) {
+            labels.forEach((label, idx) => {
+                if (isSameDay(bookingDay, dateObjects[idx])) {
+                    dailyBookedCounts[label]++;
+                }
+            });
         }
-        processedBookings++;
-
-        const bookingDate = parseBookingDate(booking.booking_time);
-        if (!bookingDate) return;
-
-        // Daily booked
-        labels.forEach((label, idx) => {
-            if (isSameDay(bookingDate, dateObjects[idx])) {
-                dailyBookedCounts[label]++;
-            }
-        });
-
-        // Weekly: slot count
-        slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
-
-        // Weekly: hour count
-        if (bookingDate) {
-            const hour = bookingDate.getHours();
+        
+        const fullBookingDate = parseFullTimestamp(booking.booking_time);
+        if (fullBookingDate) {
+            const hour = fullBookingDate.getHours();
             hourlyBookings[hour] = (hourlyBookings[hour] || 0) + 1;
         }
-    });
-    console.log(`✅ Processed ${processedBookings} bookings for PDF, ignored ${ignoredBookings}.`);
 
-    console.log("Processing unauthorized parking notifications...");
-    let processedNotifications = 0;
-    let ignoredNotifications = 0;
-    
-    // Unauthorized parking aggregation
+        slotBookingCounts[slotId] = (slotBookingCounts[slotId] || 0) + 1;
+    });
+
     notifications.forEach(notification => {
-        // 1. Filter by notification type
-        if (notification.type !== 'unauthorized_parking') {
-            ignoredNotifications++;
+        if (notification.type !== 'unauthorized_parking') return;
+        const slotId = normalizeSlotId(notification.slotId);
+        const slot = slotId ? slotMap[slotId] : null;
+        if (!slot || (slot.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()) {
             return;
         }
-        
-        // 2. Filter by building name ONLY (as requested)
-        if ((notification.building || "").toLowerCase().trim() !== buildingName.toLowerCase().trim()) {
-            ignoredNotifications++;
-            return;
-        }
-        
-        processedNotifications++;
-        
-        // 3. Parse the date
+
         const notifDate = parseBookingDate(notification.timestamp);
         if (!notifDate) return;
-        
-        // 4. Increment the daily count if the date matches
+
         labels.forEach((label, idx) => {
             if (isSameDay(notifDate, dateObjects[idx])) {
                 dailyUnauthorizedCounts[label]++;
             }
         });
     });
-    
-    console.log(`✅ Processed ${processedNotifications} unauthorized notifications for PDF, ignored ${ignoredNotifications}.`);
+
     console.log("Daily Unauthorized Counts:", dailyUnauthorizedCounts);
 
-    // Most parked slot (weekly)
     let mostParkedSlot = "N/A";
     let mostParkedSlotCount = 0;
     for (const slotId in slotBookingCounts) {
@@ -663,23 +555,26 @@ async function getPdfReportDataForBuilding(buildingName) {
         }
     }
 
-    // Peak time (weekly)
     let peakTime = "N/A";
     let maxBookingsInHour = 0;
     for (const hour in hourlyBookings) {
         if (hourlyBookings[hour] > maxBookingsInHour) {
             maxBookingsInHour = hourlyBookings[hour];
-            peakTime = `${hour}:00 - ${parseInt(hour) + 1}:00`;
+            const startHour = parseInt(hour);
+            const endHour = startHour + 1;
+
+            
+            const getAmPmTime = (h) => {
+                const hour12 = h % 12 || 12; 
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                return `${hour12}:00 ${ampm}`;
+            };
+            
+            peakTime = `${getAmPmTime(startHour)} - ${getAmPmTime(endHour)}`;
         }
     }
 
-    // Final log of processed data
-    console.log("🚀 Report Data Ready!");
-    console.log("Building:", buildingName);
-    console.log("Daily Booked Counts:", dailyBookedCounts);
-    console.log("Daily Unauthorized Counts:", dailyUnauthorizedCounts);
-    console.log("Total Slots:", totalSlots);
-    console.log("Most Parked Slot:", mostParkedSlot);
+    console.log("Report Data Ready!");
     console.log("Peak Time:", peakTime);
 
     return {
@@ -694,7 +589,6 @@ async function getPdfReportDataForBuilding(buildingName) {
     };
 }
 
-// --- PDF Generation ---
 async function generateAndDisplayPdf() {
     const buildingSelect = document.getElementById("buildingSelect");
     const selectedBuilding = buildingSelect.value;
@@ -714,7 +608,6 @@ async function generateAndDisplayPdf() {
     const doc = new jsPDF();
     let y = 20;
 
-    // --- Header ---
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
     doc.setTextColor(34, 40, 49);
@@ -725,20 +618,17 @@ async function generateAndDisplayPdf() {
     doc.text("Weekly Parking Report", 12, y + 8);
     y += 18;
 
-    // --- Building & Date ---
     doc.setFontSize(12);
     doc.setTextColor(34, 40, 49);
     doc.text(`Building: ${selectedBuilding}`, 12, y);
     doc.text(`Report Generated: ${new Date().toLocaleString()}`, 120, y);
     y += 8;
 
-    // --- Section Divider ---
     doc.setDrawColor(54, 162, 235);
     doc.setLineWidth(0.8);
     doc.line(12, y, 198, y);
     y += 6;
 
-    // --- Weekly Overview ---
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
     doc.setTextColor(54, 162, 235);
@@ -750,23 +640,20 @@ async function generateAndDisplayPdf() {
     doc.setTextColor(34, 40, 49);
     doc.text(`Total Slots: ${reportData.totalSlots}`, 14, y);
     doc.text(`Most Parked Slot: ${reportData.mostParkedSlot} (${reportData.mostParkedSlotCount})`, 60, y);
-    doc.text(`Peak Time: ${reportData.peakTime}`, 150, y);
+    doc.text(`Peak Time: ${reportData.peakTime}`, 135, y);
     y += 10;
 
-    // --- Section Divider ---
     doc.setDrawColor(220, 220, 220);
     doc.setLineWidth(0.5);
     doc.line(12, y, 198, y);
     y += 7;
 
-    // --- Daily Metrics Table ---
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.setTextColor(54, 162, 235);
     doc.text("Daily Metrics", 12, y);
     y += 8;
 
-    // Table Header
     doc.setFontSize(12);
     doc.setTextColor(255, 255, 255);
     doc.setFillColor(54, 162, 235);
@@ -785,14 +672,13 @@ async function generateAndDisplayPdf() {
             doc.addPage();
             y = 20;
         }
-        // Alternate row color for readability
         if (idx % 2 === 0) {
             doc.setFillColor(245, 247, 250);
             doc.rect(12, y - 2, 184, 10, "F");
         }
         const booked = reportData.dailyBookedCounts[date] || 0;
-        const free = reportData.totalSlots - booked;
         const unauthorized = reportData.dailyUnauthorizedCounts[date] || 0;
+        const free = reportData.totalSlots - (booked + unauthorized);
 
         doc.setTextColor(34, 40, 49);
         doc.text(date, 20, y + 6);
@@ -803,13 +689,11 @@ async function generateAndDisplayPdf() {
         y += 11;
     });
 
-    // --- Footer ---
     doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
     doc.setTextColor(120, 120, 120);
     doc.text("ParkNex | Smart Parking Solutions", 12, 290);
 
-    // --- Display PDF ---
     const pdfDataUri = doc.output('datauristring');
     document.getElementById("pdfViewer").src = pdfDataUri;
     document.getElementById("pdfViewerSection").style.display = 'block';
