@@ -293,6 +293,7 @@
     width: 16px;
     height: 16px;
     border-radius: 4px;
+    background-color: var(--neutral-gray);
 }
 
 .legend-color.available {
@@ -300,7 +301,7 @@
 }
 
 .legend-color.occupied {
-    background: var(--text-secondary);
+    background: var(--primary-red);
 }
 
 .legend-color.reserved {
@@ -409,7 +410,11 @@
 
    
 }
+.parking-slot.named {
+        background-color: var(--neutral-gray);
 
+   
+}
 /* Blinking Animation */
 @keyframes blink {
     0%, 100% {
