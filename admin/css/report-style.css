@@ -1,4 +1,8 @@
 
+.report-container{
+  padding: 20px;
+}
+
 .usage-header-flex {
   display: flex;
   align-items: center;
@@ -8,7 +12,7 @@
 
 .usage-header-flex h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 18px;
 }
 
 .usage-trends {

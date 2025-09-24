@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
 import { getFirestore, collection, query, onSnapshot, where, Timestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-
+// import {app,db} from "../../public/js/firebase-config.js";
 // IMPORTANT: This firebaseConfig must be the same one used in your other script.js
 const firebaseConfig = {
   apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
@@ -12,26 +12,25 @@ const firebaseConfig = {
   measurementId: "G-VN0P6KKP50"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- Real-time listener for NEW notifications ---
-const q = query(
+// ===================================================
+// LISTENER 1: For the Real-time Pop-up Alert
+// ===================================================
+const newNotificationsQuery = query(
     collection(db, "notifications"), 
     where("timestamp", ">", Timestamp.now())
 );
 
-onSnapshot(q, (snapshot) => {
+onSnapshot(newNotificationsQuery, (snapshot) => {
     snapshot.docChanges().forEach((change) => {
         if (change.type === "added") {
-            console.log("New notification received: ", change.doc.data());
             showNotificationPopup(change.doc.data());
         }
     });
 });
 
-// --- MODIFIED Function to create and show the pop-up ---
 function showNotificationPopup(notificationData) {
     // 1. Create the pop-up element
     const popup = document.createElement('div');
@@ -91,3 +90,50 @@ function showNotificationPopup(notificationData) {
         dismissPopup();
     });
 }
+
+// ===================================================
+// LISTENER 2: For Dynamically Creating/Removing the Sidebar Badge
+// ===================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Get the parent link where the badge will be added
+    const notificationLink = document.querySelector('.user-menu') || document.querySelector('.nav-link[data-section="notifications"]');
+
+    if (notificationLink) {
+        const unreadQuery = query(
+            collection(db, "notifications"),
+            where("isRead", "==", false)
+        );
+
+        onSnapshot(unreadQuery, (snapshot) => {
+            const unreadCount = snapshot.size;
+            // Try to find the badge in case it already exists
+            let badgeElement = notificationLink.querySelector('.notification-badge');
+
+            if (unreadCount > 0) {
+                // If the badge doesn't exist, create it
+                if (!badgeElement) {
+                    badgeElement = document.createElement('span');
+                    badgeElement.className = 'notification-badge';
+                    notificationLink.appendChild(badgeElement);
+                }
+                
+                // Update the count and make it visible
+                badgeElement.textContent = unreadCount;
+                // Use a tiny timeout to ensure the CSS transition fires correctly on creation
+                setTimeout(() => {
+                    badgeElement.classList.add('show');
+                }, 10);
+
+            } else {
+                // If the badge exists and the count is zero, remove it
+                if (badgeElement) {
+                    badgeElement.classList.remove('show');
+                    // Wait for the fade-out animation to finish before removing from the DOM
+                    setTimeout(() => {
+                        badgeElement.remove();
+                    }, 300); // This duration should match your CSS transition time
+                }
+            }
+        });
+    }
+});

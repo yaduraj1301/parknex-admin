@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="css/realtime-alert.css">
+
 </head>
 
 <body>
@@ -91,11 +93,14 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <header class="dashboard-header">
+            <header class="main-header">
                 <div class="header-content">
                     <div class="header-left">
-                        <h1>Vehicle Management</h1>
-                        <p>Employee and vehicle records</p>
+                        <div class="header-left-text">
+                            <h1>Vehicle Management</h1>
+                            <p>Employee and vehicle records</p>
+                        </div>
+
                     </div>
                     <div class="header-right">
                         <div class="datetime">
@@ -364,6 +369,8 @@
     </div>
 
     <script type="module" src="js/vm.js"></script>
+    <script type="module" src="js/realtime-alerts.js"></script>
+
 </body>
 
 </html>
