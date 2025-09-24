@@ -71,60 +71,66 @@
 /* Filters Container */
 .filters-container {
     display: flex;
-    justify-content: space-between;
-    padding-right: 20px; ;
+    gap: 15px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 /* Form Controls */
-.search-bar {
-    color: #404040;
-    border: 1px solid black;
+.search-bar, #statusFilter, #dateFilter {
     padding: 8px 12px;
-    border-radius: 12px;
-    width: 300px;
-    height: 30px;
-    outline: none;
+    border: 1px solid var(--neutral-gray);
+    border-radius: 6px;
     font-size: 14px;
+    background: var(--neutral-white);
 }
 
-.search-bar:focus {
-    border-color: var(--secondary-light-blue);
-    box-shadow: 0 0 0 2px rgba(100, 162, 245, 0.2);
+.search-bar {
+    min-width: 200px;
 }
 
-.btn-dropdown {
-    color: #404040;
-    border: 1px solid black;
-    padding: 8px 12px;
-    border-radius: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+#statusFilter, #dateFilter {
     min-width: 120px;
-    height: 30px;
-    background: white;
+}
+
+.search-bar:focus, #statusFilter:focus, #dateFilter:focus {
+    border-color: var(--secondary-blue);
+    box-shadow: 0 0 0 2px rgba(62, 104, 185, 0.2);
+    outline: none;
+}
+
+.btn-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--neutral-white);
+    border: 1px solid var(--neutral-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-red);
     transition: all 0.3s ease;
 }
 
-.btn-dropdown:hover {
-    background-color: var(--hover-color);
+.btn-clear:hover {
+    background: var(--primary-red-transparent);
+    border-color: var(--primary-red);
 }
 
-.btn-dropdown i {
-    margin-left: 8px;
-    font-size: 12px;
+.button-container {
+
 }
 
 /* Primary Button */
 .btn-primary {
-    height: 30px;
+    height: auto; /* Adjust height to content */
     background-color: var(--secondary-light-blue);
     color: white;
     border: none;
     padding: 8px 16px;
-    border-radius: 12px;
+    border-radius: 6px; /* Match other buttons */
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
@@ -290,28 +296,24 @@
 }
 
 .legend-color.available {
-    background-color: var(--secondary-green);
+    background: var(--secondary-green);
 }
 
 .legend-color.occupied {
-    background-color: var(--primary-red);
+    background: var(--text-secondary);
 }
 
 .legend-color.reserved {
-    background-color: var(--secondary-orange);
-}
-
-/* .legend-color.unbooked {
-    background-color: var(--neutral-gray);
-} */
+    background: var(--secondary-orange);
+}   
 
 .legend-color.unbooked {
-    background-color: var(--neutral-gray);
+    background: var(--secondary-coral);
+    animation: blink 1s infinite;
 }
-
 /* Special slot styling */
 .parking-slot.special-slot {
-    border: 2px solid var(--secondary-purple);
+    border: 2px solid var(--secondary-gray);
     box-shadow: 0 0 8px rgba(128, 97, 195, 0.3);
 }
 
@@ -398,12 +400,14 @@
 }
 
 .parking-slot.unbooked {
-    background-color: var(--neutral-gray);
+     background-color: var(--secondary-orange);
+    animation: blink 1s infinite;   
 }
 
 .parking-slot.reserved {
-    background-color: var(--secondary-orange);
-    animation: blink 1s infinite;
+        background-color: var(--neutral-gray);
+
+   
 }
 
 /* Blinking Animation */

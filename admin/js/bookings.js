@@ -14,6 +14,43 @@ import {
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Add styles for parking slots
+    const parkingStyles = document.createElement('style');
+    parkingStyles.textContent = `
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        .parking-slot {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .parking-slot.available {
+            background-color: #43bf73;
+            color: white;
+        }
+        .parking-slot.occupied {
+            background-color: #DC143C;
+            color: white;
+            cursor: not-allowed;
+        }
+        .parking-slot.reserved {
+            background-color: #F09951;
+            color: white;
+            cursor: not-allowed;
+        }
+        .parking-slot.named {
+            background-color: #A0A0A0;
+            color: white;
+            cursor: not-allowed;
+        }
+        .parking-slot.unbooked {
+            background-color: #EA5853;
+            color: white;
+        }
+    `;
+    document.head.appendChild(parkingStyles);
 
     // Initialize table filters
     function initTableFilters() {
@@ -89,6 +126,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (dateFilter) {
             dateFilter.addEventListener("change", applyFilters);
+        }
+
+        const clearFiltersBtn = document.getElementById('clearFilters');
+        if (clearFiltersBtn) {
+            clearFiltersBtn.addEventListener('click', () => {
+                if (searchInput) searchInput.value = '';
+                if (statusFilter) statusFilter.value = '';
+                if (dateFilter) dateFilter.value = '';
+                applyFilters();
+            });
         }
     }
 
@@ -444,38 +491,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const bookSlotButton = document.querySelector('.btn-primary');
 
     // Function to handle the booking submission
-    const handleAddBooking = async () => {
+    const handleAddBooking = async (bookingDateStr) => {
         // 1. Get data from form inputs
         const vehicleNumber = document.getElementById('book-vehicle-number').value.trim();
         const employeeName = document.getElementById('book-employee-name').value.trim();
         const slotName = document.getElementById('book-slot-number').value.trim();
         const contactNumber = document.getElementById('book-contact-number').value.trim();
-        const bookingDateStr = document.getElementById('book-booking-date').value;
 
         // 2. Basic validation
-        if (!vehicleNumber || !slotName || !bookingDateStr) {
-            alert('Please fill in Vehicle Number, Slot Number, and Booking Date.');
+        if (!vehicleNumber || !slotName) {
+            alert('Please fill in Vehicle Number and select a Slot.');
             return;
         }
 
         try {
+            // Get the selected floor and building from hidden inputs
+            const floorInput = document.getElementById('book-floor-number');
+            const buildingInput = document.getElementById('book-building');
+            const selectedFloor = floorInput ? floorInput.value : null;
+            const selectedBuilding = buildingInput ? buildingInput.value : null;
+            
+            if (!selectedFloor || !selectedBuilding) {
+                alert('Please select a parking slot using the slot selection tool.');
+                return;
+            }
+
+            // Extract the actual slot name from the display value
+            const actualSlotName = slotName.split(' (')[0];
+            
             // 3. Find the slot's document reference (slot_id) and verify it's available
             const slotsRef = collection(db, 'ParkingSlots');
-            const slotQuery = query(slotsRef, where('slot_name', '==', slotName));
+            const slotQuery = query(slotsRef, 
+                where('slot_name', '==', actualSlotName),
+                where('floor', '==', selectedFloor),
+                where('building', '==', selectedBuilding)
+            );
+            
             const slotSnapshot = await getDocs(slotQuery);
 
             if (slotSnapshot.empty) {
-                alert(`Parking slot "${slotName}" not found.`);
+                alert(`Parking slot "${actualSlotName}" not found in ${selectedBuilding} on floor ${selectedFloor}.`);
                 return;
             }
 
             const slotDoc = slotSnapshot.docs[0];
             const slotData = slotDoc.data();
 
-            if (slotData.status !== 'Free') {
-                alert(`Slot "${slotName}" is already ${slotData.status}. Please select a free slot.`);
-                return;
+            // For future dates, we assume the slot is free if it's not 'Named'
+            const selectedDate = new Date(bookingDateStr);
+            selectedDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate.getTime() === today.getTime()) {
+                if (slotData.status !== 'Free') {
+                    alert(`Slot "${actualSlotName}" in ${selectedBuilding} on floor ${selectedFloor} is already ${slotData.status}. Please select a free slot.`);
+                    return;
+                }
+            } else if (selectedDate > today) {
+                if (slotData.status === 'Named') {
+                     alert(`Slot "${actualSlotName}" in ${selectedBuilding} on floor ${selectedFloor} is a named slot and cannot be booked.`);
+                    return;
+                }
             }
+
             const slotRef = slotDoc.ref; // This is the DocumentReference for slot_id
 
             // 4. Construct the new booking object with simplified structure
@@ -489,7 +568,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 employee_name: employeeName, // Store employee name directly
                 contact_number: contactNumber, // Store contact number
                 slot_id: slotRef,
-                slot_name: slotName, // Store slot name for easier reference
+                slot_name: actualSlotName, // Store actual slot name
                 building: slotData.building || 'N/A',
                 floor: slotData.floor || 'N/A',
                 created_at: Timestamp.now()
@@ -499,11 +578,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const docRef = await addDoc(collection(db, 'bookings'), newBooking);
             console.log("Booking added with ID: ", docRef.id);
 
-            // 6. IMPORTANT: Update the status of the parking slot
-            await updateDoc(slotRef, {
-                status: 'Booked'
-            });
-            console.log(`Slot ${slotName} status updated to Booked.`);
+            // 6. IMPORTANT: Update the status of the parking slot only for today's bookings
+            if (selectedDate.getTime() === today.getTime()) {
+                await updateDoc(slotRef, {
+                    status: 'Booked'
+                });
+                console.log(`Slot ${actualSlotName} status updated to Booked.`);
+            }
 
             // 7. Close overlay and refresh the table
             alert('Slot booked successfully!');
@@ -516,7 +597,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    bookSlotButton.addEventListener('click', () => {
+    const showBookingForm = (bookingDateStr) => {
         // Create overlay
         const overlay = document.createElement('div');
         overlay.className = 'overlay'; // Add a class for easier selection
@@ -547,11 +628,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- MODIFICATION: ADD IDs TO INPUTS ---
         const fields = [
+            { label: 'Booking Date', type: 'date', id: 'book-booking-date', readonly: true },
             { label: 'Vehicle Number', type: 'text', id: 'book-vehicle-number' },
             { label: 'Employee Name', type: 'text', id: 'book-employee-name' },
-            { label: 'Slot Number', type: 'text', id: 'book-slot-number', button: 'Select Slot' },
-            { label: 'Contact Number', type: 'text', id: 'book-contact-number' },
-            { label: 'Booking Date', type: 'date', id: 'book-booking-date' }
+            { label: 'Slot Number', type: 'text', id: 'book-slot-number', button: 'Select Slot', readonly: true},
+            { label: 'Contact Number', type: 'text', id: 'book-contact-number' }
         ];
 
         fields.forEach(field => {
@@ -570,6 +651,15 @@ document.addEventListener('DOMContentLoaded', () => {
             input.style.padding = '8px';
             input.style.border = '1px solid #ccc';
             input.style.borderRadius = '4px';
+
+            if (field.readonly) {
+                input.readOnly = true;
+                input.style.backgroundColor = '#e9ecef';
+            }
+
+            if (field.id === 'book-booking-date') {
+                input.value = bookingDateStr;
+            }
 
             fieldContainer.appendChild(label);
             fieldContainer.appendChild(input);
@@ -630,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // --- MODIFICATION: CALL THE handleAddBooking FUNCTION ---
-        bookButton.addEventListener('click', handleAddBooking);
+        bookButton.addEventListener('click', () => handleAddBooking(bookingDateStr));
 
         // (The 'Select Slot' button listener and related functions remain the same)
         document.querySelectorAll('button').forEach(button => {
@@ -751,14 +841,29 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.log(`Rendering parking grid for floor: ${floor}`);
                             parkingGrid.innerHTML = '';
 
-                            // Filter slots by floor
-                            const floorSlots = slots.filter(slot => slot.floor === floor);
-                            console.log(`Slots for floor ${floor}:`, floorSlots);
+                            // Get the selected building
+                            const selectedBuilding = buildingDropdown.value;
+                            
+                            // Filter slots by building and floor
+                            const floorSlots = slots.filter(slot => 
+                                slot.floor === floor && 
+                                slot.building === selectedBuilding
+                            );
+                            console.log(`Slots for building ${selectedBuilding}, floor ${floor}:`, floorSlots);
 
                             if (floorSlots.length === 0) {
                                 parkingGrid.innerHTML = '<div style="text-align: center; padding: 20px;">No slots available for this floor</div>';
                                 return;
                             }
+
+                            // Store current floor and building in the grid's data attributes
+                            parkingGrid.dataset.currentFloor = floor;
+                            parkingGrid.dataset.currentBuilding = selectedBuilding;
+                            
+                            // Create a map of slot names to their status for this floor and building
+                            const floorSlotMap = new Map(
+                                floorSlots.map(slot => [slot.slot_name, slot])
+                            );
 
                             // Group slots by block
                             const slotsByBlock = floorSlots.reduce((blocks, slot) => {
@@ -783,42 +888,83 @@ document.addEventListener('DOMContentLoaded', () => {
                                 slotsByBlock[blockName].forEach(slot => {
                                     const slotElement = document.createElement('div');
                                     slotElement.classList.add('parking-slot');
-                                    slotElement.textContent = slot.slot_name;
-                                    console.log("Slot id:", slot.slot_name, "\nSlot status:", slot.status);
+                                    
+                                    // Get the slot data for this floor
+                                    const currentFloorSlot = floorSlotMap.get(slot.slot_name);
+                                    
+                                    // Use the status from the current floor's slot
+                                    let currentStatus = currentFloorSlot ? currentFloorSlot.status : 'Unbooked';
 
-                                    // Apply status-based styling based on database status
-                                    if (slot.status === 'Free') {
-                                        console.log('Slot available:', slot);
+                                    // Check if the booking is for a future date
+                                    const selectedDate = new Date(bookingDateStr);
+                                    selectedDate.setHours(0, 0, 0, 0);
+                                    const today = new Date();
+                                    today.setHours(0, 0, 0, 0);
+
+                                    let isClickable = false;
+
+                                    if (selectedDate > today) { // Future date
+                                        if (currentStatus !== 'Named') {
+                                            currentStatus = 'Free';
+                                            isClickable = true;
+                                        }
+                                    } else { // Today
+                                        if (currentStatus === 'Free') {
+                                            isClickable = true;
+                                        }
+                                    }
+                                    
+                                    // Set slot status class based on the determined status
+                                    if (currentStatus === 'Free') {
                                         slotElement.classList.add('available');
-                                    } else if (slot.status === 'Booked') {
-                                        slotElement.classList.add('occupied');
-                                    } else if (slot.status === 'Reserved') {
+                                    } else if (currentStatus === 'Named') {
+                                        slotElement.classList.add('named');
+                                    } else if (currentStatus === 'Reserved') {
                                         slotElement.classList.add('reserved');
+                                    } else if (currentStatus === 'Booked') {
+                                        slotElement.classList.add('occupied');
                                     } else {
                                         slotElement.classList.add('unbooked');
                                     }
 
-                                    // Add click event for slot selection
-                                    slotElement.addEventListener('click', () => {
-                                        if (slot.status === 'Free') {
-                                            // Find the slot number input field in the booking form
-                                            const allInputs = document.querySelectorAll('input[type="text"]');
+                                    slotElement.textContent = slot.slot_name;
+                                    slotElement.title = `Slot ${slot.slot_name}\nStatus: ${currentStatus}`;
 
-                                            // The slot number input should be the 3rd input (index 2)
-                                            // Order: Vehicle Number (0), Employee Name (1), Slot Number (2), Contact Number (3)
-                                            if (allInputs.length >= 3) {
-                                                allInputs[2].value = slot.slot_name || slot.slotNumber || slot.id;
+                                    // Make slot clickable only if it's available
+                                    if (isClickable) {
+                                        slotElement.style.cursor = 'pointer';
+                                        slotElement.addEventListener('click', () => {
+                                            const slotInput = document.getElementById('book-slot-number');
+                                            const floorInput = document.createElement('input');
+                                            floorInput.type = 'hidden';
+                                            floorInput.id = 'book-floor-number';
+                                            floorInput.value = floor;
+                                            
+                                            const buildingInput = document.createElement('input');
+                                            buildingInput.type = 'hidden';
+                                            buildingInput.id = 'book-building';
+                                            buildingInput.value = selectedBuilding;
+                                            
+                                            if (slotInput) {
+                                                // Remove existing hidden inputs if they exist
+                                                const existingFloorInput = document.getElementById('book-floor-number');
+                                                const existingBuildingInput = document.getElementById('book-building');
+                                                if (existingFloorInput) existingFloorInput.remove();
+                                                if (existingBuildingInput) existingBuildingInput.remove();
+                                                
+                                                // Add the new hidden inputs
+                                                slotInput.parentNode.appendChild(floorInput);
+                                                slotInput.parentNode.appendChild(buildingInput);
+                                                
+                                                // Store slot name and display building and floor info
+                                                slotInput.value = `${slot.slot_name} (${selectedBuilding} - Floor ${floor})`;
+                                                
+                                                // Close the slot selection overlay
+                                                document.body.removeChild(slotOverlay);
                                             }
-
-                                            console.log('Slot selected:', slot);
-                                            // Close the slot selection overlay
-                                            document.body.removeChild(slotOverlay);
-                                        } else {
-                                            // Show message for unavailable slots
-                                            alert('This slot is not available for booking.');
-                                        }
-                                    });
-
+                                        });
+                                    }
+                                    
                                     slotsGrid.appendChild(slotElement);
                                 });
 
@@ -945,18 +1091,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const fetchSlotsAndFloors = async (building) => {
                         try {
                             console.log(`Fetching slots for building: ${building}`);
-                            const slotsSnapshot = await getDocs(collection(db, 'ParkingSlots'));
+                            const slotsRef = collection(db, 'ParkingSlots');
+                            const buildingQuery = query(slotsRef, where('building', '==', building));
+                            const slotsSnapshot = await getDocs(buildingQuery);
+                            
                             allSlotsData = [];
                             const floorsSet = new Set();
 
                             slotsSnapshot.forEach((doc) => {
                                 const slotData = { id: doc.id, ...doc.data() };
-
-                                if (slotData.building === building) {
-                                    allSlotsData.push(slotData);
-                                    if (slotData.floor) {
-                                        floorsSet.add(slotData.floor);
-                                    }
+                                allSlotsData.push(slotData);
+                                if (slotData.floor) {
+                                    floorsSet.add(slotData.floor);
                                 }
                             });
 
@@ -981,5 +1127,99 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-    }); // Closing brace for the last event listener
-}); // Closing brace for the DOMContentLoaded event listener
+    }
+
+    bookSlotButton.addEventListener('click', () => {
+        // Create a preliminary overlay to ask for the date first
+        const dateOverlay = document.createElement('div');
+        dateOverlay.className = 'overlay';
+        dateOverlay.style.position = 'fixed';
+        dateOverlay.style.top = '0';
+        dateOverlay.style.left = '0';
+        dateOverlay.style.width = '100%';
+        dateOverlay.style.height = '100%';
+        dateOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        dateOverlay.style.display = 'flex';
+        dateOverlay.style.justifyContent = 'center';
+        dateOverlay.style.alignItems = 'center';
+        dateOverlay.style.zIndex = '1000';
+
+        const card = document.createElement('div');
+        card.style.width = '400px';
+        card.style.backgroundColor = '#fff';
+        card.style.borderRadius = '8px';
+        card.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+        card.style.padding = '20px';
+        card.style.position = 'relative';
+
+        const heading = document.createElement('h3');
+        heading.textContent = 'Select Booking Date';
+        heading.style.marginBottom = '20px';
+        card.appendChild(heading);
+
+        const fieldContainer = document.createElement('div');
+        fieldContainer.style.marginBottom = '15px';
+
+        const label = document.createElement('label');
+        label.textContent = 'Booking Date';
+        label.style.display = 'block';
+        label.style.marginBottom = '5px';
+        fieldContainer.appendChild(label);
+
+        const dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.id = 'pre-booking-date';
+        dateInput.style.width = '100%';
+        dateInput.style.padding = '8px';
+        dateInput.style.border = '1px solid #ccc';
+        dateInput.style.borderRadius = '4px';
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today); // Prevent selecting past dates
+        fieldContainer.appendChild(dateInput);
+        card.appendChild(fieldContainer);
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.style.display = 'flex';
+        buttonContainer.style.justifyContent = 'flex-end';
+        buttonContainer.style.marginTop = '20px';
+
+        const cancelButton = document.createElement('button');
+        cancelButton.textContent = 'Cancel';
+        cancelButton.style.marginRight = '10px';
+        cancelButton.style.padding = '10px 20px';
+        cancelButton.style.border = 'none';
+        cancelButton.style.backgroundColor = '#6c757d';
+        cancelButton.style.color = '#fff';
+        cancelButton.style.borderRadius = '4px';
+        cancelButton.style.cursor = 'pointer';
+        buttonContainer.appendChild(cancelButton);
+
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.style.padding = '10px 20px';
+        nextButton.style.border = 'none';
+        nextButton.style.backgroundColor = '#007bff';
+        nextButton.style.color = '#fff';
+        nextButton.style.borderRadius = '4px';
+        nextButton.style.cursor = 'pointer';
+        buttonContainer.appendChild(nextButton);
+
+        card.appendChild(buttonContainer);
+        dateOverlay.appendChild(card);
+        document.body.appendChild(dateOverlay);
+
+        cancelButton.addEventListener('click', () => {
+            document.body.removeChild(dateOverlay);
+        });
+
+        nextButton.addEventListener('click', () => {
+            const selectedDate = dateInput.value;
+            if (!selectedDate) {
+                alert('Please select a date to continue.');
+                return;
+            }
+            document.body.removeChild(dateOverlay);
+            showBookingForm(selectedDate);
+        });
+    });
+});
