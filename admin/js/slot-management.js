@@ -5,7 +5,7 @@ import {
     addDoc,
     getDocs,
     query,
-    orderBy,
+    deleteDoc,
     where,
     onSnapshot,
     doc,
@@ -178,15 +178,17 @@ function applyFilters() {
 
 function handleSlotEdit(slotId) {
     populateBuildingDropdown(); // Refresh building list
-    const slot = currentBuildingSlots.find(s => s.slot_name === slotId);
+    const slot = currentBuildingSlots.find(s => s.docId === slotId);
     if (!slot) return;
-    console.log("slot: ",slot);
+    console.log("slot: ", slot);
     // Populate configure modal with slot data
     document.getElementById('configSlotNumber').value = slot.slot_name || '';
     document.getElementById('configSlotBuilding').value = slot.building || '';
-    document.getElementById('configSlotLevel').value = slot.floor || '';
+    const floorNumber = slot.floor ? slot.floor.replace(/[^0-9]/g, '') : '';
+
+    document.getElementById('configSlotLevel').value = floorNumber;
     document.getElementById('configSlotBlock').value = slot.block || '';
-    document.getElementById('configSlotStatus').value = slot.status || 'available';
+    document.getElementById('configSlotStatus').value = slot.status || 'Available';
 
     // Handle is_special field
     const isSpecialValue = slot.is_special ? 'yes' : 'no';
@@ -242,7 +244,7 @@ async function handleAddSlotSubmit(e) {
 
     try {
         // Get form data
-        const slotNumber = document.getElementById('slotNumber').value.trim();
+        const slotNumber = document.getElementById('slotNumber').value.trim().toUpperCase();
         const building = document.getElementById('slotBuilding').value.trim();
         const level = document.getElementById('slotLevel').value.trim();
         const block = document.getElementById('slotBlock').value;
@@ -263,7 +265,10 @@ async function handleAddSlotSubmit(e) {
 
         // Check if slot already exists
         const existingSlot = currentBuildingSlots.find(slot =>
-            slot.slot_name?.toLowerCase() === slotNumber.toLowerCase()
+            slot.slot_name?.toLowerCase() === slotNumber.toLowerCase() &&
+            slot.floor === `Level ${level}` &&
+            slot.building === (building || window.selectedBuilding || 'building1') &&
+            slot.block === block
         );
 
         if (existingSlot) {
@@ -291,12 +296,12 @@ async function handleAddSlotSubmit(e) {
         closeModal('addSlotModal');
 
         // Show success message
-        showNotification('Slot added successfully!', 'success');
+        alert('Slot added successfully!', 'success');
         renderParkingSlots();
 
     } catch (error) {
         console.error('Error adding slot:', error);
-        showNotification(`Failed to add slot: ${error.message}`, 'error');
+        alert(`Failed to add slot: ${error.message}`, 'error');
     } finally {
         // Reset button state
         submitBtn.innerHTML = originalText;
@@ -311,7 +316,7 @@ async function handleConfigureSlotSubmit(e) {
     e.preventDefault();
 
     if (!window.currentEditingSlot) {
-        showNotification('No slot selected for editing', 'error');
+        alert('No slot selected for editing', 'error');
         return;
     }
 
@@ -370,13 +375,13 @@ async function handleConfigureSlotSubmit(e) {
         window.currentEditingSlot = null;
 
         // Show success message
-        showNotification('Slot updated successfully!', 'success');
+        alert('Slot updated successfully!', 'success');
 
         // The real-time listener will automatically update the grid
 
     } catch (error) {
         console.error('Error updating slot:', error);
-        showNotification(`Failed to update slot: ${error.message}`, 'error');
+        alert(`Failed to update slot: ${error.message}`, 'error');
     } finally {
         // Reset button state
         submitBtn.innerHTML = originalText;
@@ -384,37 +389,50 @@ async function handleConfigureSlotSubmit(e) {
     }
 }
 
+// ===== Delete Slot Function =====
+async function handleDeleteSlot() {
+    if (!window.currentEditingSlot) {
+        alert('No slot selected for deletion', 'error');
+        return;
+    }
+
+    // Confirm before deleting
+    const confirmDelete = confirm(`Are you sure you want to delete slot "${window.currentEditingSlot.slot_name}"?`);
+    if (!confirmDelete) return;
+
+    try {
+        console.log('Deleting slot from Firestore:', window.currentEditingSlot.docId);
+
+        // Delete from Firestore
+        const slotRef = doc(db, 'ParkingSlots', window.currentEditingSlot.docId);
+        await deleteDoc(slotRef);
+
+        console.log('Slot deleted successfully');
+
+        // Close modal
+        closeModal('configureSlotModal');
+
+        // Clear editing reference
+        window.currentEditingSlot = null;
+
+        // Show success message
+        alert('Slot deleted successfully!', 'success');
+
+        // Re-render slots
+        renderParkingSlots();
+
+    } catch (error) {
+        console.error('Error deleting slot:', error);
+        alert(`Failed to delete slot: ${error.message}`, 'error');
+    }
+}
+
+
+
 // ===== Debug Function to Print All Slots =====
 
 // Make function available globally for console access
 
-function showNotification(message, type = 'info') {
-    // Remove existing notifications
-    const existingNotifications = document.querySelectorAll('.notification-toast');
-    existingNotifications.forEach(notification => notification.remove());
-
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification-toast notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="notification-icon fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-            <span class="notification-message">${message}</span>
-        </div>
-    `;
-
-    // Add to body
-    document.body.appendChild(notification);
-
-    // Show with animation
-    setTimeout(() => notification.classList.add('show'), 100);
-
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 5000);
-}
 
 // ===== Event Listeners Setup =====
 document.addEventListener("DOMContentLoaded", () => {
@@ -448,8 +466,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const configureSlotForm = document.getElementById("configureSlotForm");
+    const configureDeleteBtn = document.getElementById('deleteConfigSlot');
+
     if (configureSlotForm) {
         configureSlotForm.addEventListener("submit", handleConfigureSlotSubmit);
+    }
+    if (configureDeleteBtn) {
+        configureDeleteBtn.addEventListener('click', handleDeleteSlot);
     }
 
     // Special field toggle for Add Modal
@@ -912,7 +935,7 @@ function createSlotElement(slot) {
 
     // Make entire slot clickable
     slotDiv.addEventListener('click', () => {
-        handleSlotEdit(slot.slot_name);
+        handleSlotEdit(slot.docId);
     });
 
     slotDiv.style.cursor = 'pointer';

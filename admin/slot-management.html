@@ -54,7 +54,11 @@
               </a>
             </li>
             <li class="nav-item">
-              <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
+              <a
+                href="vehicle_management.html"
+                class="nav-link"
+                data-section="vehicle-management"
+              >
                 <i class="nav-icon fas fa-car"></i>
                 Vehicle Management
               </a>
@@ -108,7 +112,9 @@
             <div class="header-left">
               <div class="header-left-text">
                 <h1>Slot Management</h1>
-                <p>Manage parking slots, monitor occupancy, and track utilization</p>
+                <p>
+                  Manage parking slots, monitor occupancy, and track utilization
+                </p>
               </div>
               <div class="logout-button-container">
                 <button class="logout-button" id="logout-button">
@@ -117,7 +123,6 @@
               </div>
             </div>
             <div class="header-right">
-              
               <div class="datetime">
                 <span class="date" id="current-date">15/09/2025</span>
                 <span class="time" id="current-time">11:14:25</span>
@@ -136,9 +141,14 @@
           <div class="action-buttons">
             <button class="action-btn add-slot-btn" id="add-slot-btn">
               <i class="fa-solid fa-plus"></i>
-              Add new slot
+              <span class="btn-text">Add new slot</span>
+              <span class="btn-text short" id="short" style="display: none;">Add</span>
             </button>
-            <button class="action-btn refresh-btn" id="refresh-btn" style="display: none;">
+            <button
+              class="action-btn refresh-btn"
+              id="refresh-btn"
+              style="display: none"
+            >
               <i class="fa-solid fa-arrows-rotate"></i>
               Refresh
             </button>
@@ -191,6 +201,7 @@
                 <option value="occupied">Occupied</option>
                 <option value="reserved">Reserved</option>
                 <option value="unauthorized">Unbooked</option>
+                <option value="named">Named</option>
               </select>
             </div>
           </div>
@@ -279,7 +290,7 @@
                 type="text"
                 class="form-input"
                 id="slotNumber"
-                placeholder="e.g. G-123"
+                placeholder="e.g. G123"
                 required
               />
             </div>
@@ -307,27 +318,27 @@
               </div>
               <div class="form-group">
                 <label class="form-label">
-                  Building <span class="required">*</span>
+                  Select Block
+                  <span class="required">*</span>
                 </label>
                 <select class="form-select" id="slotBlock" required>
                   <option value="A">Block A</option>
                   <option value="B">Block B</option>
                   <option value="C">Block C</option>
+                  <option value="D">Block D</option>
                 </select>
               </div>
-            </div>
 
-            <!-- Slot Type + Initial Status -->
-            <div class="form-row">
               <div class="form-group">
                 <label class="form-label">
                   Initial Status <span class="required">*</span>
                 </label>
                 <select class="filter-select" id="slotInitialStatus" required>
-                  <option value="available">Available</option>
-                  <option value="occupied">Occupied</option>
-                  <option value="reserved">Reserved</option>
-                  <option value="unauthorized">Unauthorized</option>
+                  <option value="Available">Available</option>
+                  <option value="Occupied">Occupied</option>
+                  <option value="Reserved">Reserved</option>
+                  <option value="Unauthorized">Unbooked</option>
+                  <option value="Named">Named</option>
                 </select>
               </div>
               <div class="form-group">
@@ -410,7 +421,10 @@
       <div class="modal" id="configureSlotModal">
         <div class="modal-content">
           <div class="modal-header">
-            <h3 class="modal-title">✏️ Configure Slots</h3>
+            <h3 class="modal-title">
+              <i class="fa-regular fa-pen-to-square"></i>
+              Configure slot
+            </h3>
             <button
               class="modal-close"
               onclick="closeModal('configureSlotModal')"
@@ -419,45 +433,44 @@
             </button>
           </div>
           <form id="configureSlotForm">
+            <!-- Slot Number -->
             <div class="form-group">
-              <label class="form-label">Slot Number</label>
-              <input type="text" class="form-input" id="configSlotNumber" />
+              <label class="form-label">
+                Slot Number <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-input"
+                id="configSlotNumber"
+                placeholder="e.g. G123"
+              />
             </div>
 
+            <!-- Location -->
             <div class="form-group">
-              <label class="form-label">Building</label>
+              <label class="form-label">
+                Building <span class="required">*</span>
+              </label>
               <select class="filter-select" id="configSlotBuilding">
                 <!-- Options will be populated dynamically -->
               </select>
             </div>
 
-            <div class="form-row">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Level Number</label>
-                  <input
-                    type="text"
-                    class="form-input"
-                    id="configSlotLevel"
-                    placeholder="e.g. 0, 1, 2..."
-                  />
-                </div>
-              </div>
-            </div>
-
+            <!-- Building + Group -->
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label">Initial Status</label>
-                <select class="filter-select" id="configSlotStatus">
-                  <option value="available">Available</option>
-                  <option value="occupied">Occupied</option>
-                  <option value="reserved">Reserved</option>
-                  <option value="unauthorized">Unauthorized</option>
-                </select>
+                <label class="form-label">Level Number</label>
+                <input
+                  type="text"
+                  class="form-input"
+                  id="configSlotLevel"
+                  placeholder="e.g. 0, 1, 2..."
+                />
               </div>
               <div class="form-group">
                 <label class="form-label">
-                  Block <span class="required">*</span>
+                  Select Block
+                  <span class="required">*</span>
                 </label>
                 <select class="form-select" id="configSlotBlock" required>
                   <option value="A">Block A</option>
@@ -465,16 +478,29 @@
                   <option value="C">Block C</option>
                 </select>
               </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  Initial Status <span class="required">*</span>
+                </label>
+                <select class="filter-select" id="configSlotStatus" required>
+                  <option value="Available">Available</option>
+                  <option value="Occupied">Occupied</option>
+                  <option value="Reserved">Reserved</option>
+                  <option value="Unbooked">Unbooked</option>
+                  <option value="Named">Named</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Is Special</label>
+                <select class="form-select" id="configSlotIsSpecial">
+                  <option value="no" selected>No</option>
+                  <option value="yes">Yes</option>
+                </select>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Is Special</label>
-              <select class="form-select" id="configSlotIsSpecial">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-              </select>
-            </div>
-
+            <!-- Updated Notes section with ONLY radio buttons -->
             <div
               class="form-group"
               id="configNotesSection"
@@ -484,7 +510,7 @@
                 >Special Slot Type <span class="required">*</span></label
               >
 
-              <!-- Only radio buttons for configure modal -->
+              <!-- Only radio buttons, no textarea -->
               <div id="configNotesRadio">
                 <div class="radio-group">
                   <div class="radio-option">
@@ -521,22 +547,29 @@
                       name="configSlotNotesRadio"
                       value="Handicapped slot"
                     />
-                    <label for="configHandicapped">Handicapped slot</label>
+                    <label for="connfigHandicapped">Handicapped Slot</label>
                   </div>
                 </div>
               </div>
             </div>
 
+            <!-- Actions -->
             <div class="modal-actions">
               <button
                 type="button"
-                class="btn btn-cancel"
-                onclick="closeModal('configureSlotModal')"
+                class="popup-btns btn-delete"
+                id="deleteConfigSlot"
               >
-                Cancel
+                <i class="fa-solid fa-trash"></i>
+                Delete
               </button>
-              <button type="submit" class="btn btn-primary" id="configSubmit">
-                Confirm
+              <button
+                type="submit"
+                class="popup-btns btn-primary"
+                id="configSubmit"
+              >
+                <i class="nav-icon fas fa-plus"></i>
+                Update
               </button>
             </div>
           </form>
