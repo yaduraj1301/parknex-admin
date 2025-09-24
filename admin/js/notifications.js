@@ -1,20 +1,6 @@
 // Import onSnapshot for real-time updates
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-import { getFirestore, collection, query, orderBy, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
-// import {app,db} from "../../public/js/firebase-config.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyBDG2sJZF5Z2T3ABa0bJ_dOF2E_CDZvRFk",
-  authDomain: "parknex-e6cea.firebaseapp.com",
-  projectId: "parknex-e6cea",
-  storageBucket: "parknex-e6cea.firebasestorage.app",
-  messagingSenderId: "830756459271",
-  appId: "1:830756459271:web:f2c5591a282887a10b6ba2",
-  measurementId: "G-VN0P6KKP50"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { collection, query, orderBy, doc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { db } from "../../public/js/firebase-config.js";
 
 // --- Mappings for UI display ---
 const notificationTypeMap = {
