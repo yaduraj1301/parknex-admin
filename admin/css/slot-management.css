@@ -48,14 +48,18 @@
 }
 
 .add-slot-btn {
-    background-color: var(--primary-red);
-    color: var(--neutral-white);
-    border: none;
+    background-color: #64A2F5;
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: -2px 4px 5px rgba(0, 0, 0, 0.114);
 }
 
-.add-slot-btn:hover {
-  background: var(--dull-red);
+#add-slot-btn:hover {
+    background-color: rgba(100, 162, 245, 0.1);
+    color: #64A2F5;
+    transform: scale(1.05);
 }
+
 
 /* Action Bar */
 .action-bar {
@@ -82,9 +86,6 @@
   align-items: center;
   gap: 8px;
 }
-
-
-
 
 .btn-secondary {
   background: var(--neutral-white);
@@ -113,7 +114,8 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 14px;
-  min-width: 200px;
+  /* min-width: 200px; */
+  width: 25%;
 }
 
 .filter-select {
@@ -284,6 +286,7 @@
   color: var(--neutral-white);
 }
 
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
@@ -307,6 +310,15 @@
   .action-buttons {
     flex-direction: column;
   }
+
+  .search-input {
+    flex: 1;
+  }
+
+  .add-slot-btn .btn-text {
+    display: none;
+  }
+
 }
 
 /* Modal */
@@ -329,7 +341,7 @@
   background: var(--neutral-white);
   padding: 30px;
   border-radius: 12px;
-  width: 90%;
+  /* width: 90%; */
   max-width: 500px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
@@ -355,7 +367,7 @@
   font-size: 24px;
   cursor: pointer;
   padding: 5px;
-  color: var(--text-secondary);
+  color: var(--primary-red);
 }
 
 .modal-close:hover {
@@ -366,11 +378,27 @@
   margin-bottom: 20px;
 }
 
+#slotBuilding {
+  width: 100%;
+}
+
+#slotBlock {
+  width: 100%;
+}
+
+#slotInitialStatus {
+  width: 100%;
+}
+
 .form-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
+}
+
+.form-row .form-group {
+  margin-bottom: 0; 
 }
 
 .form-label {
@@ -379,6 +407,11 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+}
+
+.form-row .form-input,
+.form-row .form-select {
+ heigth: 100%;
 }
 
 .form-input,
@@ -409,24 +442,38 @@
   color: var(--primary-red);
 }
 
+#configSlotStatus {
+  width: 100%;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-color);
 }
 
 .popup-btns {
   padding: 12px 18px;
   border-radius: 12px;
-
+  color: var(--bg-color);
 }
 
-.btn-cancel, .btn-primary {
-  background: var(--bg-color);
-  color: var(--primary-black);
+
+.btn-cancel {
+  background-color: var(--primary-red);
+  border: 1px solid var(--primary-red);
+}
+
+.btn-primary {
+  background-color: var(--secondary-light-blue);
+  border: 1px solid var(--secondary-light-blue);
+}
+
+.btn-delete {
+  background-color: var(--primary-red);
+  border: 1px solid var(--primary-red);
 }
 
 .btn-cancel:hover .btn-primary:hover {
@@ -674,6 +721,12 @@
     gap: 6px;
 }
 
+.grid-loading{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .parking-slot {
     /* aspect-ratio: 1; */
     border-radius: 12px 0px 12px 12px;
@@ -694,7 +747,7 @@
 }
 .parking-slot.available {
     background: var(--secondary-green-transparent);
-    border: 1.5px solid var(--secondary-green);
+    border: 1.2px solid var(--secondary-green);
     color: var(--secondary-green);
 }
 
@@ -919,7 +972,7 @@
 
 .modal-actions {
     padding: 20px 0;
-    margin-top: 20px;
+    margin-top: 0px;
 }
 
 /* Ensure modal content maintains proper padding when scrolling */
@@ -986,31 +1039,6 @@
     transform: scale(1.1);
 }
 
-/* Single result layout optimization */
-.parking-block.single-result {
-    max-width: 300px;
-    margin: 0 auto;
-}
-
-.parking-block.single-result h4 {
-    text-align: center;
-    color: #007bff;
-    font-weight: bold;
-}
-
-.slots-grid.single-slot {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100px;
-}
-
-.slots-grid.single-slot .parking-slot {
-    transform: scale(1.2);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.2);
-    border: 2px solid #007bff;
-}
-
 /* Active Filter Button Styles */
 .quick-filters .btn {
     transition: all 0.3s ease;
@@ -1057,6 +1085,10 @@
     font-weight: bold;
 }
 
+#configSlotBuilding {
+  width: 100%;
+}
+
 /* No Slots Message Styling */
 .no-slots {
     text-align: center;
@@ -1066,6 +1098,14 @@
     background: #f8f9fa;
     border-radius: 8px;
     margin: 20px 0;
+}
+
+#configSlotGroup {
+  height: 35px;
+}
+
+#slotGroup {
+  height: 20px;
 }
 
 /* Slot hover effects for better UX */
