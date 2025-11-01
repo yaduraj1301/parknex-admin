@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="../public/css/common-styles.css">
+    <link rel="stylesheet" href="css/realtime-alert.css">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
@@ -41,7 +43,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="vehicle-management.html" class="nav-link" data-section="vehicle-management">
+                    <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
 
                         <i class="nav-icon fas fa-car"></i>
                         Vehicle Management
@@ -86,21 +88,19 @@
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
-            <header class="dashboard-header">
+            <header class="main-header">
                 <div class="header-content">
                     <div class="header-left">
                         <div class="header-left-text">
-                            <div class="header-left-text">
+
                             <h1>Dashboard</h1>
-                                <p>Real time parking lot management and monitoring</p>
+                            <p>Real time parking lot management and monitoring</p>
+
+
                         </div>
                         <div class="logout-button-container ">
                             <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i>
                                 Logout</button>
-                        </div>
-                        </div>
-                        <div class="logout-button-container ">
-                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i> Logout</button>
                         </div>
                     </div>
                     <div class="header-right">
@@ -127,6 +127,9 @@
             <div class="dashboard-content">
                 <!-- Stats Cards -->
                 <!-- Updated Stats Cards with Progress Bars -->
+                <div class="building-card" id="building-card">
+
+                </div>
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-icon">
@@ -134,7 +137,7 @@
                         </div>
                         <div class="stat-content">
                             <h3>Total Slots</h3>
-                            <div class="stat-number">50</div>
+                            <div class="stat-number"><span class="loading-text">Loading...</span> </div>
                         </div>
                     </div>
 
@@ -144,15 +147,15 @@
                         </div>
                         <div class="stat-content">
                             <h3>Available</h3>
-                            <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
+                            <div class="stat-number"><span class="loading-text">Loading...</span> <span
+                                    class="stat-total"></span></div>
                             <div class="stat-progress-container">
                                 <div class="stat-progress-bar">
-                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                    <div class="stat-progress-fill" style="width: 0%"></div>
                                 </div>
-                                <div class="stat-percentage">16%</div>
+                                <div class="stat-percentage"></div>
 
                             </div>
-                            <div class="stat-change positive">+5% from last week</div>
                         </div>
                     </div>
 
@@ -162,15 +165,15 @@
                         </div>
                         <div class="stat-content">
                             <h3>In Use</h3>
-                            <div class="stat-number">8 <span class="stat-total">/ 50</span></div>
+                            <div class="stat-number"><span class="loading-text">Loading...</span> <span
+                                    class="stat-total"></span></div>
                             <div class="stat-progress-container">
                                 <div class="stat-progress-bar">
-                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                    <div class="stat-progress-fill" style="width: 0%"></div>
                                 </div>
-                                <div class="stat-percentage">16%</div>
+                                <div class="stat-percentage"></div>
 
                             </div>
-                            <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
 
@@ -179,16 +182,16 @@
                             <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>Reserved</h3>
-                            <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
+                            <h3>Pre-Booked</h3>
+                            <div class="stat-number"><span class="loading-text">Loading...</span> <span
+                                    class="stat-total"></span></div>
                             <div class="stat-progress-container">
                                 <div class="stat-progress-bar">
-                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                    <div class="stat-progress-fill" style="width: 0%"></div>
                                 </div>
-                                <div class="stat-percentage">16%</div>
+                                <div class="stat-percentage"></div>
 
                             </div>
-                            <div class="stat-change negative">2% from last week</div>
                         </div>
                     </div>
 
@@ -197,13 +200,14 @@
                             <i class="fas fa-car"></i>
                         </div>
                         <div class="stat-content">
-                            <h3>DU Heads</h3>
-                            <div class="stat-number">10 <span class="stat-total">/ 50</span></div>
+                            <h3>Named Slots</h3>
+                            <div class="stat-number"><span class="loading-text">Loading...</span> <span
+                                    class="stat-total"></span></div>
                             <div class="stat-progress-container">
                                 <div class="stat-progress-bar">
-                                    <div class="stat-progress-fill" style="width: 16%"></div>
+                                    <div class="stat-progress-fill" style="width: 0%"></div>
                                 </div>
-                                <div class="stat-percentage">16%</div>
+                                <div class="stat-percentage"></div>
 
                             </div>
                         </div>
@@ -239,7 +243,7 @@
                     <div class="weekly-overview-card">
                         <div class="card-header">
                             <h3><i class="fas fa-chart-bar"></i> Weekly Usage Overview</h3>
-                            <p>Average slots occupied by day - Friday shows highest demand</p>
+                            <p>Average slots occupied by day</p>
                         </div>
                         <div class="chart-container">
                             <canvas id="weeklyChart"></canvas>
@@ -256,7 +260,7 @@
                                     <h4>Attention Required</h4>
                                 </div>
                                 <p>N vehicles are parked without booking.</p>
-                                <button class="alert-action attention" >View Details</button>
+                                <button class="alert-action attention">View Details</button>
                             </div>
 
                             <!-- Sensor Issues -->
@@ -284,15 +288,15 @@
                             <h4>Usage Insights</h4>
                             <div class="insight-row">
                                 <span>Peak Day</span>
-                                <span class="insight-value">Friday</span>
+                                <span class="insight-value" id="peak-day-value">--</span>
                             </div>
                             <div class="insight-row">
                                 <span>Low Day</span>
-                                <span class="insight-value">Sunday</span>
+                                <span class="insight-value" id="low-day-value">--</span>
                             </div>
                             <div class="insight-row">
                                 <span>Weekly Avg</span>
-                                <span class="insight-value">36</span>
+                                <span class="insight-value" id="weekly-avg-value">--</span>
                             </div>
                         </div>
                     </div>
@@ -303,273 +307,70 @@
                         <h3>Parking Lot Overview</h3>
                         <div class="legend-container">
                             <div class="parking-legend">
-                            
-                            <div class="legend-item">
-                                <span class="legend-color corner"></span>
-                                DU Heads
+
+                                <div class="legend-item">
+                                    <span class="legend-color corner"></span>
+                                    Named Slots
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color available"></span>
+                                    Available
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color occupied"></span>
+                                    Booked
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color reserved"></span>
+                                    Pre-Booked
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-color unbooked"></span>
+                                    Unbooked
+                                </div>
                             </div>
-                            <div class="legend-item">
-                                <span class="legend-color available"></span>
-                                Available
+
+                            <div class="parking-legend second-row">
+
+                                <div class="legend-item">
+                                    <img src="../public/assets/icons/pillar.png" class="pillar" alt="">
+                                    Pillar
+                                </div>
+                                <div class="legend-item">
+                                    <i class="fa fa-turn-down"></i>
+                                    Corner
+                                </div>
+                                <div class="legend-item">
+                                    <i class="fa fa-bolt available"></i>
+                                    EV Slot
+                                </div>
                             </div>
-                            <div class="legend-item">
-                                <span class="legend-color occupied"></span>
-                                Booked
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color reserved"></span>
-                                Reserved
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-color unbooked"></span>
-                                Unbooked
-                            </div>
+
                         </div>
 
-                        <div class="parking-legend second-row">
-                            
-                            <div class="legend-item">
-                                <img src="../public/assets/icons/pillar.png" class="pillar" alt="">
-                                Pillar
-                            </div>
-                            <div class="legend-item">
-                                <i class="fa fa-turn-down"></i>
-                                Corner
-                            </div>
-                            <div class="legend-item">
-                                <i class="fa fa-bolt available"></i>
-                                EV Slot
-                            </div>
-                        </div>
-
-                        </div>
-                        
                     </div>
 
                     <!-- Level Tabs -->
                     <div class="level-tabs">
-                        <button class="level-tab active" data-level="1">Level 1</button>
+                        <!-- <button class="level-tab active" data-level="1">Level 1</button>
                         <button class="level-tab" data-level="2">Level 2</button>
-                        <button class="level-tab" data-level="3">Level 3</button>
+                        <button class="level-tab" data-level="3">Level 3</button> -->
                     </div>
 
                     <!-- Parking Grid -->
                     <div class="parking-grid" id="parking-grid">
-                        <!-- A-Block -->
-                        <div class="parking-block">
-                            <h4>A-Block</h4>
-                            <div class="slots-grid">
-                                <div class="parking-slot available" data-slot="A01">
-                                    <span class="slot-id">A01</span>
-
-                                    <i class="slot-icon fas fa-car"></i>
-
-
-                                </div>
-                                <div class="parking-slot occupied" data-slot="A02">
-                                    <span class="slot-id">A02</span>
-
-                                    <i class="slot-icon fas fa-car"></i>
-
-                                </div>
-                                <div class="parking-slot available" data-slot="A03">
-                                    <span class="slot-id">A03</span>
-
-                                    <i class="slot-icon fas fa-car"></i>
-
-
-                                </div>
-                                <div class="parking-slot occupied" data-slot="A04">
-                                    <span class="slot-id">A04</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="A05">
-                                    <span class="slot-id">A05</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="A06">
-                                    <span class="slot-id">A06</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="A07">
-                                    <span class="slot-id">A07</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="A08">
-                                    <span class="slot-id">A08</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot named" data-slot="A09">
-                                    <span class="slot-id">A09</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="A10">
-                                    <span class="slot-id">A10</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="A11">
-                                    <span class="slot-id">A11</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="A12">
-                                    <span class="slot-id">A12</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="A13">
-                                    <span class="slot-id">A13</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="A14">
-                                    <span class="slot-id">A14</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="A15">
-                                    <span class="slot-id">A15</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- B-Block -->
-                        <div class="parking-block">
-                            <h4>B-Block</h4>
-                            <div class="slots-grid">
-                                <div class="parking-slot available" data-slot="B01">
-                                    <span class="slot-id">B01</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="B02">
-                                    <span class="slot-id">B02</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="B03">
-                                    <span class="slot-id">B03</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="B04">
-                                    <span class="slot-id">B04</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="B05">
-                                    <span class="slot-id">B05</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="B06">
-                                    <span class="slot-id">B06</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="B07">
-                                    <span class="slot-id">B07</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="B08">
-                                    <span class="slot-id">B08</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="B09">
-                                    <span class="slot-id">B09</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="B10">
-                                    <span class="slot-id">B10</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="B11">
-                                    <span class="slot-id">B11</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="B12">
-                                    <span class="slot-id">B12</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="B13">
-                                    <span class="slot-id">B13</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="B14">
-                                    <span class="slot-id">B14</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="B15">
-                                    <span class="slot-id">B15</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- C-Block -->
-                        <div class="parking-block">
-                            <h4>C-Block</h4>
-                            <div class="slots-grid">
-                                <div class="parking-slot available" data-slot="C01">
-                                    <span class="slot-id">C01</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="C02">
-                                    <span class="slot-id">C02</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="C03">
-                                    <span class="slot-id">C03</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="C04">
-                                    <span class="slot-id">C04</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="C05">
-                                    <span class="slot-id">C05</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="C06">
-                                    <span class="slot-id">C06</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="C07">
-                                    <span class="slot-id">C07</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="C08">
-                                    <span class="slot-id">C08</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot reserved" data-slot="C09">
-                                    <span class="slot-id">C09</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="C10">
-                                    <span class="slot-id">C10</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="C11">
-                                    <span class="slot-id">C11</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="C12">
-                                    <span class="slot-id">C12</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="C13">
-                                    <span class="slot-id">C13</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot available" data-slot="C14">
-                                    <span class="slot-id">C14</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                                <div class="parking-slot occupied" data-slot="C15">
-                                    <span class="slot-id">C15</span>
-                                    <i class="slot-icon fas fa-car"></i>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="grid-loading">Loading....</div>
                     </div>
                 </div>
+
             </div>
         </main>
     </div>
 
     <script type="module" src="js/dashboard.js"></script>
+    <script type="module" src="js/realtime-alerts.js"></script>
+    <script type="module" src="js/auth.js"></script>
+
 </body>
 
 </html>

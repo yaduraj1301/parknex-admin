@@ -10,7 +10,7 @@ const buildingsByLocation = [
   "Thejaswini, Trivandrum",
   "Athulya, Kochi",
 ];
-const statuses = ["Free", "Unbooked", "Reserved", "Named"];
+const statuses = ["Free", "Unbooked", "", "Named"];
 const notesOptions = ["Has a pillar in it", "Is in a corner", "EV slot"];
 
 function randChoice(arr) {
@@ -28,7 +28,7 @@ async function seedParkingSlots() {
 
     for (const floor of floors) {
       for (const block of blocks) {
-        for (let slotNum = 1; slotNum <= 3; slotNum++) {
+        for (let slotNum = 1; slotNum <= 2; slotNum++) {
           const slotName = `${block}${slotNum}`;
 
           const is_special = Math.random() > 0.7;

@@ -1,8 +1,6 @@
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
+
+.report-container{
+  padding: 20px;
 }
 
 .usage-header-flex {
@@ -14,7 +12,7 @@
 
 .usage-header-flex h2 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 18px;
 }
 
 .usage-trends {
