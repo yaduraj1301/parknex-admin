@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ParkNex - Bookings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../public/css/common-styles.css">
+    <link rel="stylesheet" href="css/bookings.css">
+
+</head>
+
+<body>
+    <div class="main-container">
+
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="logo">ParkNex</h2>
+                <p class="logo-subtitle">Parking Management</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item ">
+                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
+                        <i class="nav-icon fas fa-th-large"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="bookings.html" class="nav-link" data-section="bookings">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        Bookings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="report-index.html" class="nav-link" data-section="reports">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
+
+                        <i class="nav-icon fas fa-car"></i>
+                        Vehicle Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="slot-management.html" class="nav-link" data-section="slot-management">
+                        <i class="nav-icon fas fa-plus"></i>
+                        Slot Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="notifications.html" class="nav-link" data-section="notifications">
+                        <i class="nav-icon fas fa-bell"></i>
+                        Notifications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link" data-section="settings">
+                        <i class="nav-icon fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="admin-info">
+                        <p class="admin-name">Admin User</p>
+                        <p class="admin-email">admin@park.com</p>
+                    </div>
+                    <div class="logout-button" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="main-content">
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="header-left-text">
+                            <div class="header-left-text">
+                                <h1>Bookings</h1>
+                                <p>Manage your bookings efficiently</p>
+                            </div>
+                        </div>
+                        <div class="logout-button-container ">
+                            <button class="logout-button" id="logout-button"> <i class="fa fa-sign-out-alt"></i>
+                                Logout</button>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <!-- <select class="building-selector" id="building-selector">
+                            <option value="building1"><i class="fas fa-map-marker-alt"></i> Athulya, Kochi
+                            </option>
+                            <option value="building2"><i class="fas fa-map-marker-alt"></i> Gayathri, Trivandrum</option>
+                            <option value="building3"><i class="fas fa-map-marker-alt"></i> Thejaswini, Trivandrum</option>
+                        </select> -->
+                        <div class="datetime">
+                            <span class="date" id="current-date">15/09/2025</span>
+                            <span class="time" id="current-time">11:14:25</span>
+                        </div>
+                        <div class="user-menu">
+                            <button class="user-avatar">
+                                <i class="fas fa-bell"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <main>
+
+                <div class="sub-heading-container">
+                    <div class="sub-heading-top">
+                        <h4>All Bookings</h4>
+                    </div>
+                    <div class="filters-container">
+                        <input class="search-bar" type="search" placeholder="Search" aria-label="Search">
+                        <div>
+                            <label for="statusFilter">Status:</label>
+                            <select id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="dateFilter">Date:</label>
+                            <input type="date" id="dateFilter" class="date-filter">
+                        </div>
+                        <button id="clearFilters" class="btn-clear">Clear Filters</button>
+
+                        <div class="button-container">
+                            <button class="btn-primary">
+                                <i class="fas fa-plus"></i>Reserve Slot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Vehicle Number</th>
+                                <th>Employee</th>
+                                <th>Building</th>
+                                <th>Slot Number</th>
+                                <th>Status</th>
+                                <th>Date and Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Bookings will be dynamically populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script type="module" src="../admin/js/bookings.js"></script>
+    <script src="../public/js/headerScript.js"></script>
+    <script type="module" src="js/realtime-alerts.js"></script>
+        <script type="module" src="js/auth.js"></script>
+
+
+</body>
+
+</html>

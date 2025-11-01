@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle management page</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="../public/css/common-styles.css" />
+    <link rel="stylesheet" href="css/vm_styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/realtime-alert.css">
+
+</head>
+
+<body>
+    <div id="loader" class="loader-overlay">
+        <div class="spinner"></div>
+    </div>
+    <div class="main-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2 class="logo">ParkNex</h2>
+                <p class="logo-subtitle">Parking Management</p>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item ">
+                    <a href="dashboard.html" class="nav-link" data-section="dashboard">
+                        <i class="nav-icon fas fa-th-large"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item ">
+                    <a href="bookings.html" class="nav-link" data-section="bookings">
+                        <i class="nav-icon fas fa-calendar-alt"></i>
+                        Bookings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="report-index.html" class="nav-link" data-section="reports">
+                        <i class="nav-icon fas fa-file-alt"></i>
+                        Reports
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a href="vehicle_management.html" class="nav-link" data-section="vehicle-management">
+
+                        <i class="nav-icon fas fa-car"></i>
+                        Vehicle Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="slot-management.html" class="nav-link" data-section="slot-management">
+                        <i class="nav-icon fas fa-plus"></i>
+                        Slot Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="notifications.html" class="nav-link" data-section="notifications">
+                        <i class="nav-icon fas fa-bell"></i>
+                        Notifications
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="settings.html" class="nav-link" data-section="settings">
+                        <i class="nav-icon fas fa-cog"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="admin-profile">
+                    <div class="admin-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="admin-info">
+                        <p class="admin-name">Admin User</p>
+                        <p class="admin-email">admin@park.com</p>
+                    </div>
+                    <div class="logout-button" id="logout-button">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="header-left-text">
+                            <h1>Vehicle Management</h1>
+                            <p>Employee and vehicle records</p>
+                        </div>
+
+                    </div>
+                    <div class="header-right">
+                        <div class="datetime">
+                            <span class="date" id="current-date">15/09/2025</span>
+                            <span class="time" id="current-time">11:14:25</span>
+                        </div>
+                        <div class="user-menu">
+                            <button class="user-avatar">
+                                <i class="fas fa-bell"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Top Summary Cards -->
+            <!-- Top Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card" style="margin-left: 16px;">
+                    <h3>Total Vehicles</h3>
+                    <p class="description">Registered vehicles in the system</p>
+                    <div style="display: flex;flex-direction: column;">
+                        <p class="value">0</p>
+                        <div style="display: flex; justify-content: flex-end; align-items: center;">
+                            <i class="fa-solid fa-car" style="justify-content:right;"></i>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div class="summary-card">
+                    <h3>Currently Parked</h3>
+                    <p class="description">currently parked vehicles</p>
+                    <p class="value">0</p>
+                    <div style="display: flex; justify-content: flex-end; align-items: center;">
+                        <i class="fa-solid fa-car-tunnel"></i>
+                    </div>
+
+
+                </div>
+                <div class="summary-card alert">
+                    <h3>Security Alerts</h3>
+                    <p class="description" style="color: #DC143C;">Vehicles that need attention</p>
+                    <p class="value">0</p>
+                    <div style="display: flex; justify-content: flex-end; align-items: center;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+
+
+                </div>
+                <div class="add-vehicle" style="justify-content: center;align-content: center;">
+                    <button class="add-btn" style="margin-right: 10px;">
+                        <i class="fas fa-plus"></i>
+                        Add Vehicle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Records Table with integrated Search and Filters -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3>Vehicle Records</h3>
+                    <br>
+                    <div class="table-controls">
+                        <div class="search-section">
+                            <input type="text" placeholder="Search by Employee or Vehicle No." class="search-input">
+                            <button class="search-btn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="ocr-section">
+                            <input type="file" id="upload-ocr" accept="image/*">
+                            <label for="upload-ocr" class="ocr-btn">
+                                <i class="fas fa-camera"></i>
+                                OCR Scan
+                            </label>
+                        </div>
+                        <div class="filter-section">
+                            <!-- Departments -->
+                            <select class="filter-select filter-dept">
+                                <option>All Departments</option>
+                                <option>DES</option>
+                                <option>ATS</option>
+                                <option>DU1</option>
+                                <option>DU2</option>
+                                <option>DU3</option>
+                                <option>DU4</option>
+                                <option>DU5</option>
+                                <option>DU6</option>
+                            </select>
+
+                            <!-- Status -->
+                            <select class="filter-select filter-status">
+                                <option>All Status</option>
+                                <option>Booked</option>
+                                <option>Unbooked</option>
+                            </select>
+
+                            <!-- Building (replaces Authorization) -->
+                            <select class="filter-select filter-building">
+                                <option>All Buildings</option>
+                                <option>Athulya, Kochi</option>
+                                <option>Thejaswini, Trivandrum</option>
+                                <option>Gayathri, Trivandrum</option>
+                            </select>
+
+                        </div>
+                        <div class="clear-btn-section">
+                            <button class="clear-btn">
+                                <i class="fas fa-times"></i>
+                                Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrollable wrapper -->
+                <div class="table-scroll">
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Department</th>
+                                <th>Vehicle</th>
+                                <th>Contact</th>
+                                <th>Recent Parking</th>
+                                <th>Booking</th>
+                                <th>Authorization</th>
+                                <th>Building</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>John Smith</td>
+                                <td>IT</td>
+                                <td>KL-07-1234</td>
+                                <td>+91 9876543210</td>
+                                <td>14/09/2025 - Slot 10</td>
+                                <td><span class="status active">Active</span></td>
+                                <td><span class="status authorized">Authorized</span></td>
+                                <td>Gayatri</td>
+                                <td class="action-buttons">
+                                    <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                                    <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                                    <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>?</td>
+                                <td>?</td>
+                                <td>?</td>
+                                <td>?</td>
+                                <td>17-09-2025 - Slot 11</td>
+                                <td><span class="status inactive">No booking</span></td>
+                                <td><span class="status unauthorized">Unauthorized</span></td>
+                                <td>Athulya</td>
+                                <td class="action-buttons">
+                                    <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                                    <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                                    <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Mike Johnson</td>
+                                <td>Finance</td>
+                                <td>KL-05-9999</td>
+                                <td>+91 9123456789</td>
+                                <td>13/09/2025 - Slot 5</td>
+                                <td><span class="status active">Active</span></td>
+                                <td><span class="status authorized">Authorized</span></td>
+                                <td>Tejaswini</td>
+                                <td class="action-buttons">
+                                    <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                                    <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                                    <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Sarah Wilson</td>
+                                <td>Marketing</td>
+                                <td>KL-03-7777</td>
+                                <td>+91 9567890123</td>
+                                <td>12/09/2025 - Slot 8</td>
+                                <td><span class="status inactive">No booking</span></td>
+                                <td><span class="status authorized">Authorized</span></td>
+                                <td>Gayatri</td>
+                                <td class="action-buttons">
+                                    <button class="action-btn1" title="Call"><i class="fas fa-phone"></i></button>
+                                    <button class="action-btn2" title="Flag"><i class="fas fa-flag"></i></button>
+                                    <button class="action-btn3" title="Add Booking"><i class="fas fa-plus"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Popup Modal -->
+            <div id="popupModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h3>Authorization Status</h3>
+                    <div class="status-card">
+                        <div class="status-header">
+                            <h4 id="empName">Sarah Johnson</h4>
+                            <span class="status-badge authorized" id="authStatus">Authorized</span>
+                        </div>
+                        <p><strong>ID:</strong> <span id="empId">EMP002</span></p>
+
+                        <div class="details">
+                            <p><strong>Vehicle Information:</strong> <span id="vehicleInfo">KL 08 Q 3738, Maruti 800
+                                    White</span></p>
+                            <p><strong>Department:</strong> <span id="department">L & D</span></p>
+                            <p><strong>Building:</strong> <span id="building">Gayatri Phase 1</span></p>
+                            <p><strong>Contact Number:</strong> <span id="contact">8078345787</span></p>
+                            <p><strong>Date Authorized:</strong> <span id="authDate">18/03/2019</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Vehicle Modal -->
+            <div id="addVehicleModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn">&times;</span>
+                    <h3>Add new Vehicle</h3>
+
+                    <form id="vehicleForm">
+                        <label>Vehicle Number *</label>
+                        <input type="text" name="registration_no" placeholder="e.g. KA01AB1234" required>
+
+                        <label>Employee ID *</label>
+                        <input type="text" name="employee_id" placeholder="e.g. EMP002" required>
+
+                        <label>Vehicle Model *</label>
+                        <input type="text" name="model" placeholder="e.g. Tesla Model 3" required>
+
+                        <label>Car Color *</label>
+                        <input type="text" name="color" placeholder="e.g. Red" required>
+
+                        <label>Default Vehicle?</label>
+                        <select name="is_default" required>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+
+                        <label>Registration Date *</label>
+                        <input type="date" name="registration_date" required>
+
+                        <div class="form-actions">
+                            <button type="button" class="cancel-btn">Cancel</button>
+                            <button type="submit" class="add-btn">Add Vehicle</button>
+                        </div>
+                    </form>
+
+
+                </div>
+            </div>
+
+
+
+
+        </main>
+    </div>
+
+    <script type="module" src="js/vm.js"></script>
+    <script type="module" src="js/realtime-alerts.js"></script>
+        <script type="module" src="js/auth.js"></script>
+
+
+</body>
+
+</html>

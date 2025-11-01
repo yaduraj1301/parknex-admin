@@ -1,0 +1,1173 @@
+:root {
+      --primary-black: #000000;
+    --primary-red: #DC143C;
+    --dull-red: #A50B2C;
+    --primary-red-transparent: rgba(220, 20, 60, 0.25);
+    --secondary-gray: #4D4D4D;
+    --secondary-coral: #EA5853;
+    --secondary-orange: #F09951;
+    --dull-orange: #e2904d;
+    --secondary-orange-transparent: rgba(240, 152, 81, 0.25);
+    --secondary-green: #43BF73;
+    --secondary-green-transparent: hsla(143, 49%, 51%, 0.25);
+    --secondary-purple: #8061C3;
+    --secondary-light-blue: #64A2F5;
+    --secondary-blue: #3E68B9;
+    --neutral-gray: #A0A0A0;
+    --neutral-gray-transparent: hsla(0, 0%, 63%, 0.25);
+    --neutral-white: #FFFFFF;
+    --bg-color: #f8f9fa;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --border-color: #e0e0e0;
+    --hover-color: #f0f0f0;
+}
+
+
+.content-container {
+    padding: 20px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 20px;
+}
+
+.action-btn {
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    width: 18%;
+    font-size: 15px;
+    font-weight: 500;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-slot-btn {
+    background-color: #64A2F5;
+    color: #ffffff;
+    transform: scale(1.05);
+    box-shadow: -2px 4px 5px rgba(0, 0, 0, 0.114);
+}
+
+#add-slot-btn:hover {
+    background-color: rgba(100, 162, 245, 0.1);
+    color: #64A2F5;
+    transform: scale(1.05);
+}
+
+
+/* Action Bar */
+.action-bar {
+  background: var(--neutral-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.btn {
+  padding: 10px 16px;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-secondary {
+  background: var(--neutral-white);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--hover-color);
+}
+
+.quick-filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-input {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  /* min-width: 200px; */
+  width: 25%;
+}
+
+.filter-select {
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--neutral-white);
+  cursor: pointer;
+}
+
+/* Parking Overview */
+.parking-overview {
+  background: var(--neutral-white);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.overview-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.legend {
+  display: flex;
+  gap: 20px;
+  font-size: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-dot.filter {
+  background: var(--secondary-green);
+}
+.legend-dot.corner {
+  background: var(--secondary-orange);
+}
+.legend-dot.available {
+  background: var(--secondary-green);
+}
+.legend-dot.occupied {
+  background: var(--primary-red);
+}
+.legend-dot.reserved {
+  background: var(--secondary-purple);
+}
+.legend-dot.unbooked {
+  background: var(--neutral-gray);
+}
+
+.level-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.level-tab {
+  padding: 10px 20px;
+  border: none;
+  background: var(--hover-color);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.level-tab.active {
+  background: var(--secondary-light-blue);
+  color: var(--neutral-white);
+}
+
+#parkingGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns for blocks */
+  gap: 20px;
+}
+
+
+.parking-block {
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+}
+
+.block-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: var(--text-primary);
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.slot {
+  width: 60px;
+  height: 45px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.slot:hover {
+  transform: scale(1.05);
+}
+
+/* Slot Status Colors */
+.slot.available {
+  background: var(--secondary-green);
+  color: var(--neutral-white);
+}
+
+.slot.occupied {
+  background: var(--primary-red);
+  color: var(--neutral-white);
+}
+
+.slot.reserved {
+  background: var(--secondary-purple);
+  color: var(--neutral-white);
+}
+
+.slot.handicapped {
+  background: var(--secondary-orange);
+  color: var(--neutral-white);
+}
+
+.slot.ev {
+  background: var(--secondary-light-blue);
+  color: var(--neutral-white);
+}
+
+.slot.corner {
+  background: var(--secondary-orange);
+  color: var(--neutral-white);
+}
+
+.slot.unbooked {
+  background: var(--neutral-gray);
+  color: var(--neutral-white);
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .parking-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .quick-filters {
+    flex-direction: column;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .search-input {
+    flex: 1;
+  }
+
+  .add-slot-btn .btn-text {
+    display: none;
+  }
+
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--neutral-white);
+  padding: 30px;
+  border-radius: 12px;
+  /* width: 90%; */
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 5px;
+  color: var(--primary-red);
+}
+
+.modal-close:hover {
+  color: var(--text-primary);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+#slotBuilding {
+  width: 100%;
+}
+
+#slotBlock {
+  width: 100%;
+}
+
+#slotInitialStatus {
+  width: 100%;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  /* margin-bottom: 20px; */
+}
+
+.form-row .form-group {
+  margin-bottom: 0; 
+}
+
+.form-label {
+  display: block;
+  /* margin-bottom: 8px; */
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-row .form-input,
+.form-row .form-select {
+ heigth: 100%;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--neutral-white);
+  transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--secondary-light-blue);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.required {
+  color: var(--primary-red);
+}
+
+#configSlotStatus {
+  width: 100%;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 30px;
+  padding-top: 20px;
+}
+
+.popup-btns {
+  padding: 12px 18px;
+  border-radius: 12px;
+  color: var(--bg-color);
+}
+
+
+.btn-cancel {
+  background-color: var(--primary-red);
+  border: 1px solid var(--primary-red);
+}
+
+.btn-primary {
+  background-color: var(--secondary-light-blue);
+  border: 1px solid var(--secondary-light-blue);
+}
+
+.btn-delete {
+  background-color: var(--primary-red);
+  border: 1px solid var(--primary-red);
+}
+
+.btn-cancel:hover .btn-primary:hover {
+  background: var(--hover-color);
+}
+
+.slot-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.slot-status.available {
+  background: var(--secondary-green);
+  color: white;
+}
+.slot-status.occupied {
+  background: var(--primary-red);
+  color: white;
+}
+.slot-status.reserved {
+  background: var(--secondary-purple);
+  color: white;
+}
+.slot-status.unauthorized {
+  background: var(--secondary-orange);
+  color: white;
+}
+
+/* Outer grid for blocks */
+.block-wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  margin-top: 20px;
+  justify-content: space-between;
+}
+
+/* Each block card */
+.block-section {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 24px;
+}
+
+/* Block title */
+.block-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* Grid inside block for slots */
+.block-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columns inside each block */
+  gap: 20px;
+}
+
+/* Slot card */
+.slot-box {
+  padding: 23px 0px;
+  border-radius: 12px 0px 12px 12px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.slot-box.available {
+  background: #43BF734D; 
+  color: var(--secondary-green);
+  font-weight: 550;
+  border: 2px solid var(--secondary-green);
+}
+.slot-box.occupied {
+  background: #DC143C40;
+  color: var(--primary-red);
+  font-weight: 550;
+  border: 2px solid var(--primary-red);
+}
+.slot-box.reserved {
+  background: #F0995140 ;
+  color: var(--secondary-orange) ;
+  font-weight: 550;
+  border: 2px solid var(--secondary-orange);
+}
+.slot-box.unbooked {
+  background: var(--primary-red); /* grey */
+}
+.slot-box.named {
+  background: #4D4D4D40;
+  color: var(--secondary-gray) ;
+  font-weight: 550;
+  border: 2px solid var(--secondary-gray)
+}
+
+
+
+
+/* Parking Overview */
+.parking-overview {
+    background: var(--neutral-white);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+}
+
+.parking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 16px;
+}
+
+.parking-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.legend-container{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: end;
+}
+
+.parking-legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+.second-row {
+    display: flex;
+    gap: 16px;
+    justify-content: end;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-color.pillar {
+    background: var(--secondary-gray);
+}
+
+.legend-color.corner {
+    background: var(--neutral-gray);
+}
+
+.legend-color.available {
+    background: var(--secondary-green);
+}
+
+.legend-color.occupied {
+    background: var(--primary-red);
+}
+
+.legend-color.reserved {
+    background: var(--secondary-orange);
+}
+
+.legend-color.unbooked {
+    background: var(--secondary-coral);
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.5; }
+}
+
+/* Level Tabs */
+.level-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+}
+
+.level-tab {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--neutral-white);
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.level-tab:hover {
+    background: var(--hover-color);
+}
+
+.level-tab.active {
+    background: var(--secondary-light-blue);
+    color: var(--neutral-white);
+    border-color: var(--secondary-light-blue);
+}
+
+/* Parking Grid */
+.parking-grid {
+    display: flex;
+    gap: 14px;
+
+}
+
+.parking-block {
+    flex: 1;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    background: #fafafa;
+}
+
+.parking-block h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+
+.grid-loading{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.parking-slot {
+    /* aspect-ratio: 1; */
+    border-radius: 12px 0px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    position: relative;
+    min-height: 50px;
+}
+
+.parking-slot:hover {
+    transform: scale(1.05);
+    border-color: var(--secondary-light-blue);
+}
+.parking-slot.available {
+    background: var(--secondary-green-transparent);
+    border: 1.2px solid var(--secondary-green);
+    color: var(--secondary-green);
+}
+
+.parking-slot.occupied {
+    background: var(--primary-red-transparent);
+    border: 1.5px solid var(--primary-red);
+    color: var(--primary-red);
+}
+.parking-slot.named {
+    background: var(--neutral-gray-transparent);
+    border: 1.5px solid var(--neutral-gray);
+    color: var(--neutral-black);
+}
+
+.parking-slot.reserved {
+    background: var(--secondary-orange-transparent);
+    border: 1.5px solid var(--secondary-orange);
+    color: var(--secondary-orange);
+}
+
+.parking-slot.unbooked {
+    background: var(--secondary-coral);
+    color: var(--neutral-white);
+    animation: blink 1s infinite;
+}
+
+
+.slot-id {
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.slot-icon {
+    font-size: 12px;
+}
+.pillar{
+    scale: 0.75;
+}
+.icon-list {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Simple Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(70, 69, 69, 0.9);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.loading-overlay.visible {
+    opacity: 1;
+}
+
+.loading-content {
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #64A2F5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+.loading-text {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .parking-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-left: 240px;
+    }
+    
+    .parking-legend {
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    
+/*     
+    .header-content {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .datetime {
+        display: none;    
+    } */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+    }
+
+    .dashboard-row {
+        flex-direction: column;
+    }
+
+    .alert-card.no-alerts {
+        display: none;
+    }
+
+    .parking-legend {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .parking-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+    }
+    
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-bold {
+    font-weight: 600;
+}
+
+.mb-16 {
+    margin-bottom: 16px;
+}
+
+.mb-24 {
+    margin-bottom: 24px;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--border-color);
+    border-top: 2px solid var(--secondary-light-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-black);
+    color: var(--neutral-white);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+
+.hidden{
+    display: none;
+}
+
+/*font sizes*/
+.small-text{
+    font-size: 12px;
+}
+.medium-text{
+    font-size: 14px;
+}
+.large-text{
+    font-size: 16px;
+}
+/* Extra Large Text */
+.xlarge-text{
+    font-size: 18px;
+}
+/* Modal Scrollable Styles - Add this to your existing CSS */
+
+/* Make modals scrollable when they exceed 85% viewport height */
+.scrollable-modal {
+    max-height: 85vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Regular modal styling without sticky footer */
+.modal-content form {
+    display: block;
+}
+
+.modal-actions {
+    padding: 20px 0;
+    margin-top: 0px;
+}
+
+/* Ensure modal content maintains proper padding when scrolling */
+.scrollable-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-modal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.scrollable-modal::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.scrollable-modal::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Edit Button Styles */
+.edit-slot-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: #666;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.8);
+    z-index: 10;
+    pointer-events: none; /* Prevent blocking slot clicks */
+}
+
+.parking-slot {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.parking-slot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.parking-slot:hover .edit-slot-btn {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+.edit-slot-btn:hover {
+    background: #007bff;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Active Filter Button Styles */
+.quick-filters .btn {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.quick-filters .btn.active {
+     background-color: #64A2F5;
+    color: #ffffff;
+    box-shadow: 0 2px 8px var(--primary-red-transparent);
+}
+
+.quick-filters .btn.active::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--primary-red), var(var(--secondary-coral)));
+    border-radius: 6px;
+    z-index: -1;
+}
+
+.quick-filters .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Filter Status Indicator */
+.action-bar {
+    position: relative;
+}
+
+.filter-status {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #28a745;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+#configSlotBuilding {
+  width: 100%;
+}
+
+/* No Slots Message Styling */
+.no-slots {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+#configSlotGroup {
+  height: 35px;
+}
+
+#slotGroup {
+  height: 20px;
+}
+
+/* Slot hover effects for better UX */
+.parking-slot:active {
+    transform: translateY(0px) scale(0.98);
+}
+
+/* Modal backdrop improvements */
+.modal {
+    backdrop-filter: blur(2px);
+}
+
+/* Form spacing adjustments for better scroll experience */
+.scrollable-modal .form-group:last-of-type {
+    margin-bottom: 80px; /* Extra space for sticky footer */
+}

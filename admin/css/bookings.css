@@ -1,0 +1,456 @@
+:root {
+    --primary-black: #000000;
+    --primary-red: #DC143C;
+    --dull-red: #A50B2C;
+    --primary-red-transparent: rgba(220, 20, 60, 0.25);
+    --secondary-gray: #4D4D4D;
+    --secondary-coral: #EA5853;
+    --secondary-orange: #F09951;
+    --dull-orange: #e2904d;
+    --secondary-orange-transparent: rgba(240, 152, 81, 0.25);
+    --secondary-green: #43BF73;
+    --secondary-green-transparent: hsla(143, 49%, 51%, 0.25);
+    --secondary-purple: #8061C3;
+    --secondary-light-blue: #64A2F5;
+    --secondary-blue: #3E68B9;
+    --neutral-gray: #A0A0A0;
+    --neutral-gray-transparent: hsla(0, 0%, 63%, 0.25);
+    --neutral-white: #FFFFFF;
+    --bg-color: #f8f9fa;
+    --text-primary: #333;
+    --text-secondary: #666;
+    --border-color: #e0e0e0;
+    --hover-color: #f0f0f0;
+}
+
+/* Layout Styles */
+
+
+/* Header Styles */
+/* .header-content {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+} */
+
+.header-left h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.notification-icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* Sub-heading Container */
+.sub-heading-container {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    padding-right: 0;
+}
+
+.sub-heading-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.sub-heading-top h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Filters Container */
+.filters-container {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Form Controls */
+.search-bar, #statusFilter, #dateFilter {
+    padding: 8px 12px;
+    border: 1px solid var(--neutral-gray);
+    border-radius: 6px;
+    font-size: 14px;
+    background: var(--neutral-white);
+}
+
+.search-bar {
+    min-width: 200px;
+}
+
+#statusFilter, #dateFilter {
+    min-width: 120px;
+}
+
+.search-bar:focus, #statusFilter:focus, #dateFilter:focus {
+    border-color: var(--secondary-blue);
+    box-shadow: 0 0 0 2px rgba(62, 104, 185, 0.2);
+    outline: none;
+}
+
+.btn-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--neutral-white);
+    border: 1px solid var(--neutral-gray);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-red);
+    transition: all 0.3s ease;
+}
+
+.btn-clear:hover {
+    background: var(--primary-red-transparent);
+    border-color: var(--primary-red);
+}
+
+.button-container {
+
+}
+
+/* Primary Button */
+.btn-primary {
+    height: auto; /* Adjust height to content */
+    background-color: var(--secondary-light-blue);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px; /* Match other buttons */
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-blue);
+    transform: translateY(-1px);
+}
+
+.btn-primary i {
+    font-size: 12px;
+}
+
+/* Table Styles */
+.table-container {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    margin: 0 20px 20px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    color: var(--text-secondary);
+    font-weight: 700;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.table tbody tr:nth-child(even):hover {
+    background-color: #f0f0f0;
+}
+
+/* Action Button */
+.btn-action {
+    background-color: var(--secondary-light-blue);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+}
+
+.btn-action:hover {
+    background-color: var(--secondary-blue);
+}
+
+/* Status Badges */
+.status-confirmed, .status-active {
+    background-color: var(--secondary-green-transparent);
+    color: var(--secondary-green);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background-color: var(--secondary-orange-transparent);
+    color: var(--secondary-orange);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-cancelled, .status-expired {
+    background-color: var(--primary-red-transparent);
+    color: var(--primary-red);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-unknown {
+    background-color: var(--neutral-gray-transparent);
+    color: var(--neutral-gray);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Parking Overview Overlay */
+.parking-overview {
+    width: 80%;
+    height: 80%;
+    background-color: var(--neutral-white);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.parking-header {
+    margin-bottom: 20px;
+}
+
+.parking-header h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Parking Legend */
+.parking-legend {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background-color: var(--neutral-gray);
+}
+
+.legend-color.available {
+    background: var(--secondary-green);
+}
+
+.legend-color.occupied {
+    background: var(--primary-red);
+}
+
+.legend-color.reserved {
+    background: var(--secondary-orange);
+}   
+
+.legend-color.unbooked {
+    background: var(--secondary-coral);
+    animation: blink 1s infinite;
+}
+/* Special slot styling */
+.parking-slot.special-slot {
+    border: 2px solid var(--secondary-gray);
+    box-shadow: 0 0 8px rgba(128, 97, 195, 0.3);
+}
+
+/* Level Tabs */
+.level-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.level-tab {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--neutral-white);
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: background-color 0.3s ease;
+}
+
+.level-tab.active {
+    background-color: var(--secondary-light-blue);
+    color: var(--neutral-white);
+}
+
+.level-tab:hover {
+    background-color: var(--hover-color);
+}
+
+.parking-grid{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Parking Blocks */
+.parking-block {
+    margin-bottom: 16px;
+}
+
+.parking-block h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(5,1fr);
+    gap: 8px;
+    max-width: 100%;
+}
+
+.parking-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--secondary-light-blue);
+    color: var(--neutral-white);
+    border-radius: 8px;
+    height: 60px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 80px;
+}
+
+.parking-slot:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.parking-slot.available {
+    background-color: var(--secondary-green);
+}
+
+.parking-slot.occupied {
+    background-color: var(--primary-red);
+}
+
+.parking-slot.unbooked {
+     background-color: var(--secondary-orange);
+    animation: blink 1s infinite;   
+}
+
+.parking-slot.reserved {
+        background-color: var(--neutral-gray);
+
+   
+}
+.parking-slot.named {
+        background-color: var(--neutral-gray);
+
+   
+}
+/* Blinking Animation */
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.slot-blinking {
+    animation: blink 1s infinite;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filters-container {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .search-bar {
+        width: 100%;
+    }
+    
+    .btn-dropdown {
+        width: 100%;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .table {
+        min-width: 600px;
+    }
+}
+
